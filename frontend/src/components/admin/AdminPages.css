@@ -57,9 +57,23 @@
   padding: 0;
 }
 
-/* Tables */
+/* Tables — responsive mobile : défilement horizontal fluide */
+.table-responsive {
+  -webkit-overflow-scrolling: touch;
+  overflow-x: auto;
+}
+
 .admin-table {
   margin-bottom: 0;
+}
+
+@media (max-width: 767.98px) {
+  .admin-table thead th,
+  .admin-table tbody td {
+    padding: 0.5rem 0.5rem;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+  }
 }
 
 .admin-table thead th {

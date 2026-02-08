@@ -249,3 +249,24 @@ code {
 @media (min-width: 768px) { .text-3xl.md\:text-4xl { font-size: 2.25rem; } }
 .btn-primary { color: #fff; }
 .africadata-card { border-radius: 1rem; border: 1px solid rgba(196,22,28,0.15); background: rgba(255,255,255,0.95); }
+
+/* ========== Responsive mobile & safe area ========== */
+@media (max-width: 575.98px) {
+  .container, .container-fluid {
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+  }
+}
+
+/* Zones de toucher minimales sur mobile (accessibilité) */
+@media (max-width: 767.98px) {
+  .btn:not(.btn-sm),
+  .nav-link,
+  .dropdown-toggle {
+    min-height: 44px;
+  }
+  .form-control-lg,
+  .input-group-lg .form-control {
+    min-height: 48px;
+  }
+}

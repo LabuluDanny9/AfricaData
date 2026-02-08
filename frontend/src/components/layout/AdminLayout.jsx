@@ -3,7 +3,7 @@ import { Outlet, Navigate, Link, useLocation } from 'react-router-dom';
 import { Navbar, Nav, Container, Button, ListGroup, Offcanvas, Toast, ToastContainer } from 'react-bootstrap';
 import {
   LayoutDashboard, LogOut, FileText, Users, CreditCard, BookOpen, MessageCircle,
-  Bell, BarChart3, Settings, ScrollText, Sun, Moon, KeyRound,
+  Bell, BarChart3, Settings, ScrollText, Sun, Moon, KeyRound, Menu,
 } from 'lucide-react';
 import { useAuth } from 'context/AuthContext';
 import { useTheme } from 'context/ThemeContext';
@@ -31,6 +31,7 @@ export default function AdminLayout() {
   const location = useLocation();
   const [notifications] = useState([]);
   const [showOffcanvas, setShowOffcanvas] = useState(false);
+  const [showSidebarMobile, setShowSidebarMobile] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
   // Notifications temps réel : installer socket.io-client et définir REACT_APP_SOCKET_URL pour activer
 
@@ -53,8 +54,8 @@ export default function AdminLayout() {
 
   return (
     <div className="admin-layout d-flex min-vh-100">
-      {/* Sidebar fixe */}
-      <aside className="admin-sidebar d-flex flex-column">
+      {/* Sidebar desktop */}
+      <aside className="admin-sidebar d-none d-lg-flex flex-column">
         <div className="admin-sidebar-header d-flex align-items-center gap-2">
           <Link to="/" className="d-flex align-items-center flex-shrink-0" title="Retour à l'accueil de la plateforme" aria-label="Accueil AfricaData">
             <img src="/logo.png" alt="AfricaData" className="admin-sidebar-logo" />
@@ -87,6 +88,14 @@ export default function AdminLayout() {
       <div className="admin-main-wrap d-flex flex-column flex-grow-1 min-w-0">
         <Navbar className="admin-navbar" data-bs-theme={theme} expand="lg">
           <Container fluid className="px-3 px-lg-4">
+            <Button
+              variant="link"
+              className="d-lg-none me-2 p-2 text-body"
+              onClick={() => setShowSidebarMobile(true)}
+              aria-label="Menu"
+            >
+              <Menu size={24} />
+            </Button>
             <Navbar.Toggle aria-controls="admin-top-nav" />
             <Navbar.Collapse id="admin-top-nav">
               <Nav className="me-auto" />
@@ -132,6 +141,33 @@ export default function AdminLayout() {
           </Container>
         </main>
       </div>
+
+      {/* Menu mobile (sidebar en Offcanvas) */}
+      <Offcanvas show={showSidebarMobile} onHide={() => setShowSidebarMobile(false)} placement="start" className="admin-sidebar-offcanvas" data-bs-theme={theme}>
+        <Offcanvas.Header closeButton>
+          <Offcanvas.Title className="d-flex align-items-center gap-2">
+            <img src="/logo.png" alt="" width={32} height={32} />
+            Menu Admin
+          </Offcanvas.Title>
+        </Offcanvas.Header>
+        <Offcanvas.Body className="p-0">
+          <ListGroup variant="flush" className="border-0">
+            {visibleSections.map(({ to, icon: Icon, label, section }) => (
+              <ListGroup.Item
+                key={section}
+                as={Link}
+                to={to}
+                action
+                className={`d-flex align-items-center gap-2 rounded-0 border-0 px-3 py-3 ${location.pathname === to ? 'bg-danger bg-opacity-10 text-danger fw-semibold' : ''}`}
+                onClick={() => setShowSidebarMobile(false)}
+              >
+                <Icon size={20} />
+                {label}
+              </ListGroup.Item>
+            ))}
+          </ListGroup>
+        </Offcanvas.Body>
+      </Offcanvas>
 
       <Offcanvas show={showOffcanvas} onHide={() => setShowOffcanvas(false)} placement="end" className="admin-notifications-offcanvas">
         <Offcanvas.Header closeButton>

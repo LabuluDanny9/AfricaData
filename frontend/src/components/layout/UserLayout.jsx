@@ -4,6 +4,7 @@ import { Navbar, Nav, Container, Button, Dropdown, Offcanvas, Form, InputGroup, 
 import {
   Sun, Moon, LogOut, User, Bell, Search, LayoutDashboard, BookOpen, PlusCircle, FileText, Star, MessageCircle, Menu, Shield,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from 'context/ThemeContext';
 import { useAuth } from 'context/AuthContext';
 import { isAdminRole } from 'lib/adminRoles';
@@ -14,16 +15,17 @@ import 'components/layout/AfricadataHeader.css';
 import './UserLayout.css';
 
 const SIDEBAR_LINKS = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
-  { to: '/librairie', icon: BookOpen, label: 'Explorer les publications' },
-  { to: '/submit', icon: PlusCircle, label: 'Soumettre une publication' },
-  { to: '/mes-publications', icon: FileText, label: 'Mes publications' },
-  { to: '/favoris', icon: Star, label: 'Favoris' },
-  { to: '/avis', icon: MessageCircle, label: 'Avis & commentaires' },
-  { to: '/profil', icon: User, label: 'Profil' },
+  { to: '/dashboard', icon: LayoutDashboard, labelKey: 'user.dashboard' },
+  { to: '/librairie', icon: BookOpen, labelKey: 'user.explorePublications' },
+  { to: '/submit', icon: PlusCircle, labelKey: 'user.submitPublication' },
+  { to: '/mes-publications', icon: FileText, labelKey: 'user.myPublications' },
+  { to: '/favoris', icon: Star, labelKey: 'user.favorites' },
+  { to: '/avis', icon: MessageCircle, labelKey: 'user.reviewsComments' },
+  { to: '/profil', icon: User, labelKey: 'user.profile' },
 ];
 
 export default function UserLayout() {
+  const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
   const { user, logout, authLoading } = useAuth();
   const navigate = useNavigate();
@@ -115,7 +117,7 @@ export default function UserLayout() {
             <InputGroup size="sm">
               <Form.Control
                 type="search"
-                placeholder="Rechercher dans la bibliothèque..."
+                placeholder={t('user.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="user-navbar-search"
@@ -168,16 +170,16 @@ export default function UserLayout() {
               </Dropdown.Toggle>
               <Dropdown.Menu align="end" className="shadow">
                 <Dropdown.Header className="small">{user.email}</Dropdown.Header>
-                <Dropdown.Item as={Link} to="/dashboard"><LayoutDashboard size={16} className="me-2" /> Tableau de bord</Dropdown.Item>
-                <Dropdown.Item as={Link} to="/profil"><User size={16} className="me-2" /> Profil</Dropdown.Item>
+                <Dropdown.Item as={Link} to="/dashboard"><LayoutDashboard size={16} className="me-2" /> {t('user.dashboard')}</Dropdown.Item>
+                <Dropdown.Item as={Link} to="/profil"><User size={16} className="me-2" /> {t('user.profile')}</Dropdown.Item>
                 {isAdminRole(user.role) && (
                   <Dropdown.Item as={Link} to="/superadmin" className="text-danger fw-semibold">
-                    <Shield size={16} className="me-2" /> Administration
+                    <Shield size={16} className="me-2" /> {t('nav.admin')}
                   </Dropdown.Item>
                 )}
                 <Dropdown.Divider />
                 <Dropdown.Item onClick={handleLogout} className="text-danger">
-                  <LogOut size={16} className="me-2" /> Se déconnecter
+                  <LogOut size={16} className="me-2" /> {t('nav.logout')}
                 </Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
@@ -190,7 +192,7 @@ export default function UserLayout() {
         <aside className="user-sidebar d-none d-lg-block">
           <nav className="user-sidebar-nav">
             <ListGroup variant="flush" className="rounded-0 border-0">
-              {SIDEBAR_LINKS.map(({ to, icon: Icon, label }) => (
+              {SIDEBAR_LINKS.map(({ to, icon: Icon, labelKey }) => (
                 <ListGroup.Item
                   key={to}
                   as={Link}
@@ -199,7 +201,7 @@ export default function UserLayout() {
                   className={`user-sidebar-item d-flex align-items-center gap-2 rounded-3 mx-2 my-1 ${location.pathname === to ? 'active' : ''}`}
                 >
                   <Icon size={20} className="flex-shrink-0" />
-                  <span>{label}</span>
+                  <span>{t(labelKey)}</span>
                 </ListGroup.Item>
               ))}
               {isAdminRole(user.role) && (
@@ -210,7 +212,7 @@ export default function UserLayout() {
                   className={`user-sidebar-item d-flex align-items-center gap-2 rounded-3 mx-2 my-1 text-danger ${location.pathname === '/superadmin' ? 'active' : ''}`}
                 >
                   <Shield size={20} className="flex-shrink-0" />
-                  <span>Administration</span>
+                  <span>{t('nav.admin')}</span>
                 </ListGroup.Item>
               )}
             </ListGroup>
@@ -230,12 +232,25 @@ export default function UserLayout() {
         <Offcanvas.Header closeButton>
           <Offcanvas.Title className="d-flex align-items-center gap-2">
             <img src="/logo.png" alt="" width={32} height={32} />
-            Menu
+            {t('user.menu')}
           </Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body className="p-0">
+          <Form onSubmit={handleSearch} className="d-lg-none p-3 border-bottom">
+            <InputGroup size="sm">
+              <Form.Control
+                type="search"
+                placeholder={t('user.searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <Button type="submit" variant="outline-secondary" aria-label="Rechercher">
+                <Search size={18} />
+              </Button>
+            </InputGroup>
+          </Form>
           <ListGroup variant="flush">
-            {SIDEBAR_LINKS.map(({ to, icon: Icon, label }) => (
+            {SIDEBAR_LINKS.map(({ to, icon: Icon, labelKey }) => (
               <ListGroup.Item
                 key={to}
                 as={Link}
@@ -245,7 +260,7 @@ export default function UserLayout() {
                 onClick={() => setShowSidebarMobile(false)}
               >
                 <Icon size={20} />
-                {label}
+                {t(labelKey)}
               </ListGroup.Item>
             ))}
             {isAdminRole(user.role) && (
@@ -257,7 +272,7 @@ export default function UserLayout() {
                 onClick={() => setShowSidebarMobile(false)}
               >
                 <Shield size={20} />
-                Administration
+                {t('nav.admin')}
               </ListGroup.Item>
             )}
           </ListGroup>
@@ -269,7 +284,7 @@ export default function UserLayout() {
         <Offcanvas.Header closeButton>
           <Offcanvas.Title className="d-flex align-items-center gap-2">
             <Bell size={22} />
-            Notifications
+            {t('user.notifications')}
           </Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body className="p-0">

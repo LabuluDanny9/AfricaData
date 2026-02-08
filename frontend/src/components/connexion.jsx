@@ -26,6 +26,7 @@ import {
   Send,
   KeyRound,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import AfricadataHeader from 'components/layout/AfricadataHeader';
 import AfricadataFooter from 'components/layout/AfricadataFooter';
 import { GoogleIcon } from 'components/ui/GoogleIcon';
@@ -65,6 +66,7 @@ const itemVariants = {
 const MSG_GOOGLE_NON_CONFIG = 'Connexion Google non configurée. Activez le fournisseur Google dans Supabase (Authentication > Providers) et configurez les identifiants dans Google Cloud Console.';
 
 function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -137,15 +139,13 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
           >
             <Badge bg="danger" className="mb-2 px-3 py-2 rounded-pill d-inline-flex align-items-center gap-2">
               <LogIn size={18} />
-              {isAdminLogin ? 'Connexion Super Admin' : 'Connexion'}
+              {isAdminLogin ? t('auth.loginSuperAdmin') : t('auth.login')}
             </Badge>
             <h1 className="h2 fw-bold mb-2">
-              {isAdminLogin ? 'Connexion Super Administrateur' : 'Connexion à AfricaData'}
+              {isAdminLogin ? t('auth.loginSuperAdminTitle') : t('auth.loginToAfricaData')}
             </h1>
             <p className="text-body-secondary mb-0">
-              {isAdminLogin
-                ? 'Accédez au tableau de bord d\'administration de la plateforme.'
-                : 'Accédez à votre espace pour gérer vos publications et vos données scientifiques.'}
+              {isAdminLogin ? t('auth.loginAdminSubtitle') : t('auth.loginSubtitle')}
             </p>
           </motion.div>
 
@@ -184,7 +184,7 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
                                   disabled={googleLoading}
                                 >
                                   <GoogleIcon size={22} />
-                                  {googleLoading ? 'Connexion en cours…' : 'Se connecter avec Google'}
+                                  {googleLoading ? t('auth.signingIn') : t('auth.signInWithGoogle')}
                                 </Button>
                               </motion.div>
                             )}
@@ -197,7 +197,7 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
                             )}
                             {!isAdminLogin && (
                               <motion.div variants={itemVariants} className="auth-divider my-3">
-                                <span className="small text-body-secondary">ou avec email</span>
+                                <span className="small text-body-secondary">{t('auth.orWithEmail')}</span>
                               </motion.div>
                             )}
                             {(googleError || authError) && (
@@ -207,11 +207,11 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
                             <motion.div variants={itemVariants}>
                               <Form.Group className="mb-3">
                                 <Form.Label className="small fw-semibold text-body-secondary d-flex align-items-center gap-1">
-                                  <Mail size={14} /> Adresse email
+                                  <Mail size={14} /> {t('auth.email')}
                                 </Form.Label>
                                 <Form.Control
                                   type="email"
-                                  placeholder="prenom.nom@institution.org"
+                                  placeholder={t('auth.emailPlaceholder')}
                                   required
                                   size="lg"
                                   className="auth-input"
@@ -225,7 +225,7 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
                             <motion.div variants={itemVariants}>
                               <Form.Group className="mb-4">
                                 <Form.Label className="small fw-semibold text-body-secondary d-flex align-items-center gap-1">
-                                  <Lock size={14} /> Mot de passe
+                                  <Lock size={14} /> {t('auth.password')}
                                 </Form.Label>
                                 <InputGroup size="lg" className="auth-input-group">
                                   <Form.Control

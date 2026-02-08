@@ -8,6 +8,19 @@
   max-width: 900px;
 }
 
+@media (max-width: 767.98px) {
+  .publication-details-container {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  .publication-details-title {
+    font-size: 1.25rem;
+  }
+  .publication-details-pdf-toolbar .btn {
+    min-height: 44px;
+  }
+}
+
 .publication-details-back {
   font-size: 0.9375rem;
   color: var(--bs-danger);

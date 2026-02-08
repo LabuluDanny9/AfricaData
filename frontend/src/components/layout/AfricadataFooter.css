@@ -3,6 +3,7 @@
   color: #e9ecef;
   padding: 2rem 1rem;
   margin-top: auto;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
 }
 
 [data-bs-theme="dark"] .africadata-footer {
@@ -34,6 +35,29 @@
   width: auto;
   min-height: 168px;
   object-fit: contain;
+}
+
+@media (max-width: 767.98px) {
+  .africadata-footer {
+    padding: 1.5rem 0.75rem;
+  }
+  .africadata-footer-logo {
+    height: 5rem;
+    min-height: 64px;
+  }
+  .africadata-footer__links {
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .africadata-footer-logo {
+    height: 3.5rem;
+    min-height: 48px;
+  }
+  .africadata-footer__links a {
+    font-size: 0.875rem;
+  }
 }
 
 .africadata-footer__links {

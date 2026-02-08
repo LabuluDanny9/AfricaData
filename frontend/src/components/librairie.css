@@ -9,6 +9,21 @@
   margin: 0 auto;
 }
 
+@media (max-width: 575.98px) {
+  .librairie-container {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  .librairie-card .card-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .librairie-card .card-footer .d-flex.gap-1 {
+    justify-content: flex-end;
+  }
+}
+
 /* Barre de recherche globale */
 .librairie-search-bar .form-control,
 .librairie-search-bar .input-group-text {

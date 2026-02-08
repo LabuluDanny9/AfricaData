@@ -28,6 +28,7 @@ import {
   Eye,
   EyeOff,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import AfricadataHeader from 'components/layout/AfricadataHeader';
 import AfricadataFooter from 'components/layout/AfricadataFooter';
 import { GoogleIcon } from 'components/ui/GoogleIcon';
@@ -72,6 +73,7 @@ const itemVariants = {
 const MSG_GOOGLE_NON_CONFIG = 'Inscription Google non configurée. Activez le fournisseur Google dans Supabase (Authentication > Providers) et configurez les identifiants dans Google Cloud Console.';
 
 function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
+  const { t } = useTranslation();
   const [role, setRole] = useState('chercheur');
   const [agreed, setAgreed] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -116,9 +118,9 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
                       <div className="d-inline-flex align-items-center justify-content-center rounded-circle bg-success bg-opacity-10 text-success mb-3" style={{ width: 64, height: 64 }}>
                         <Mail size={32} />
                       </div>
-                      <h2 className="h5 fw-bold mb-3">Inscription enregistrée</h2>
+                      <h2 className="h5 fw-bold mb-3">{t('auth.signupSuccessTitle')}</h2>
                       <p className="text-body-secondary mb-4">
-                        Rendez-vous sur votre <strong>boîte email</strong> pour confirmer votre adresse. Cliquez sur le lien reçu pour activer votre compte.
+                        {t('auth.signupSuccessMessage')}
                       </p>
                       <p className="small text-body-secondary mb-4">
                         Une fois l’email confirmé, cliquez sur le bouton ci-dessous pour vous connecter.
@@ -130,7 +132,7 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
                         size="lg"
                         className="rounded-pill px-4 d-inline-flex align-items-center gap-2"
                       >
-                        Se connecter
+                        {t('nav.login')}
                         <ArrowRight size={18} />
                       </Button>
                     </Card.Body>

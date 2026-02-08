@@ -1,8 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import './AfricadataFooter.css';
 
 export default function AfricadataFooter() {
+  const { t } = useTranslation();
   const year = new Date().getFullYear();
   return (
     <footer className="africadata-footer">
@@ -11,12 +13,12 @@ export default function AfricadataFooter() {
           <img src="/logo.png" alt="AfricaData" className="africadata-footer-logo" />
         </Link>
         <div className="africadata-footer__links">
-          <Link to="/">Accueil</Link>
-          <Link to="/librairie">Librairie</Link>
-          <Link to="/about">À propos</Link>
-          <Link to="/connexion">Connexion</Link>
+          <Link to="/">{t('nav.home')}</Link>
+          <Link to="/librairie">{t('nav.library')}</Link>
+          <Link to="/about">{t('nav.about')}</Link>
+          <Link to="/connexion">{t('nav.login')}</Link>
         </div>
-        <p className="africadata-footer__copy">© {year} AfricaData — Rayonnement scientifique panafricain.</p>
+        <p className="africadata-footer__copy">{t('footer.copy', { year })}</p>
       </div>
     </footer>
   );

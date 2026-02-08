@@ -39,6 +39,20 @@
   display: block;
 }
 
+@media (max-width: 767.98px) {
+  .accueil-hero-logo {
+    height: 12rem;
+    max-width: 280px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .accueil-hero-logo {
+    height: 8rem;
+    max-width: 200px;
+  }
+}
+
 .accueil-hero-title {
   color: var(--bs-heading-color);
   line-height: 1.2;
@@ -145,6 +159,16 @@
 }
 
 /* ========== Responsive & ergonomie ========== */
+@media (max-width: 767.98px) {
+  .accueil-hero .display-5 {
+    font-size: 1.75rem;
+  }
+  .accueil-hero .py-5 {
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
+  }
+}
+
 @media (max-width: 575.98px) {
   .accueil-hero .display-5 {
     font-size: 1.5rem;
@@ -154,6 +178,10 @@
   }
   .accueil-search-form .input-group .btn {
     width: 100%;
+  }
+  .accueil-stat-card,
+  .accueil-feature-card {
+    padding: 1rem !important;
   }
 }
 

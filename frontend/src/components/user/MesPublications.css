@@ -1,3 +1,8 @@
+/* Table responsive : défilement horizontal sur mobile */
+.mes-publications .table-responsive {
+  -webkit-overflow-scrolling: touch;
+}
+
 .mes-publications-table th {
   font-size: 0.8125rem;
   font-weight: 600;
@@ -11,6 +16,14 @@
 .mes-publications-table td {
   padding: 0.75rem 1rem;
   vertical-align: middle;
+}
+
+@media (max-width: 767.98px) {
+  .mes-publications-table th,
+  .mes-publications-table td {
+    padding: 0.5rem 0.5rem;
+    font-size: 0.8125rem;
+  }
 }
 
 .mes-publications-table tbody tr:hover {

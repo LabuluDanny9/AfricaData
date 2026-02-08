@@ -14,7 +14,76 @@
   display: block;
 }
 
+@media (max-width: 991.98px) {
+  .africadata-header-logo {
+    height: 3rem;
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .africadata-header-logo {
+    height: 2.5rem;
+    min-height: 36px;
+  }
+}
+
 .theme-toggle:hover {
   background: var(--bs-secondary-bg) !important;
+}
+
+/* Onglets non sélectionnés : jamais de rouge, ni texte ni fond */
+.africadata-navbar .nav-link {
+  color: var(--bs-body-color) !important;
+  background: transparent !important;
+}
+
+.africadata-navbar .nav-link:hover {
+  color: var(--bs-secondary-color) !important;
+  background: transparent !important;
+}
+
+/* Onglet sélectionné (Accueil, Librairie, À propos, etc.) : rouge + encadré */
+.africadata-navbar .nav-link.active {
+  color: var(--bs-danger) !important;
+  font-weight: 600;
+  background: rgba(var(--bs-danger-rgb), 0.08) !important;
+  border: 1px solid var(--bs-danger);
+  border-radius: 0.375rem;
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
+}
+
+.africadata-navbar .nav-link.active:hover {
+  color: var(--bs-danger) !important;
+  background: rgba(var(--bs-danger-rgb), 0.12) !important;
+  border-color: var(--bs-danger);
+}
+
+/* S'inscrire non sélectionné : pas de rouge, style comme les autres onglets */
+.africadata-navbar .btn.btn-danger:not(.active) {
+  background: transparent !important;
+  color: var(--bs-body-color) !important;
+  border: 1px solid var(--bs-border-color);
+}
+
+.africadata-navbar .btn.btn-danger:not(.active):hover {
+  background: var(--bs-secondary-bg) !important;
+  color: var(--bs-body-color) !important;
+  border-color: var(--bs-border-color);
+}
+
+/* S'inscrire sélectionné (page inscription) : rouge + encadré */
+.africadata-navbar .btn.btn-danger.active {
+  background: var(--bs-danger) !important;
+  color: #fff !important;
+  border: 1px solid var(--bs-danger);
+  box-shadow: 0 0 0 2px rgba(var(--bs-danger-rgb), 0.3);
+}
+
+.africadata-navbar .btn.btn-danger.active:hover {
+  background: var(--bs-danger) !important;
+  color: #fff !important;
+  border-color: var(--bs-danger);
 }
 
