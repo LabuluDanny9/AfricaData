@@ -1,0 +1,139 @@
+/* Dashboard - Tableau de bord */
+
+.dashboard {
+  min-height: 100vh;
+  padding: 1.5rem;
+  background: #f1f3f5;
+}
+
+.dashboard__header {
+  margin-bottom: 2rem;
+}
+
+.dashboard__title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 0.25rem;
+}
+
+.dashboard__subtitle {
+  font-size: 0.9375rem;
+  color: #6c757d;
+}
+
+.dashboard__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.dashboard__stat {
+  padding: 1.25rem;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e9ecef;
+}
+
+.dashboard__stat-label {
+  font-size: 0.8125rem;
+  color: #6c757d;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.dashboard__stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.dashboard__section {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e9ecef;
+}
+
+.dashboard__section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #16213e;
+}
+
+.dashboard__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dashboard__list-item {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dashboard__list-item:last-child {
+  border-bottom: none;
+}
+
+.dashboard__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.dashboard__list-meta {
+  font-size: 0.875rem;
+  color: #6c757d;
+  font-weight: 400;
+}
+
+.dashboard__list-link {
+  font-size: 0.875rem;
+  color: #0f3460;
+  font-weight: 500;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.dashboard__list-link:hover {
+  text-decoration: underline;
+}
+
+.dashboard__btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #fff;
+  background: #0f3460;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.dashboard__btn:hover {
+  background: #16213e;
+}
+
+.dashboard__btn--outline {
+  background: transparent;
+  color: #0f3460;
+  border: 1px solid #0f3460;
+}
+
+.dashboard__btn--outline:hover {
+  background: rgba(15, 52, 96, 0.08);
+}

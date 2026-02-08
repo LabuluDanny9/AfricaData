@@ -1,0 +1,29 @@
+/* Inscription — spécifique (layout partagé dans auth.css) */
+
+.inscription-badge {
+  animation: inscription-badge-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes inscription-badge-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+.inscription-check .form-check-input:checked {
+  background-color: var(--bs-danger);
+  border-color: var(--bs-danger);
+}
+
+.inscription-check .form-check-input:focus {
+  box-shadow: 0 0 0 0.2rem rgba(196, 30, 58, 0.25);
+}
+
+[data-theme="dark"] .inscription-check .form-check-input:focus {
+  box-shadow: 0 0 0 0.2rem rgba(232, 96, 112, 0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inscription-badge {
+    animation: none;
+  }
+}

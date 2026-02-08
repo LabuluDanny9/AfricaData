@@ -1,0 +1,297 @@
+/* ========== Design unifié Connexion & Inscription — responsive ========== */
+
+.auth-page {
+  --auth-bg: linear-gradient(160deg, #f8f9fa 0%, #e9ecef 40%, #f1f3f5 100%);
+  --auth-card-bg: var(--bs-body-bg);
+  --auth-card-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.08);
+  --auth-sidebar-bg: linear-gradient(165deg, #c41e3a 0%, #8b1629 100%);
+  --auth-input-border: var(--bs-border-color);
+  --auth-input-focus: rgba(196, 30, 58, 0.25);
+  --auth-benefit-icon-bg: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .auth-page {
+  --auth-bg: linear-gradient(160deg, #0d1117 0%, #161b22 50%, #21262d 100%);
+  --auth-card-bg: var(--bs-secondary-bg);
+  --auth-card-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.3);
+  --auth-sidebar-bg: linear-gradient(165deg, #a01830 0%, #6b1120 100%);
+  --auth-input-border: var(--bs-border-color);
+  --auth-input-focus: rgba(232, 96, 112, 0.3);
+  --auth-benefit-icon-bg: rgba(255, 255, 255, 0.15);
+}
+
+/* Page pleine hauteur : main occupe tout l'espace restant */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  background: var(--auth-bg);
+  transition: background 0.3s ease;
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+}
+
+.auth-main .container {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* ========== Carte principale ========== */
+
+.auth-card-wrapper {
+  perspective: 1000px;
+}
+
+.auth-card {
+  background: var(--auth-card-bg);
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: var(--auth-card-shadow);
+  transition: box-shadow 0.3s ease;
+  width: 100%;
+}
+
+@media (min-width: 992px) {
+  .auth-card {
+    min-height: 480px;
+  }
+}
+
+.auth-card:hover {
+  box-shadow: 0 0.75rem 2.5rem rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .auth-card:hover {
+  box-shadow: 0 0.75rem 2.5rem rgba(0, 0, 0, 0.4);
+}
+
+/* Icône en haut (connexion) ou badge (inscription) */
+.auth-icon-wrap {
+  width: 56px;
+  height: 56px;
+  background: rgba(196, 30, 58, 0.12);
+  color: var(--bs-danger);
+}
+
+[data-theme="dark"] .auth-icon-wrap {
+  background: rgba(196, 30, 58, 0.2);
+}
+
+/* ========== Colonne formulaire ========== */
+
+.auth-form .form-label {
+  letter-spacing: 0.02em;
+}
+
+.auth-input,
+.auth-input-group .form-control {
+  border-radius: 0.5rem;
+  border: 1px solid var(--auth-input-border);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-input:focus,
+.auth-input-group .form-control:focus {
+  border-color: var(--bs-danger);
+  box-shadow: 0 0 0 0.2rem var(--auth-input-focus);
+  outline: 0;
+}
+
+.auth-input-group .form-control:focus + .btn,
+.auth-input-group .btn:focus {
+  border-color: var(--bs-danger);
+  box-shadow: none;
+}
+
+.auth-password-toggle {
+  border-radius: 0 0.5rem 0.5rem 0;
+  min-width: 48px;
+  padding: 0.5rem;
+}
+
+.auth-password-toggle:hover {
+  background: var(--bs-secondary-bg);
+  border-color: var(--bs-border-color);
+}
+
+/* ========== Bouton principal ========== */
+
+.auth-submit-btn {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-submit-btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0.25rem 0.75rem rgba(196, 30, 58, 0.35);
+}
+
+.auth-submit-btn:not(:disabled):active {
+  transform: translateY(0);
+}
+
+.auth-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ========== Bouton Google ========== */
+
+.auth-google-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #3c4043;
+  background: #fff;
+  border: 1px solid #dadce0;
+  border-radius: 0.5rem;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-google-btn:hover {
+  background: #f8f9fa;
+  border-color: #dadce0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  color: #3c4043;
+}
+
+[data-theme="dark"] .auth-google-btn {
+  background: var(--bs-secondary-bg);
+  border-color: var(--bs-border-color);
+  color: var(--bs-body-color);
+}
+
+[data-theme="dark"] .auth-google-btn:hover {
+  background: var(--bs-tertiary-bg);
+  border-color: var(--bs-border-color);
+  color: var(--bs-body-color);
+}
+
+/* ========== Séparateur "ou" ========== */
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--bs-border-color);
+}
+
+/* ========== Sidebar avantages ========== */
+
+.auth-sidebar-col {
+  background: var(--auth-sidebar-bg);
+}
+
+.auth-sidebar {
+  background: var(--auth-sidebar-bg) !important;
+  min-height: 100%;
+}
+
+@media (min-width: 992px) {
+  .auth-sidebar-col {
+    min-height: 480px;
+  }
+
+  .auth-sidebar {
+    min-height: 480px;
+  }
+}
+
+.auth-benefits-list {
+  --bs-list-group-bg: transparent;
+}
+
+.auth-benefit-item {
+  transition: transform 0.2s ease;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.auth-benefit-item:hover {
+  transform: translateX(4px);
+}
+
+.auth-benefit-icon {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  background: var(--auth-benefit-icon-bg);
+  color: #fff;
+  backdrop-filter: blur(4px);
+  border-radius: 0.5rem;
+}
+
+/* ========== Responsive ========== */
+
+@media (max-width: 991.98px) {
+  .auth-sidebar-col {
+    order: -1;
+    border-radius: 1rem 1rem 0 0;
+  }
+
+  .auth-sidebar {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+
+  .auth-benefits-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    flex-direction: row;
+  }
+
+  .auth-benefit-item {
+    flex: 1 1 calc(50% - 0.375rem);
+    min-width: 0;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .auth-benefit-item {
+    flex: 1 1 100%;
+  }
+
+  .auth-card .card-body {
+    padding: 1.25rem !important;
+  }
+
+  .auth-main {
+    padding: 1rem 0 !important;
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-benefit-item:hover {
+    transform: none;
+  }
+
+  .auth-submit-btn:not(:disabled):hover {
+    transform: none;
+  }
+}

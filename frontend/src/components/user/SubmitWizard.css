@@ -1,0 +1,268 @@
+/* ============================================
+   Submit Wizard — Interface académique pro
+   Mobile-first · Max 800px · Dark/Light
+   ============================================ */
+
+.submit-wizard-container {
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-bottom: 2rem;
+}
+
+/* ---- Header ---- */
+.submit-wizard-header {
+  margin-bottom: 1.5rem;
+}
+
+.submit-wizard-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.submit-wizard-subtitle {
+  color: var(--bs-secondary-color);
+  font-size: 0.9375rem;
+  margin-bottom: 0;
+}
+
+/* ---- Stepper Pills ---- */
+.submit-wizard-stepper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  padding: 0.5rem 0;
+  border-radius: 12px;
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
+}
+
+.submit-wizard-stepper-item {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.submit-wizard-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.submit-wizard-pill-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.submit-wizard-pill-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Étape active = rouge */
+.submit-wizard-pill.active,
+.submit-wizard-pill.active:hover {
+  background-color: var(--bs-danger) !important;
+  color: #fff !important;
+  border-color: var(--bs-danger);
+}
+
+/* Étape complétée = vert clair */
+.submit-wizard-pill.completed:not(.active) {
+  background-color: rgba(25, 135, 84, 0.15);
+  color: var(--bs-success);
+}
+
+.submit-wizard-pill.completed:not(.active):hover {
+  background-color: rgba(25, 135, 84, 0.25);
+}
+
+/* Étape future / désactivée */
+.submit-wizard-pill.step-disabled,
+.submit-wizard-pill:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Mobile : stepper vertical ou 2x2 */
+@media (max-width: 576px) {
+  .submit-wizard-stepper {
+    flex-direction: column;
+  }
+
+  .submit-wizard-pill-title {
+    white-space: normal;
+  }
+}
+
+/* ---- Card ---- */
+.submit-wizard-card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.submit-wizard-card .card-body {
+  transition: background-color 0.2s;
+}
+
+/* ---- Step title ---- */
+.submit-wizard-step-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+}
+
+/* ---- Inputs ---- */
+.submit-wizard-input,
+.submit-wizard-input .form-control {
+  border-radius: 8px;
+}
+
+.submit-wizard-input:focus,
+.submit-wizard-input .form-control:focus {
+  border-color: var(--bs-danger);
+  box-shadow: 0 0 0 0.2rem rgba(var(--bs-danger-rgb), 0.2);
+}
+
+/* ---- Dropzone ---- */
+.submit-wizard-dropzone {
+  border: 2px dashed var(--bs-border-color);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.submit-wizard-dropzone:hover {
+  border-color: var(--bs-danger);
+  background-color: rgba(var(--bs-danger-rgb), 0.04);
+}
+
+.submit-wizard-dropzone.drag-over {
+  border-color: var(--bs-danger);
+  background-color: rgba(var(--bs-danger-rgb), 0.08);
+}
+
+.submit-wizard-dropzone.has-file {
+  border-style: solid;
+  border-color: var(--bs-success);
+  background-color: rgba(25, 135, 84, 0.06);
+}
+
+.submit-wizard-dropzone-icon {
+  color: var(--bs-secondary);
+  opacity: 0.7;
+}
+
+.submit-wizard-badge-file {
+  font-size: 0.8125rem;
+}
+
+/* ---- Summary card ---- */
+.submit-wizard-summary-card {
+  border-radius: 10px;
+  border: 1px solid var(--bs-border-color);
+}
+
+/* ---- Paiement : cartes opérateurs ---- */
+.submit-wizard-radio-card {
+  border: 2px solid var(--bs-border-color);
+  min-width: 140px;
+  transition: border-color 0.2s, background-color 0.2s;
+  cursor: pointer;
+}
+
+.submit-wizard-radio-card:hover {
+  border-color: var(--bs-danger);
+  background-color: rgba(var(--bs-danger-rgb), 0.04);
+}
+
+.submit-wizard-radio-card.selected {
+  border-color: var(--bs-danger);
+  background-color: rgba(var(--bs-danger-rgb), 0.08);
+}
+
+.submit-wizard-radio-card .form-check-input:checked {
+  background-color: var(--bs-danger);
+  border-color: var(--bs-danger);
+}
+
+/* Montant readonly ---- */
+.submit-wizard-amount-readonly {
+  background-color: var(--bs-secondary-bg);
+  font-weight: 600;
+  cursor: default;
+}
+
+/* ---- Bouton soumettre ---- */
+.submit-wizard-btn-submit {
+  font-size: 1.05rem;
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+.submit-wizard-btn-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.submit-wizard-btn-submit:disabled {
+  opacity: 0.85;
+}
+
+/* ---- Actions Précédent / Suivant ---- */
+.submit-wizard-actions {
+  border-color: var(--bs-border-color) !important;
+}
+
+.submit-wizard-actions .btn {
+  min-width: 120px;
+}
+
+@media (max-width: 576px) {
+  .submit-wizard-actions {
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+  }
+
+  .submit-wizard-actions .btn {
+    width: 100%;
+  }
+}
+
+/* ---- Dark mode (via data-bs-theme) ---- */
+[data-bs-theme="dark"] .submit-wizard-dropzone:hover {
+  background-color: rgba(220, 53, 69, 0.12);
+}
+
+[data-bs-theme="dark"] .submit-wizard-dropzone.drag-over {
+  background-color: rgba(220, 53, 69, 0.15);
+}
+
+[data-bs-theme="dark"] .submit-wizard-summary-card {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+[data-bs-theme="dark"] .submit-wizard-amount-readonly {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* ---- Toast brouillon (discret) ---- */
+.submit-wizard .toast.bg-body-secondary .toast-body {
+  font-size: 0.8125rem;
+  color: var(--bs-secondary-color);
+}

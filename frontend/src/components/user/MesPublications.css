@@ -1,0 +1,18 @@
+.mes-publications-table th {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--bs-body-secondary);
+  border-bottom: 1px solid var(--bs-border-color);
+  padding: 0.75rem 1rem;
+}
+
+.mes-publications-table td {
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+}
+
+.mes-publications-table tbody tr:hover {
+  background: var(--bs-secondary-bg);
+}

@@ -1,0 +1,108 @@
+/* About - Page À propos */
+
+/* Hero : fond transparent + motif science & données */
+.about-hero {
+  position: relative;
+  background: transparent;
+  overflow: hidden;
+}
+
+.about-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.85;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cdefs%3E%3Cpattern id='science-dots' width='24' height='24' patternUnits='userSpaceOnUse'%3E%3Ccircle cx='3' cy='3' r='0.8' fill='%23c41e3a' fill-opacity='0.14'/%3E%3Ccircle cx='15' cy='3' r='0.6' fill='%230d6efd' fill-opacity='0.1'/%3E%3Ccircle cx='3' cy='15' r='0.6' fill='%23198754' fill-opacity='0.1'/%3E%3Ccircle cx='15' cy='15' r='0.8' fill='%23c41e3a' fill-opacity='0.12'/%3E%3Ccircle cx='9' cy='9' r='0.5' fill='%236f42c1' fill-opacity='0.08'/%3E%3C/pattern%3E%3Cpattern id='data-grid' width='60' height='60' patternUnits='userSpaceOnUse'%3E%3Cpath d='M0 30h60M30 0v60' stroke='%23c41e3a' stroke-opacity='0.06' stroke-width='0.3' fill='none'/%3E%3Crect x='8' y='10' width='10' height='14' fill='none' stroke='%23c41e3a' stroke-opacity='0.07' stroke-width='0.35' rx='0.5'/%3E%3Cline x1='9.5' y1='12.5' x2='16.5' y2='12.5' stroke='%23c41e3a' stroke-opacity='0.06' stroke-width='0.25'/%3E%3Cline x1='9.5' y1='15' x2='14' y2='15' stroke='%23c41e3a' stroke-opacity='0.05' stroke-width='0.25'/%3E%3Cpolygon points='38,20 44,26 38,32 32,26' fill='none' stroke='%230d6efd' stroke-opacity='0.06' stroke-width='0.3'/%3E%3Cline x1='35' y1='26' x2='41' y2='26' stroke='%230d6efd' stroke-opacity='0.05' stroke-width='0.25'/%3E%3Cline x1='38' y1='23' x2='38' y2='29' stroke='%230d6efd' stroke-opacity='0.05' stroke-width='0.25'/%3E%3C/pattern%3E%3Cpattern id='about-pattern' width='120' height='120' patternUnits='userSpaceOnUse'%3E%3Crect width='120' height='120' fill='url(%23science-dots)'/%3E%3Crect width='120' height='120' fill='url(%23data-grid)'/%3E%3C/svg%3E");
+  background-size: 120px 120px;
+}
+
+.about-hero .max-w-6xl {
+  position: relative;
+  z-index: 1;
+}
+
+.about-hero-title {
+  color: var(--bs-heading-color, #1a1a2e);
+}
+
+.about-hero-subtitle {
+  color: var(--bs-body-color, #4a4a68);
+}
+
+[data-theme="dark"] .about-hero::before {
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cdefs%3E%3Cpattern id='science-dots-d' width='24' height='24' patternUnits='userSpaceOnUse'%3E%3Ccircle cx='3' cy='3' r='0.8' fill='%23e86070' fill-opacity='0.18'/%3E%3Ccircle cx='15' cy='3' r='0.6' fill='%2375aaff' fill-opacity='0.12'/%3E%3Ccircle cx='3' cy='15' r='0.6' fill='%235dd8a4' fill-opacity='0.12'/%3E%3Ccircle cx='15' cy='15' r='0.8' fill='%23e86070' fill-opacity='0.15'/%3E%3Ccircle cx='9' cy='9' r='0.5' fill='%23a78bfa' fill-opacity='0.1'/%3E%3C/pattern%3E%3Cpattern id='data-grid-d' width='60' height='60' patternUnits='userSpaceOnUse'%3E%3Cpath d='M0 30h60M30 0v60' stroke='%23e86070' stroke-opacity='0.08' stroke-width='0.3' fill='none'/%3E%3Crect x='8' y='10' width='10' height='14' fill='none' stroke='%23e86070' stroke-opacity='0.09' stroke-width='0.35' rx='0.5'/%3E%3Cline x1='9.5' y1='12.5' x2='16.5' y2='12.5' stroke='%23e86070' stroke-opacity='0.07' stroke-width='0.25'/%3E%3Cpolygon points='38,20 44,26 38,32 32,26' fill='none' stroke='%2375aaff' stroke-opacity='0.08' stroke-width='0.3'/%3E%3C/pattern%3E%3Cpattern id='about-pattern-d' width='120' height='120' patternUnits='userSpaceOnUse'%3E%3Crect width='120' height='120' fill='url(%23science-dots-d)'/%3E%3Crect width='120' height='120' fill='url(%23data-grid-d)'/%3E%3C/svg%3E");
+}
+
+.about {
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+
+.about__container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.about__title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #1a1a2e;
+}
+
+.about__section {
+  margin-bottom: 2rem;
+}
+
+.about__section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: #16213e;
+}
+
+.about__text {
+  line-height: 1.7;
+  color: #4a4a68;
+}
+
+.about__list {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.about__list-item {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.about__link {
+  color: #0f3460;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.about__link:hover {
+  text-decoration: underline;
+}
+
+.about-hero-logo {
+  height: 6rem;
+  width: auto;
+  max-width: 200px;
+  margin-left: auto;
+  margin-right: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.about-mission-logo {
+  height: 10rem;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
+}

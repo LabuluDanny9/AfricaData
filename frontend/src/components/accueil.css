@@ -1,0 +1,167 @@
+/* ========== Variables thème (clair / sombre) ========== */
+.accueil-page {
+  --accueil-hero-bg: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #f1f3f5 100%);
+  --accueil-card-bg: #fff;
+  --accueil-card-border: rgba(0, 0, 0, 0.06);
+  --accueil-icon-bg: rgba(220, 53, 69, 0.12);
+  --accueil-cta-bg: linear-gradient(135deg, #c41e3a 0%, #a01830 100%);
+  --accueil-pub-link: #212529;
+  --accueil-pub-link-hover: #c41e3a;
+  --accueil-social-bg: rgba(220, 53, 69, 0.15);
+  --accueil-social-hover: rgba(220, 53, 69, 0.25);
+}
+
+[data-theme="dark"] .accueil-page {
+  --accueil-hero-bg: linear-gradient(135deg, #1a1d21 0%, #212529 50%, #1e2125 100%);
+  --accueil-card-bg: var(--bs-secondary-bg);
+  --accueil-card-border: rgba(255, 255, 255, 0.08);
+  --accueil-icon-bg: rgba(220, 53, 69, 0.2);
+  --accueil-cta-bg: linear-gradient(135deg, #b01d35 0%, #8b1629 100%);
+  --accueil-pub-link: var(--bs-body-color);
+  --accueil-pub-link-hover: #e86070;
+  --accueil-social-bg: rgba(220, 53, 69, 0.2);
+  --accueil-social-hover: rgba(220, 53, 69, 0.35);
+}
+
+/* ========== Hero ========== */
+.accueil-hero {
+  background: var(--accueil-hero-bg);
+  transition: background 0.3s ease;
+}
+
+.accueil-hero-logo {
+  height: 24rem;
+  width: auto;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.accueil-hero-title {
+  color: var(--bs-heading-color);
+  line-height: 1.2;
+}
+
+.accueil-search-form .form-control:focus {
+  border-color: var(--bs-danger);
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.accueil-stat-card {
+  background: var(--accueil-card-bg);
+  border: 1px solid var(--accueil-card-border);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.accueil-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ========== Cartes fonctionnalités / stats ========== */
+.accueil-feature-card {
+  background: var(--accueil-card-bg);
+  border: 1px solid var(--accueil-card-border);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.accueil-feature-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.1) !important;
+}
+
+.accueil-icon-wrap {
+  width: 48px;
+  height: 48px;
+  background: var(--accueil-icon-bg);
+  color: var(--bs-danger);
+}
+
+/* ========== Publications récentes ========== */
+.accueil-publications-list {
+  background: transparent;
+}
+
+.accueil-pub-item {
+  background: var(--accueil-card-bg) !important;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+  transition: background 0.2s ease;
+}
+
+.accueil-pub-item:hover {
+  background: var(--bs-body-secondary) !important;
+}
+
+.accueil-pub-link {
+  color: var(--accueil-pub-link);
+  transition: color 0.2s ease;
+}
+
+.accueil-pub-link:hover {
+  color: var(--accueil-pub-link-hover);
+}
+
+/* Badge outline (Bootstrap n'a pas outline-danger) */
+.badge.bg-outline-danger {
+  background: transparent;
+  color: var(--bs-danger);
+  border: 1px solid var(--bs-danger);
+}
+
+[data-theme="dark"] .badge.bg-outline-danger {
+  color: #e86070;
+  border-color: #e86070;
+}
+
+/* ========== Boutons réseaux sociaux ========== */
+.accueil-social-btn {
+  width: 44px;
+  height: 44px;
+  background: var(--accueil-social-bg);
+  color: var(--bs-danger);
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.accueil-social-btn:hover {
+  background: var(--accueil-social-hover);
+  color: var(--bs-danger);
+  transform: translateY(-2px);
+}
+
+/* ========== CTA final ========== */
+.accueil-cta-card {
+  background: var(--accueil-cta-bg);
+  box-shadow: 0 0.5rem 2rem rgba(196, 30, 58, 0.25);
+}
+
+.accueil-cta-card .btn-outline-light:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-color: #fff;
+}
+
+/* ========== Responsive & ergonomie ========== */
+@media (max-width: 575.98px) {
+  .accueil-hero .display-5 {
+    font-size: 1.5rem;
+  }
+  .accueil-search-form .input-group {
+    flex-direction: column;
+  }
+  .accueil-search-form .input-group .btn {
+    width: 100%;
+  }
+}
+
+/* Réduction des mouvements pour préférence utilisateur */
+@media (prefers-reduced-motion: reduce) {
+  .accueil-stat-card:hover,
+  .accueil-feature-card:hover,
+  .accueil-social-btn:hover {
+    transform: none;
+  }
+}

@@ -1,0 +1,206 @@
+/* ========== Interface Admin AfricaData — design Bootstrap ========== */
+/* Thème clair/sombre : suit data-bs-theme (ThemeContext) */
+
+.admin-layout {
+  background: var(--bs-body-bg);
+  min-height: 100vh;
+}
+
+/* ----- Sidebar ----- */
+.admin-sidebar {
+  width: 280px;
+  min-height: 100vh;
+  flex-shrink: 0;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Mode clair : menu blanc/clair, distinct de la zone de contenu à droite */
+.admin-sidebar,
+[data-bs-theme="light"] .admin-sidebar {
+  background: #f5f6f8;
+  border-right: 1px solid var(--bs-border-color);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+}
+
+[data-bs-theme="light"] .admin-sidebar-header {
+  border-bottom: 1px solid var(--bs-border-color);
+  padding: 1.25rem 1rem;
+  min-height: 80px;
+}
+
+[data-bs-theme="light"] .admin-sidebar-header a {
+  color: var(--bs-body-color) !important;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+[data-bs-theme="light"] .admin-sidebar-header .small {
+  color: var(--bs-secondary-color);
+  font-size: 0.75rem;
+  margin-top: 0.35rem;
+}
+
+[data-bs-theme="light"] .admin-sidebar-nav .list-group-item {
+  color: var(--bs-body-color);
+  background: transparent;
+}
+
+[data-bs-theme="light"] .admin-sidebar-nav .list-group-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--bs-body-color);
+}
+
+[data-bs-theme="light"] .admin-sidebar-item.active {
+  background: rgba(196, 22, 28, 0.12) !important;
+  color: #c4161c !important;
+  font-weight: 600;
+}
+
+[data-bs-theme="light"] .admin-sidebar-nav .admin-sidebar-item.active:hover {
+  background: rgba(196, 22, 28, 0.18) !important;
+  color: #a01217 !important;
+}
+
+/* Label "Navigation" en mode clair */
+[data-bs-theme="light"] .admin-sidebar-nav .small.text-uppercase.text-muted {
+  color: var(--bs-secondary-color) !important;
+}
+
+/* Mode sombre : menu sombre (comportement par défaut si pas de data-bs-theme) */
+[data-bs-theme="dark"] .admin-sidebar {
+  background: linear-gradient(180deg, #1a1d29 0%, #252936 100%);
+  border-right: none;
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.2);
+}
+
+.admin-sidebar-header {
+  padding: 1.25rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 80px;
+}
+
+[data-bs-theme="dark"] .admin-sidebar-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-sidebar-header .navbar-brand,
+.admin-sidebar-header a {
+  color: #fff !important;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+[data-bs-theme="dark"] .admin-sidebar-header a {
+  color: #fff !important;
+}
+
+.admin-sidebar-header .small {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
+  margin-top: 0.35rem;
+}
+
+[data-bs-theme="dark"] .admin-sidebar-header .small {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.admin-sidebar-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.admin-sidebar-nav {
+  padding: 0.75rem 0.5rem;
+}
+
+.admin-sidebar-nav .list-group-item {
+  border: 0;
+  border-radius: 0.5rem;
+  margin-bottom: 0.35rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.88);
+  background: transparent;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+[data-bs-theme="dark"] .admin-sidebar-nav .list-group-item {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.admin-sidebar-nav .list-group-item:first-of-type {
+  margin-top: 0.25rem;
+}
+
+.admin-sidebar-nav .list-group-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+[data-bs-theme="dark"] .admin-sidebar-nav .list-group-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.admin-sidebar-item.active {
+  background: rgba(220, 53, 69, 0.25) !important;
+  color: #ff6b7a !important;
+  font-weight: 600;
+}
+
+[data-bs-theme="dark"] .admin-sidebar-item.active {
+  background: rgba(220, 53, 69, 0.25) !important;
+  color: #ff6b7a !important;
+}
+
+/* ----- Main ----- */
+.admin-main-wrap {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bs-body-bg);
+}
+
+.admin-navbar {
+  background: var(--bs-body-bg) !important;
+  border-bottom: 1px solid var(--bs-border-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  padding: 0.5rem 0;
+}
+
+[data-bs-theme="dark"] .admin-navbar {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.admin-main {
+  flex: 1;
+  min-height: 0;
+  padding: 1.5rem 0;
+}
+
+/* ----- Offcanvas notifications ----- */
+.admin-notifications-offcanvas .offcanvas-header {
+  border-bottom: 1px solid var(--bs-border-color);
+  padding: 1rem 1.25rem;
+}
+
+.admin-notifications-offcanvas .offcanvas-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.admin-notifications-offcanvas .list-group-item {
+  padding: 1rem 1.25rem;
+}
+
+/* ----- Responsive ----- */
+@media (max-width: 991.98px) {
+  .admin-sidebar {
+    width: 100%;
+    min-height: auto;
+  }
+}
