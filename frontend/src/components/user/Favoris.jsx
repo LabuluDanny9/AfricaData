@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Row, Col, Button, Badge } from 'react-bootstrap';
-import { Star, BookOpen, Download, Eye } from 'lucide-react';
+import { Star, BookOpen, Download } from 'lucide-react';
 import RatingStars from 'components/ui/RatingStars';
 import { getFavorites, getPublications, toggleFavorite } from 'services/publications';
 import { useAuth } from 'context/AuthContext';
@@ -11,35 +11,40 @@ import './Favoris.css';
 
 export default function Favoris() {
   const { user } = useAuth();
-  const [favoriteIds, setFavoriteIds] = useState([]);
+  const [, setFavoriteIds] = useState([]);
   const [publications, setPublications] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user?.id) {
       setLoading(false);
+      setPublications([]);
+      setFavoriteIds([]);
       return;
     }
-    if (isSupabaseConfigured()) {
-      getFavorites(user.id).then(({ data }) => {
+    if (!isSupabaseConfigured()) {
+      setPublications([]);
+      setFavoriteIds([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    getFavorites(user.id)
+      .then(({ data }) => {
         setFavoriteIds(data || []);
         if (data?.length) {
-          getPublications({}).then(({ data: list }) => {
+          return getPublications({}).then(({ data: list }) => {
             const favs = (list || []).filter((p) => data.includes(p.id));
             setPublications(favs);
           });
         }
-        setLoading(false);
-      }).catch(() => setLoading(false));
-    } else {
-      setFavoriteIds([1, 2, 3]);
-      setPublications([
-        { id: 1, title: 'Impact des changements climatiques...', author: 'Prof. J.-M. Kabongo', type: 'Article', year: '2024', rating: 4.5, ratingCount: 12, views: 342, downloads: 89 },
-        { id: 2, title: 'Analyse SIG pour la gestion...', author: 'Dr. P. Mbuya', type: 'Thèse', year: '2024', rating: 4.8, ratingCount: 8, views: 156, downloads: 45 },
-        { id: 3, title: 'Étude épidémiologique...', author: 'Prof. C. Mulamba', type: 'Rapport', year: '2024', rating: 4.2, ratingCount: 15, views: 521, downloads: 120 },
-      ]);
-      setLoading(false);
-    }
+        setPublications([]);
+      })
+      .catch(() => {
+        setFavoriteIds([]);
+        setPublications([]);
+      })
+      .finally(() => setLoading(false));
   }, [user?.id]);
 
   const handleRemoveFavorite = async (pubId) => {

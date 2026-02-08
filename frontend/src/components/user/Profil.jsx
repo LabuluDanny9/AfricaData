@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { Card, Form, Button, Row, Col, ListGroup, Tab, Tabs, Badge, InputGroup } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+import { Card, Form, Button, Row, Col, ListGroup, Tab, Tabs, Badge } from 'react-bootstrap';
 import { User, Mail, Camera, FileText, CreditCard, MapPin, Globe, Linkedin, Twitter, GraduationCap, BookOpen } from 'lucide-react';
 import { useAuth } from 'context/AuthContext';
 import { getProfile, updateProfile, uploadAvatar } from 'services/profile';
-import { isSupabaseConfigured } from 'lib/supabase';
+import { supabase, isSupabaseConfigured } from 'lib/supabase';
 import './Profil.css';
 
 const DOMAIN_INTERESTS = ['Informatique', 'IA & Data Science', 'Médecine & Santé', 'Sciences agronomiques', 'Sciences économiques', 'Ingénierie', 'Environnement', 'Sciences sociales'];
@@ -30,6 +31,8 @@ export default function Profil() {
     institution: '',
     domain_interest: '',
   });
+  const [history, setHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   useEffect(() => {
     if (!user?.id) {
@@ -74,6 +77,38 @@ export default function Profil() {
   useEffect(() => {
     setAvatarImageError(false);
   }, [avatarUrl]);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured() || !user?.id) {
+      setHistory([]);
+      return;
+    }
+    setLoadingHistory(true);
+    supabase
+      .from('publications')
+      .select('id, title, status, created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(10)
+      .then(({ data, error }) => {
+        if (!error && data) {
+          setHistory(data.map((p) => ({
+            type: 'publication',
+            id: p.id,
+            title: (p.title || '').length > 50 ? (p.title || '').slice(0, 50) + '…' : p.title,
+            date: p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+            status: p.status === 'published' ? 'Validée' : p.status === 'rejected' ? 'Rejetée' : 'En analyse',
+          })));
+        } else {
+          setHistory([]);
+        }
+        setLoadingHistory(false);
+      })
+      .catch(() => {
+        setHistory([]);
+        setLoadingHistory(false);
+      });
+  }, [user?.id]);
 
   const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
@@ -139,11 +174,6 @@ export default function Profil() {
       setTimeout(() => setMessage(''), 4000);
     });
   };
-
-  const MOCK_HISTORY = [
-    { type: 'publication', title: 'Impact des changements climatiques...', date: '2025-02-06', status: 'Validée' },
-    { type: 'paiement', title: 'Soumission — Orange Money', date: '2025-02-04', amount: '2 000 FCFA' },
-  ];
 
   if (loading) {
     return (
@@ -341,21 +371,35 @@ export default function Profil() {
               Historique
             </Card.Header>
             <Card.Body className="pt-0">
-              <ListGroup variant="flush">
-                {MOCK_HISTORY.map((item, i) => (
-                  <ListGroup.Item key={i} className="border-0 border-bottom px-0 py-3 d-flex justify-content-between align-items-center">
-                    <div className="d-flex align-items-center gap-2">
-                      {item.type === 'paiement' ? <CreditCard size={18} className="text-body-secondary" /> : <FileText size={18} className="text-body-secondary" />}
-                      <div>
-                        <div className="small fw-semibold">{item.title}</div>
-                        <div className="small text-body-secondary">{item.date}</div>
+              {loadingHistory ? (
+                <div className="text-center py-4 small text-body-secondary">Chargement de l'historique…</div>
+              ) : history.length === 0 ? (
+                <div className="text-center py-4 small text-body-secondary">Aucune activité récente. Vos publications apparaîtront ici.</div>
+              ) : (
+                <ListGroup variant="flush">
+                  {history.map((item) => (
+                    <ListGroup.Item key={item.id || item.date} className="border-0 border-bottom px-0 py-3 d-flex justify-content-between align-items-center">
+                      <div className="d-flex align-items-center gap-2 flex-grow-1 min-w-0">
+                        <FileText size={18} className="text-body-secondary flex-shrink-0" />
+                        <div className="min-w-0">
+                          <Link to={`/publication/${item.id}`} className="small fw-semibold text-body text-decoration-none d-block text-truncate">
+                            {item.title}
+                          </Link>
+                          <div className="small text-body-secondary">{item.date}</div>
+                        </div>
                       </div>
-                    </div>
-                    {item.status && <Badge bg="success" className="rounded-pill">{item.status}</Badge>}
-                    {item.amount && <span className="small fw-semibold">{item.amount}</span>}
-                  </ListGroup.Item>
-                ))}
-              </ListGroup>
+                      {item.status && (
+                        <Badge
+                          bg={item.status === 'Validée' ? 'success' : item.status === 'Rejetée' ? 'danger' : 'warning'}
+                          className="rounded-pill flex-shrink-0 ms-2"
+                        >
+                          {item.status}
+                        </Badge>
+                      )}
+                    </ListGroup.Item>
+                  ))}
+                </ListGroup>
+              )}
             </Card.Body>
           </Card>
         </Col>
