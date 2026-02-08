@@ -6,12 +6,6 @@ import { supabase, isSupabaseConfigured } from 'lib/supabase';
 import { useAuth } from 'context/AuthContext';
 import './MesPublications.css';
 
-const MOCK_PUBLICATIONS = [
-  { id: '1', title: 'Impact des changements climatiques sur l\'agriculture durable', type: 'Article', status: 'published', date: '2025-02-06', admin_comment: null },
-  { id: '2', title: 'Analyse SIG pour la gestion des ressources naturelles', type: 'Thèse', status: 'pending', date: '2025-02-04', admin_comment: null },
-  { id: '3', title: 'Étude épidémiologique des maladies tropicales négligées', type: 'Rapport', status: 'rejected', date: '2025-02-03', admin_comment: 'Veuillez compléter la section méthodologie et ajouter les références manquantes.' },
-];
-
 const STATUS_LABELS = {
   draft: { label: 'Brouillon', variant: 'secondary' },
   pending: { label: 'En analyse', variant: 'warning' },
@@ -21,33 +15,40 @@ const STATUS_LABELS = {
 
 export default function MesPublications() {
   const { user } = useAuth();
-  const [publications, setPublications] = useState(MOCK_PUBLICATIONS);
-  const [loading, setLoading] = useState(false);
+  const [publications, setPublications] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedRejet, setSelectedRejet] = useState(null);
 
   useEffect(() => {
-    if (isSupabaseConfigured() && user?.id) {
-      setLoading(true);
-      supabase
-        .from('publications')
-        .select('id, title, type, status, created_at')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .then(({ data, error }) => {
-          if (!error && data?.length) {
-            setPublications(data.map((p) => ({
-              id: p.id,
-              title: p.title,
-              type: p.type,
-              status: p.status || 'pending',
-              date: p.created_at?.slice(0, 10) || '',
-              admin_comment: null,
-            })));
-          }
-          setLoading(false);
-        })
-        .catch(() => setLoading(false));
+    if (!isSupabaseConfigured() || !user?.id) {
+      setLoading(false);
+      return;
     }
+    setLoading(true);
+    supabase
+      .from('publications')
+      .select('id, title, type, status, created_at, admin_comment')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (!error && data) {
+          setPublications(data.map((p) => ({
+            id: p.id,
+            title: p.title,
+            type: p.type,
+            status: p.status || 'draft',
+            date: p.created_at?.slice(0, 10) || '',
+            admin_comment: p.admin_comment ?? null,
+          })));
+        } else {
+          setPublications([]);
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setPublications([]);
+        setLoading(false);
+      });
   }, [user?.id]);
 
   return (

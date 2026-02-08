@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Card, Table, Spinner, Form, Row, Col } from 'react-bootstrap';
+import { Card, Table, Spinner, Form } from 'react-bootstrap';
 import { ScrollText, Filter } from 'lucide-react';
 import { getAuditLogs } from 'services/admin';
 import { isSupabaseConfigured } from 'lib/supabase';

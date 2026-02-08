@@ -222,30 +222,43 @@ export default function PublicationDetails() {
               <Button variant="outline-secondary" size="sm" onClick={() => setPdfFullscreen((f) => !f)} title={pdfFullscreen ? 'Réduire' : 'Plein écran'} aria-label={pdfFullscreen ? 'Quitter plein écran' : 'Plein écran'}>
                 {pdfFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
               </Button>
-              <Button variant="outline-danger" size="sm" as="a" href={publication.pdf_url || PDF_SAMPLE_URL} download target="_blank" rel="noopener noreferrer" title="Télécharger le PDF" onClick={() => isSupabaseConfigured() && publication?.id && incrementDownload(publication.id)}>
-                <Download size={16} /> Télécharger
-              </Button>
+              {publication.pdf_url ? (
+                <Button variant="outline-danger" size="sm" as="a" href={publication.pdf_url} download target="_blank" rel="noopener noreferrer" title="Télécharger le PDF" onClick={() => isSupabaseConfigured() && publication?.id && incrementDownload(publication.id)}>
+                  <Download size={16} /> Télécharger
+                </Button>
+              ) : (
+                <span className="small text-body-secondary">PDF non disponible</span>
+              )}
             </div>
           </Card.Header>
           <Card.Body className="publication-details-pdf-area p-0">
-            <div
-              className="publication-details-pdf-wrapper"
-              style={{
-                height: pdfFullscreen ? '85vh' : 420,
-                width: '100%',
-              }}
-            >
-              <iframe
-                title="Aperçu PDF"
-                src={publication.pdf_url || PDF_SAMPLE_URL}
-                className="publication-details-pdf-iframe"
+            {publication.pdf_url ? (
+              <div
+                className="publication-details-pdf-wrapper"
                 style={{
-                  width: `${pdfZoom}%`,
-                  height: `${pdfZoom}%`,
-                  minHeight: '100%',
+                  height: pdfFullscreen ? '85vh' : 420,
+                  width: '100%',
                 }}
-              />
-            </div>
+              >
+                <iframe
+                  title="Aperçu PDF"
+                  src={publication.pdf_url}
+                  className="publication-details-pdf-iframe"
+                  style={{
+                    width: `${pdfZoom}%`,
+                    height: `${pdfZoom}%`,
+                    minHeight: '100%',
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="d-flex align-items-center justify-content-center text-body-secondary py-5" style={{ minHeight: 280 }}>
+                <div className="text-center">
+                  <FileText size={48} className="mb-2 opacity-50" />
+                  <p className="mb-0 small">Aucun fichier PDF associé à cette publication.</p>
+                </div>
+              </div>
+            )}
           </Card.Body>
         </Card>
 

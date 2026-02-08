@@ -45,14 +45,21 @@ export async function getSession() {
   return supabase.auth.getSession();
 }
 
-export async function signInWithOAuth(provider = 'google') {
+/**
+ * Connexion / inscription via Google (OAuth Supabase).
+ * Redirige vers Google puis revient sur redirectPath avec une session Supabase.
+ * @param {'google'} provider
+ * @param {string} redirectPath - URL de retour après connexion (ex. '/dashboard')
+ */
+export async function signInWithOAuth(provider = 'google', redirectPath = '/dashboard') {
   if (!isSupabaseConfigured()) {
     throw new Error('Supabase non configuré.');
   }
+  const redirectTo = `${window.location.origin}${redirectPath.startsWith('/') ? redirectPath : `/${redirectPath}`}`;
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: `${window.location.origin}/`,
+      redirectTo,
       queryParams: { access_type: 'offline', prompt: 'consent' },
     },
   });

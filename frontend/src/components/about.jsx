@@ -7,28 +7,28 @@ import AfricadataHeader from 'components/layout/AfricadataHeader';
 export default function About() {
   const team = [
     {
-      name: 'Dr. Amara Okonkwo',
-      role: 'Fondatrice & Directrice',
+      name: 'PHD. ROGER',
+      role: 'Fondateur & Directeur',
       bio: 'Expert en systèmes d\'information scientifique',
-      image: '👨‍🔬'
+      image: '/roger.png'
     },
     {
-      name: 'Prof. Hassan Al-Rashid',
-      role: 'Directeur Scientifique',
+      name: 'Prof. ROGER',
+      role: 'Directeur Salle du Numérique UNILU',
       bio: 'Chercheur en données ouvertes',
-      image: '👨‍🎓'
+      image: '/roger.png'
     },
     {
-      name: 'Zainab Mohamed',
+      name: 'RACHEL',
       role: 'Directrice Technique',
       bio: 'Architecte infrastructure numérique',
-      image: '👩‍💻'
+      image: null
     },
     {
-      name: 'Jean-Pierre Dubois',
-      role: 'Directeur des Opérations',
-      bio: 'Spécialiste partenariats académiques',
-      image: '👨‍💼'
+      name: 'Danny LABULU IBAM',
+      role: 'Ir en génie informatique et IA',
+      bio: 'Spécialiste en IA et DevOps',
+      image: '/danny.png'
     }
   ];
 
@@ -256,7 +256,15 @@ export default function About() {
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
               {team.map((member, idx) => (
                 <div key={idx} className="africadata-card text-center">
-                  <div className="text-6xl mb-4">{member.image}</div>
+                  <div className="mb-4 flex justify-center">
+                    {member.image ? (
+                      <img src={member.image} alt={member.name} className="rounded-full object-cover w-14 h-14 md:w-16 md:h-16" />
+                    ) : (
+                      <div className="rounded-full bg-muted/50 flex items-center justify-center text-muted w-14 h-14 md:w-16 md:h-16">
+                        <Users className="w-6 h-6 md:w-7 md:h-7" />
+                      </div>
+                    )}
+                  </div>
                   <h3 className="text-lg font-bold mb-1">{member.name}</h3>
                   <p className="text-sm text-primary font-semibold mb-2">{member.role}</p>
                   <p className="text-sm text-muted-foreground">{member.bio}</p>

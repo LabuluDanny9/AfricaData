@@ -6,38 +6,40 @@ import { supabase, isSupabaseConfigured } from 'lib/supabase';
 import { useAuth } from 'context/AuthContext';
 import './AvisCommentaires.css';
 
-const MOCK_COMMENTS = [
-  { id: 1, publication_title: 'Impact des changements climatiques...', publication_id: 1, content: 'Travail très pertinent pour notre projet. Merci pour le partage.', date: '2025-02-05 10:15' },
-  { id: 2, publication_title: 'Analyse SIG pour la gestion...', publication_id: 2, content: 'Les données méthodologiques sont claires. Une référence.', date: '2025-02-04 14:30' },
-];
-
 export default function AvisCommentaires() {
   const { user } = useAuth();
-  const [comments, setComments] = useState(MOCK_COMMENTS);
-  const [loading, setLoading] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (isSupabaseConfigured() && user?.id) {
-      setLoading(true);
-      supabase
-        .from('publication_comments')
-        .select('id, publication_id, content, created_at')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .then(({ data, error }) => {
-          if (!error && data?.length) {
-            setComments(data.map((c) => ({
-              id: c.id,
-              publication_id: c.publication_id,
-              publication_title: 'Publication',
-              content: c.content,
-              date: c.created_at,
-            })));
-          }
-          setLoading(false);
-        })
-        .catch(() => setLoading(false));
+    if (!isSupabaseConfigured() || !user?.id) {
+      setLoading(false);
+      return;
     }
+    setLoading(true);
+    supabase
+      .from('publication_comments')
+      .select('id, publication_id, content, created_at, publications(title)')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (!error && data) {
+          setComments(data.map((c) => ({
+            id: c.id,
+            publication_id: c.publication_id,
+            publication_title: c.publications?.title ?? 'Publication',
+            content: c.content,
+            date: c.created_at,
+          })));
+        } else {
+          setComments([]);
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setComments([]);
+        setLoading(false);
+      });
   }, [user?.id]);
 
   const handleDelete = async (commentId) => {

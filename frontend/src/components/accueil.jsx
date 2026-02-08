@@ -40,15 +40,15 @@ import {
 } from 'lucide-react';
 import AfricadataHeader from 'components/layout/AfricadataHeader';
 import AfricadataFooter from 'components/layout/AfricadataFooter';
-import { getPublications, subscribeToPublications } from 'services/publications';
+import { getPublications, subscribeToPublications, getPublicStats } from 'services/publications';
 import { isSupabaseConfigured } from 'lib/supabase';
 import 'components/layout/AfricadataHeader.css';
 import './accueil.css';
 
-const heroHighlights = [
-  { value: '2 847+', label: 'Publications indexées' },
-  { value: '456', label: 'Chercheurs actifs' },
-  { value: '12', label: 'Facultés connectées' },
+const HERO_KEYS = [
+  { key: 'publicationsCount', label: 'Publications indexées', suffix: '' },
+  { key: 'usersCount', label: 'Chercheurs actifs', suffix: '' },
+  { key: 'totalViews', label: 'Consultations', suffix: '' },
 ];
 
 const featureList = [
@@ -60,11 +60,11 @@ const featureList = [
   { icon: BookOpen, title: 'Open science', description: 'Conformité Open Access, DOI et intégration ORCID.' },
 ];
 
-const statHighlights = [
-  { icon: FileText, value: '45K+', label: 'Consultations annuelles', description: 'Lectures et téléchargements' },
-  { icon: TrendingUp, value: '+127%', label: 'Croissance', description: 'Soumissions sur 12 mois' },
-  { icon: Users, value: '89', label: 'Pays', description: 'Lecteurs à travers le monde' },
-  { icon: Globe, value: '24', label: 'Réseaux partenaires', description: 'Institutions connectées' },
+const STAT_KEYS = [
+  { key: 'totalViews', icon: FileText, label: 'Consultations', description: 'Lectures et téléchargements' },
+  { key: 'totalDownloads', icon: TrendingUp, label: 'Téléchargements', description: 'PDF téléchargés' },
+  { key: 'publicationsCount', icon: FileText, label: 'Publications', description: 'En ligne sur la plateforme' },
+  { key: 'usersCount', icon: Users, label: 'Utilisateurs', description: 'Inscrits sur AfricaData' },
 ];
 
 const publicationCategories = [
@@ -77,7 +77,7 @@ const publicationCategories = [
 ];
 
 const contactInfoCards = [
-  { icon: MapPin, title: 'Adresse', lines: ['Centre Numérique Africain', 'Boulevard de l\'Université', 'Lubumbashi, RDC'], highlight: null },
+  { icon: MapPin, title: 'Adresse', lines: ['Centre de collecte de données numériques', 'LUBUMBASHI, RDC'], highlight: null },
   { icon: Phone, title: 'Contact', lines: ['+243 99 123 45 67', 'support@africadata.org'], highlight: 'Support 7j/7' },
   { icon: Mail, title: 'Partenariats', lines: ['partners@africadata.org', 'media@africadata.org'], highlight: 'Réponse sous 4h' },
 ];
@@ -94,6 +94,7 @@ function Accueil() {
   const [searchQuery, setSearchQuery] = useState('');
   const [recentPublications, setRecentPublications] = useState([]);
   const [loadingRecent, setLoadingRecent] = useState(false);
+  const [publicStats, setPublicStats] = useState(null);
   const navigate = useNavigate();
 
   const fetchRecent = useCallback(async () => {
@@ -112,8 +113,16 @@ function Accueil() {
 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
+    getPublicStats().then(({ data }) => {
+      if (data) setPublicStats(data);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
     const unsubscribe = subscribeToPublications(() => {
       fetchRecent();
+      getPublicStats().then(({ data }) => data && setPublicStats(data));
     });
     return unsubscribe;
   }, [fetchRecent]);
@@ -166,16 +175,20 @@ function Accueil() {
                 </p>
               </Form>
               <Row className="g-3 mt-4 justify-content-center">
-                {heroHighlights.map((h) => (
-                  <Col xs="6" md="4" key={h.label}>
-                    <Card className="accueil-stat-card h-100 border-0 shadow-sm">
-                      <Card.Body className="py-3">
-                        <span className="d-block fs-4 fw-bold text-danger">{h.value}</span>
-                        <span className="small text-body-secondary">{h.label}</span>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                ))}
+                {HERO_KEYS.map((h) => {
+                  const raw = publicStats?.[h.key] ?? 0;
+                  const value = typeof raw === 'number' && raw >= 1000 ? `${(raw / 1000).toFixed(1).replace('.', ',')}K+` : String(raw);
+                  return (
+                    <Col xs="6" md="4" key={h.label}>
+                      <Card className="accueil-stat-card h-100 border-0 shadow-sm">
+                        <Card.Body className="py-3">
+                          <span className="d-block fs-4 fw-bold text-danger">{publicStats ? value : '—'}</span>
+                          <span className="small text-body-secondary">{h.label}</span>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  );
+                })}
               </Row>
               <div className="d-flex flex-wrap justify-content-center gap-3 mt-4 small text-body-secondary">
                 <span>Accès auteur sécurisé</span>
@@ -197,8 +210,10 @@ function Accueil() {
             <span className="text-uppercase small fw-semibold text-body-secondary">Indicateurs en temps réel</span>
           </div>
           <Row className="g-4">
-            {statHighlights.map((stat) => {
+            {STAT_KEYS.map((stat) => {
               const Icon = stat.icon;
+              const raw = publicStats?.[stat.key] ?? 0;
+              const value = typeof raw === 'number' && raw >= 1000 ? `${(raw / 1000).toFixed(1).replace('.', ',')}K+` : String(raw);
               return (
                 <Col xs="12" sm="6" lg="3" key={stat.label}>
                   <Card className="accueil-feature-card h-100 border-0 shadow-sm">
@@ -208,7 +223,7 @@ function Accueil() {
                           <Icon size={22} className="text-danger" />
                         </div>
                         <div>
-                          <span className="d-block fs-4 fw-bold">{stat.value}</span>
+                          <span className="d-block fs-4 fw-bold">{publicStats ? value : '—'}</span>
                           <span className="small fw-medium text-body-secondary">{stat.label}</span>
                           <p className="small text-body-secondary mb-0 mt-1">{stat.description}</p>
                         </div>

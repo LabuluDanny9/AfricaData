@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useGoogleLogin } from '@react-oauth/google';
 import {
   Container,
   Row,
@@ -30,7 +29,7 @@ import AfricadataHeader from 'components/layout/AfricadataHeader';
 import AfricadataFooter from 'components/layout/AfricadataFooter';
 import { GoogleIcon } from 'components/ui/GoogleIcon';
 import { useAuth } from 'context/AuthContext';
-import { signIn } from 'services/auth';
+import { signIn, signInWithOAuth } from 'services/auth';
 import { getProfile } from 'services/profile';
 import { isAdminRole } from 'lib/adminRoles';
 import { isSupabaseConfigured as hasSupabase } from 'lib/supabase';
@@ -62,7 +61,7 @@ const itemVariants = {
   },
 };
 
-const MSG_GOOGLE_NON_CONFIG = 'Connexion Google non configurée. Ajoutez REACT_APP_GOOGLE_CLIENT_ID dans le fichier .env (voir .env.example).';
+const MSG_GOOGLE_NON_CONFIG = 'Connexion Google non configurée. Activez le fournisseur Google dans Supabase (Authentication > Providers) et configurez les identifiants dans Google Cloud Console.';
 
 function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -347,52 +346,35 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
   );
 }
 
-function ConnexionWithGoogle() {
+function ConnexionWithSupabase() {
   const [googleError, setGoogleError] = useState(null);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const { setUser } = useAuth();
-  const navigate = useNavigate();
+  const location = useLocation();
+  const isAdminLogin = location.pathname === '/connexion-admin';
 
-  const googleLogin = useGoogleLogin({
-    flow: 'implicit',
-    onSuccess: async (tokenResponse) => {
-      setGoogleError(null);
-      setGoogleLoading(true);
-      try {
-        const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-        });
-        if (!res.ok) throw new Error('Impossible de récupérer le profil Google');
-        const userInfo = await res.json();
-        setUser({
-          email: userInfo.email,
-          name: userInfo.name,
-          picture: userInfo.picture,
-          sub: userInfo.sub,
-        });
-        navigate('/', { replace: true });
-      } catch (err) {
-        setGoogleError(err.message || 'Connexion Google échouée');
-      } finally {
-        setGoogleLoading(false);
-      }
-    },
-    onError: (err) => {
-      setGoogleError(err?.error_description || err?.error || 'Connexion Google annulée ou refusée');
+  const handleGoogleAuth = async () => {
+    setGoogleError(null);
+    setGoogleLoading(true);
+    try {
+      const redirectPath = isAdminLogin ? '/superadmin' : '/dashboard';
+      await signInWithOAuth('google', redirectPath);
+      // signInWithOAuth redirige vers Google ; si erreur avant redirection, on l'affiche
+    } catch (err) {
+      setGoogleError(err?.message || 'Connexion Google impossible. Vérifiez que le fournisseur Google est activé dans Supabase.');
       setGoogleLoading(false);
-    },
-  });
+    }
+  };
 
   return (
     <ConnexionContent
-      onGoogleAuth={googleLogin}
+      onGoogleAuth={handleGoogleAuth}
       googleError={googleError}
       googleLoading={googleLoading}
     />
   );
 }
 
-function ConnexionNoGoogle() {
+function ConnexionNoSupabase() {
   const [googleError, setGoogleError] = useState(null);
 
   const handleGoogleAuth = () => {
@@ -409,5 +391,5 @@ function ConnexionNoGoogle() {
 }
 
 export default function Connexion() {
-  return process.env.REACT_APP_GOOGLE_CLIENT_ID ? <ConnexionWithGoogle /> : <ConnexionNoGoogle />;
+  return hasSupabase() ? <ConnexionWithSupabase /> : <ConnexionNoSupabase />;
 }

@@ -1,18 +1,34 @@
 import { useState, useEffect } from 'react';
 import { Card, Row, Col, Spinner, Alert } from 'react-bootstrap';
 import { BarChart3, FileText, Download, Users, TrendingUp } from 'lucide-react';
-import { getAdminStatistics } from 'services/admin';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+} from 'recharts';
+import { getAdminStatistics, getAdminStatsByDomain, getAdminMonthlyTrend } from 'services/admin';
 import { isSupabaseConfigured } from 'lib/supabase';
 import './AdminPages.css';
 
 export default function AdminStatistics() {
   const [stats, setStats] = useState(null);
+  const [byDomain, setByDomain] = useState([]);
+  const [monthlyTrend, setMonthlyTrend] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingCharts, setLoadingCharts] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (!isSupabaseConfigured()) {
       setLoading(false);
+      setLoadingCharts(false);
       return;
     }
     getAdminStatistics().then(({ data, error: err }) => {
@@ -20,6 +36,18 @@ export default function AdminStatistics() {
       if (err) setError(err.message || 'Erreur chargement');
       else setStats(data ?? null);
     });
+  }, []);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    setLoadingCharts(true);
+    Promise.all([getAdminStatsByDomain(), getAdminMonthlyTrend(12)])
+      .then(([domainRes, trendRes]) => {
+        if (!domainRes.error) setByDomain(domainRes.data || []);
+        if (!trendRes.error) setMonthlyTrend(trendRes.data || []);
+        setLoadingCharts(false);
+      })
+      .catch(() => setLoadingCharts(false));
   }, []);
 
   if (loading) {
@@ -103,13 +131,33 @@ export default function AdminStatistics() {
           <Card className="admin-card admin-section-card h-100">
             <Card.Header>Activité par domaine</Card.Header>
             <Card.Body>
-              <div className="admin-empty-state py-4">
-                <div className="admin-empty-state-icon">
-                  <BarChart3 size={36} />
+              {loadingCharts ? (
+                <div className="d-flex align-items-center justify-content-center py-5">
+                  <Spinner animation="border" size="sm" variant="primary" />
                 </div>
-                <h3>Graphique à brancher</h3>
-                <p className="small text-muted mb-0">Publications par domaine scientifique. Connectez une source de données ou un outil de reporting.</p>
-              </div>
+              ) : byDomain.length === 0 ? (
+                <div className="admin-empty-state py-4">
+                  <div className="admin-empty-state-icon">
+                    <BarChart3 size={36} />
+                  </div>
+                  <h3>Aucune donnée</h3>
+                  <p className="small text-muted mb-0">Les publications par domaine apparaîtront ici une fois des publications publiées.</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={byDomain} margin={{ top: 12, right: 12, left: 0, bottom: 60 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+                    <XAxis dataKey="domain" tick={{ fontSize: 11 }} angle={-35} textAnchor="end" height={60} />
+                    <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                    <Tooltip
+                      contentStyle={{ fontSize: 12 }}
+                      formatter={(value) => [value, 'Publications']}
+                      labelFormatter={(label) => `Domaine : ${label}`}
+                    />
+                    <Bar dataKey="count" name="Publications" fill="var(--bs-primary)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </Card.Body>
           </Card>
         </Col>
@@ -117,13 +165,37 @@ export default function AdminStatistics() {
           <Card className="admin-card admin-section-card h-100">
             <Card.Header>Activité mensuelle</Card.Header>
             <Card.Body>
-              <div className="admin-empty-state py-4">
-                <div className="admin-empty-state-icon">
-                  <TrendingUp size={36} />
+              {loadingCharts ? (
+                <div className="d-flex align-items-center justify-content-center py-5">
+                  <Spinner animation="border" size="sm" variant="primary" />
                 </div>
-                <h3>Graphique à brancher</h3>
-                <p className="small text-muted mb-0">Évolution des soumissions et validations. Idéal pour un tableau de bord analytique.</p>
-              </div>
+              ) : monthlyTrend.length === 0 ? (
+                <div className="admin-empty-state py-4">
+                  <div className="admin-empty-state-icon">
+                    <TrendingUp size={36} />
+                  </div>
+                  <h3>Aucune donnée</h3>
+                  <p className="small text-muted mb-0">L'évolution des soumissions et validations apparaîtra ici.</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={280}>
+                  <LineChart data={monthlyTrend} margin={{ top: 12, right: 12, left: 0, bottom: 12 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+                    <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                    <Tooltip
+                      contentStyle={{ fontSize: 12 }}
+                      formatter={(value, name) => [value, name === 'soumissions' ? 'Soumissions' : name === 'publiees' ? 'Publiées' : name === 'brouillons' ? 'Brouillons' : 'Rejetées']}
+                      labelFormatter={(label) => `Mois : ${label}`}
+                    />
+                    <Legend formatter={(value) => (value === 'soumissions' ? 'Soumissions' : value === 'publiees' ? 'Publiées' : value === 'brouillons' ? 'Brouillons' : 'Rejetées')} />
+                    <Line type="monotone" dataKey="soumissions" name="soumissions" stroke="var(--bs-warning)" strokeWidth={2} dot={{ r: 3 }} />
+                    <Line type="monotone" dataKey="publiees" name="publiees" stroke="var(--bs-success)" strokeWidth={2} dot={{ r: 3 }} />
+                    <Line type="monotone" dataKey="brouillons" name="brouillons" stroke="var(--bs-secondary)" strokeWidth={2} dot={{ r: 3 }} />
+                    <Line type="monotone" dataKey="rejetees" name="rejetees" stroke="var(--bs-danger)" strokeWidth={2} dot={{ r: 3 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
             </Card.Body>
           </Card>
         </Col>

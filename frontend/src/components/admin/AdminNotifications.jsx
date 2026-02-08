@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Card, ListGroup, Badge, Tab, Tabs } from 'react-bootstrap';
-import { Bell, FileText, CreditCard, AlertCircle, CheckCircle } from 'lucide-react';
+import { Bell, FileText, CreditCard, AlertCircle } from 'lucide-react';
 import './AdminPages.css';
 
 const NOTIFICATION_TYPES = [

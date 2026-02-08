@@ -46,6 +46,62 @@ export async function getAdminStatistics() {
   };
 }
 
+/** Publications par domaine (pour graphique « Activité par domaine ») */
+export async function getAdminStatsByDomain() {
+  if (!isSupabaseConfigured()) return { data: [], error: null };
+  const { data, error } = await supabase
+    .from('publications')
+    .select('domain')
+    .eq('status', 'published');
+  if (error) return { data: [], error };
+  const byDomain = {};
+  (data || []).forEach((p) => {
+    const d = p.domain || 'Non renseigné';
+    byDomain[d] = (byDomain[d] || 0) + 1;
+  });
+  const result = Object.entries(byDomain)
+    .map(([domain, count]) => ({ domain, count }))
+    .sort((a, b) => b.count - a.count);
+  return { data: result, error: null };
+}
+
+/** Tendance mensuelle : soumissions et publications par mois (pour courbe) */
+export async function getAdminMonthlyTrend(monthsBack = 12) {
+  if (!isSupabaseConfigured()) return { data: [], error: null };
+  const { data, error } = await supabase
+    .from('publications')
+    .select('created_at, status')
+    .order('created_at', { ascending: true });
+  if (error) return { data: [], error };
+  const now = new Date();
+  const monthKeys = [];
+  for (let i = monthsBack - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    monthKeys.push({
+      key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+      year: d.getFullYear(),
+      month: d.getMonth() + 1,
+      label: d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }),
+    });
+  }
+  const byMonth = {};
+  monthKeys.forEach((m) => {
+    byMonth[m.key] = { ...m, soumissions: 0, publiees: 0, brouillons: 0, rejetees: 0 };
+  });
+  (data || []).forEach((p) => {
+    const created = p.created_at ? new Date(p.created_at) : null;
+    if (!created) return;
+    const key = `${created.getFullYear()}-${String(created.getMonth() + 1).padStart(2, '0')}`;
+    if (!byMonth[key]) return;
+    byMonth[key].soumissions += 1;
+    if (p.status === 'published') byMonth[key].publiees += 1;
+    else if (p.status === 'draft') byMonth[key].brouillons += 1;
+    else if (p.status === 'rejected') byMonth[key].rejetees += 1;
+  });
+  const result = monthKeys.map((k) => byMonth[k.key]);
+  return { data: result, error: null };
+}
+
 // ========== Publications ==========
 /** GET /api/admin/publications */
 export async function getAllPublicationsForAdmin() {
@@ -85,11 +141,24 @@ export async function deletePublication(id) {
   return { error };
 }
 
-export async function updatePublicationStatus(publicationId, status) {
+/**
+ * Met à jour le statut d'une publication. En cas de rejet, optionnellement enregistre le commentaire admin.
+ * @param {string} publicationId
+ * @param {string} status - 'draft' | 'published' | 'rejected'
+ * @param {string} [adminComment] - commentaire affiché à l'auteur en cas de rejet
+ */
+export async function updatePublicationStatus(publicationId, status, adminComment = null) {
   if (!isSupabaseConfigured()) return { error: new Error('Non configuré.') };
+  const updates = { status, updated_at: new Date().toISOString() };
+  if (status === 'rejected' && adminComment != null) {
+    updates.admin_comment = adminComment;
+  }
+  if (status !== 'rejected') {
+    updates.admin_comment = null;
+  }
   const { error } = await supabase
     .from('publications')
-    .update({ status, updated_at: new Date().toISOString() })
+    .update(updates)
     .eq('id', publicationId);
   return { error };
 }

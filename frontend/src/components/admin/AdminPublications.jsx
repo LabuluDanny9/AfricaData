@@ -39,7 +39,7 @@ export default function AdminPublications() {
   const handleStatusChange = async (pubId, newStatus, rejectComment = null) => {
     setUpdatingId(pubId);
     setError('');
-    const { error: err } = await updatePublicationStatus(pubId, newStatus);
+    const { error: err } = await updatePublicationStatus(pubId, newStatus, newStatus === 'rejected' ? rejectComment : null);
     setUpdatingId(null);
     setRejectModal({ show: false, pub: null, comment: '' });
     if (err) {

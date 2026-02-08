@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useGoogleLogin } from '@react-oauth/google';
 import {
   Container,
   Row,
@@ -33,8 +32,8 @@ import AfricadataHeader from 'components/layout/AfricadataHeader';
 import AfricadataFooter from 'components/layout/AfricadataFooter';
 import { GoogleIcon } from 'components/ui/GoogleIcon';
 import { useAuth } from 'context/AuthContext';
-import { signUp } from 'services/auth';
-import { getProfile } from 'services/profile';
+import { signUp, signIn, signInWithOAuth } from 'services/auth';
+import { getProfile, updateProfile } from 'services/profile';
 import { isSupabaseConfigured as hasSupabase } from 'lib/supabase';
 import 'components/layout/AfricadataHeader.css';
 import 'components/auth.css';
@@ -70,7 +69,7 @@ const itemVariants = {
   },
 };
 
-const MSG_GOOGLE_NON_CONFIG = 'Inscription Google non configurée. Ajoutez REACT_APP_GOOGLE_CLIENT_ID dans le fichier .env (voir .env.example).';
+const MSG_GOOGLE_NON_CONFIG = 'Inscription Google non configurée. Activez le fournisseur Google dans Supabase (Authentication > Providers) et configurez les identifiants dans Google Cloud Console.';
 
 function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
   const [role, setRole] = useState('chercheur');
@@ -108,8 +107,27 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
           role,
         });
         setAuthError('');
-        if (data?.user && data?.session) {
-          const uid = data.user.id;
+        const uid = data?.user?.id;
+        let session = data?.session;
+        // Si pas de session (confirmation email activée dans Supabase), tenter une connexion automatique
+        if (data?.user && !session) {
+          try {
+            const signInRes = await signIn({ email: email.trim(), password });
+            session = signInRes?.session;
+          } catch (signInErr) {
+            // "Invalid login credentials" ou "Email not confirmed" = email à confirmer
+            const msg = signInErr?.message || '';
+            const needsConfirm = /invalid login credentials|email not confirmed|confirm your email/i.test(msg);
+            setAuthLoading(false);
+            if (needsConfirm) {
+              navigate('/connexion', { replace: true, state: { message: 'Compte créé. Vérifiez votre boîte mail, confirmez votre email puis connectez-vous.' } });
+            } else {
+              navigate('/connexion', { replace: true, state: { message: 'Compte créé. Connectez-vous pour accéder à votre tableau de bord.' } });
+            }
+            return;
+          }
+        }
+        if (uid && session) {
           const baseUser = {
             id: uid,
             email: data.user.email,
@@ -117,19 +135,28 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
             picture: data.user.user_metadata?.avatar_url,
             sub: uid,
           };
-          const { data: profile } = await getProfile(uid);
-          const userRole = profile?.role ?? role;
+          const { data: profile, error: profileErr } = await getProfile(uid);
+          let userRole = profile?.role ?? role;
+          if (profileErr && !profile) {
+            await updateProfile(uid, { full_name: baseUser.name, email: data.user.email, role });
+            userRole = role;
+          }
           setUser({ ...baseUser, role: userRole });
-          // Après inscription sur la plateforme → tableau de bord utilisateur.
+          // Inscription valide → redirection directe vers le tableau de bord utilisateur
           navigate('/dashboard', { replace: true });
-        } else {
+        } else if (data?.user) {
           navigate('/connexion', { replace: true, state: { message: 'Compte créé. Connectez-vous pour accéder à votre tableau de bord.' } });
         }
       } else {
-        setAuthError('Inscription non configurée. Configurez Supabase (voir .env.example).');
+        setAuthError('Inscription non configurée. En production : ajoutez REACT_APP_SUPABASE_URL et REACT_APP_SUPABASE_ANON_KEY dans les variables d\'environnement (Vercel/Netlify). Voir DEPLOIEMENT.md.');
       }
     } catch (err) {
-      setAuthError(err.message || 'Inscription impossible. Réessayez.');
+      const msg = err?.message || '';
+      if (/invalid login credentials|email not confirmed/i.test(msg)) {
+        setAuthError('Compte créé. Vérifiez votre boîte mail pour confirmer votre email, puis connectez-vous.');
+      } else {
+        setAuthError(msg || 'Inscription impossible. Réessayez.');
+      }
     } finally {
       setAuthLoading(false);
     }
@@ -454,52 +481,32 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
   );
 }
 
-function InscriptionWithGoogle() {
+function InscriptionWithSupabase() {
   const [googleError, setGoogleError] = useState(null);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const { setUser } = useAuth();
-  const navigate = useNavigate();
 
-  const googleLogin = useGoogleLogin({
-    flow: 'implicit',
-    onSuccess: async (tokenResponse) => {
-      setGoogleError(null);
-      setGoogleLoading(true);
-      try {
-        const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-        });
-        if (!res.ok) throw new Error('Impossible de récupérer le profil Google');
-        const userInfo = await res.json();
-        setUser({
-          email: userInfo.email,
-          name: userInfo.name,
-          picture: userInfo.picture,
-          sub: userInfo.sub,
-        });
-        navigate('/', { replace: true });
-      } catch (err) {
-        setGoogleError(err.message || 'Inscription Google échouée');
-      } finally {
-        setGoogleLoading(false);
-      }
-    },
-    onError: (err) => {
-      setGoogleError(err?.error_description || err?.error || 'Inscription Google annulée ou refusée');
+  const handleGoogleAuth = async () => {
+    setGoogleError(null);
+    setGoogleLoading(true);
+    try {
+      await signInWithOAuth('google', '/dashboard');
+      // signInWithOAuth redirige vers Google ; après connexion, Supabase redirige vers /dashboard avec session
+    } catch (err) {
+      setGoogleError(err?.message || 'Inscription Google impossible. Vérifiez que le fournisseur Google est activé dans Supabase.');
       setGoogleLoading(false);
-    },
-  });
+    }
+  };
 
   return (
     <InscriptionContent
-      onGoogleAuth={googleLogin}
+      onGoogleAuth={handleGoogleAuth}
       googleError={googleError}
       googleLoading={googleLoading}
     />
   );
 }
 
-function InscriptionNoGoogle() {
+function InscriptionNoSupabase() {
   const [googleError, setGoogleError] = useState(null);
 
   const handleGoogleAuth = () => {
@@ -516,5 +523,5 @@ function InscriptionNoGoogle() {
 }
 
 export default function Inscription() {
-  return process.env.REACT_APP_GOOGLE_CLIENT_ID ? <InscriptionWithGoogle /> : <InscriptionNoGoogle />;
+  return hasSupabase() ? <InscriptionWithSupabase /> : <InscriptionNoSupabase />;
 }

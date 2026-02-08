@@ -31,19 +31,6 @@ const LANGUES = ['Français', 'English', 'Español', 'العربية', 'Portugu�
 const REGIONS = ['Afrique', 'Europe', 'Amériques', 'Asie-Océanie', 'International'];
 const ANNEES = ['2025', '2024', '2023', '2022', '2021'];
 
-const SAMPLE_PUBLICATIONS = [
-  { id: 1, title: 'Impact des changements climatiques sur l\'agriculture durable', author: 'Prof. Jean-Marie Kabongo', type: 'Article', domain: 'Sciences agronomiques', language: 'Français', region: 'Afrique', year: '2024', summary: 'Cette étude analyse les effets des changements climatiques sur les pratiques agricoles durables en Afrique centrale. Elle propose des recommandations pour l\'adaptation des systèmes de production.', rating: 4.5, ratingCount: 12, views: 342, downloads: 89 },
-  { id: 2, title: 'Analyse SIG pour la gestion des ressources naturelles', author: 'Dr. Patrick Mbuya', type: 'Thèse', domain: 'Ingénierie', language: 'Français', region: 'Afrique', year: '2024', summary: 'Travail de recherche sur l\'utilisation des systèmes d\'information géographique pour une gestion durable des ressources naturelles.', rating: 4.8, ratingCount: 8, views: 156, downloads: 45 },
-  { id: 3, title: 'Étude épidémiologique des maladies tropicales négligées', author: 'Prof. Christine Mulamba', type: 'Rapport', domain: 'Médecine & Santé', language: 'Français', region: 'Afrique', year: '2024', summary: 'Rapport d\'enquête épidémiologique sur les maladies tropicales négligées dans plusieurs régions. Données de terrain et propositions d\'interventions.', rating: 4.2, ratingCount: 15, views: 521, downloads: 120 },
-  { id: 4, title: 'L\'entrepreneuriat féminin comme levier de développement local', author: 'Prof. Jeanne Mutombo', type: 'Article', domain: 'Sciences économiques', language: 'Français', region: 'Afrique', year: '2024', summary: 'Analyse du rôle de l\'entrepreneuriat féminin dans le développement économique local en Afrique subsaharienne.', rating: 4.6, ratingCount: 22, views: 678, downloads: 98 },
-  { id: 5, title: 'Intelligence artificielle et diagnostic médical', author: 'Dr. Amara Okonkwo', type: 'Article', domain: 'IA & Data Science', language: 'English', region: 'International', year: '2025', summary: 'Application des modèles de deep learning pour l\'aide au diagnostic des pathologies tropicales. Résultats prometteurs sur des jeux de données internationaux.', rating: 4.9, ratingCount: 18, views: 890, downloads: 234 },
-  { id: 6, title: 'Réseaux 5G et couverture rurale', author: 'Dr. Hassan Al-Rashid', type: 'Mémoire', domain: 'Réseaux & Télécoms', language: 'English', region: 'Asie-Océanie', year: '2024', summary: 'Évaluation des stratégies de déploiement 5G pour les zones rurales. Comparaison Afrique, Asie et Amériques.', rating: 4.0, ratingCount: 6, views: 203, downloads: 56 },
-  { id: 7, title: 'Sécurité des systèmes d\'information de santé', author: 'Zainab Mohamed', type: 'Étude de cas', domain: 'Informatique', language: 'Français', region: 'Europe', year: '2023', summary: 'Audit de sécurité et recommandations pour les systèmes d\'information des établissements de santé.', rating: 4.3, ratingCount: 9, views: 412, downloads: 67 },
-  { id: 8, title: 'Partenariats académiques Nord-Sud', author: 'Jean-Pierre Dubois', type: 'Rapport', domain: 'Sciences économiques', language: 'Français', region: 'International', year: '2025', summary: 'Analyse des partenariats universitaires entre institutions africaines et européennes.', rating: 4.1, ratingCount: 11, views: 287, downloads: 43 },
-  { id: 9, title: 'Deep learning pour la reconnaissance des cultures', author: 'Dr. Marie Ntumba', type: 'Article', domain: 'IA & Data Science', language: 'English', region: 'Afrique', year: '2025', summary: 'Modèles de vision par ordinateur pour l\'identification des cultures à partir d\'images satellite.', rating: 4.7, ratingCount: 14, views: 445, downloads: 112 },
-  { id: 10, title: 'Épidémiologie des maladies vectorielles', author: 'Dr. David Tshimanga', type: 'Article', domain: 'Médecine & Santé', language: 'Français', region: 'Afrique', year: '2024', summary: 'Synthèse des données épidémiologiques sur le paludisme et la dengue en zone urbaine.', rating: 4.4, ratingCount: 19, views: 567, downloads: 145 },
-];
-
 const RESULTS_PER_PAGE = 10;
 
 function useDebounce(value, delay) {
@@ -71,7 +58,7 @@ export default function Librairie({ embedded = false }) {
   const [year, setYear] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
-  const [publicationsList, setPublicationsList] = useState(SAMPLE_PUBLICATIONS);
+  const [publicationsList, setPublicationsList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [favorites, setFavorites] = useState(new Set());
   const { user } = useAuth();

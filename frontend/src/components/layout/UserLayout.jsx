@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, Outlet, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { Navbar, Nav, Container, Button, Dropdown, Offcanvas, Form, InputGroup, ListGroup } from 'react-bootstrap';
 import {
-  Sun, Moon, LogOut, User, Bell, Search, LayoutDashboard, BookOpen, PlusCircle, FileText, Star, MessageCircle, Settings, Menu, Shield,
+  Sun, Moon, LogOut, User, Bell, Search, LayoutDashboard, BookOpen, PlusCircle, FileText, Star, MessageCircle, Menu, Shield,
 } from 'lucide-react';
 import { useTheme } from 'context/ThemeContext';
 import { useAuth } from 'context/AuthContext';

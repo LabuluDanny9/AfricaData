@@ -1,6 +1,5 @@
-import { Card, Table, Row, Col, Badge, Form } from 'react-bootstrap';
+import { Card, Table, Row, Col, Form } from 'react-bootstrap';
 import { CreditCard, TrendingUp, Clock, Calendar } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import './AdminPages.css';
 
 export default function AdminPayments() {

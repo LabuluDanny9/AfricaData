@@ -29,7 +29,7 @@ export default function AdminLayout() {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
-  const [notifications, setNotifications] = useState([]);
+  const [notifications] = useState([]);
   const [showOffcanvas, setShowOffcanvas] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
   // Notifications temps réel : installer socket.io-client et définir REACT_APP_SOCKET_URL pour activer

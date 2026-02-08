@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Card, Row, Col, Form, Button, Badge, Toast, ToastContainer } from 'react-bootstrap';
+import { Card, Row, Col, Form, Button, Toast, ToastContainer } from 'react-bootstrap';
 import { Lock, BookOpen, FileType, Tag, Wrench, Mail } from 'lucide-react';
 import { useAuth } from 'context/AuthContext';
 import { canChangeSettings } from 'lib/adminRoles';
