@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Table, Badge, Button, Modal } from 'react-bootstrap';
-import { FileText, Eye, AlertCircle } from 'lucide-react';
+import { FileText, Eye, AlertCircle, User } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from 'lib/supabase';
 import { useAuth } from 'context/AuthContext';
 import './MesPublications.css';
@@ -27,7 +27,7 @@ export default function MesPublications() {
     setLoading(true);
     supabase
       .from('publications')
-      .select('id, title, type, status, created_at, admin_comment')
+      .select('id, title, author, author_photo_url, type, status, created_at, admin_comment')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .then(({ data, error }) => {
@@ -35,6 +35,8 @@ export default function MesPublications() {
           setPublications(data.map((p) => ({
             id: p.id,
             title: p.title,
+            author: p.author ?? null,
+            author_photo_url: p.author_photo_url ?? null,
             type: p.type,
             status: p.status || 'draft',
             date: p.created_at?.slice(0, 10) || '',
@@ -69,6 +71,7 @@ export default function MesPublications() {
             <Table responsive hover className="mb-0 mes-publications-table">
               <thead>
                 <tr>
+                  <th>Auteur</th>
                   <th>Titre</th>
                   <th>Type</th>
                   <th>Statut</th>
@@ -81,6 +84,18 @@ export default function MesPublications() {
                   const statusInfo = STATUS_LABELS[pub.status] || STATUS_LABELS.pending;
                   return (
                     <tr key={pub.id}>
+                      <td>
+                        <div className="d-flex align-items-center gap-2">
+                          {pub.author_photo_url ? (
+                            <img src={pub.author_photo_url} alt="" className="rounded-circle object-fit-cover" style={{ width: 28, height: 28 }} />
+                          ) : (
+                            <span className="rounded-circle bg-secondary bg-opacity-25 d-inline-flex align-items-center justify-content-center" style={{ width: 28, height: 28 }}>
+                              <User size={14} className="text-secondary" />
+                            </span>
+                          )}
+                          <span className="small">{pub.author || '—'}</span>
+                        </div>
+                      </td>
                       <td>
                         <Link to={`/publication/${pub.id}`} className="fw-semibold text-body text-decoration-none">
                           {pub.title.length > 50 ? pub.title.slice(0, 50) + '…' : pub.title}

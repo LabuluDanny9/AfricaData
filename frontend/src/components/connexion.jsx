@@ -11,6 +11,7 @@ import {
   InputGroup,
   ListGroup,
   Badge,
+  Alert,
 } from 'react-bootstrap';
 import {
   LogIn,
@@ -166,6 +167,11 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
                       {/* Formulaire */}
                       <Col lg="7">
                         <Card.Body className="p-4 p-lg-5">
+                          {!isAdminLogin && location.state?.message && (
+                            <Alert variant="info" className="mb-3 mb-lg-4 small">
+                              {location.state.message}
+                            </Alert>
+                          )}
                           <Form onSubmit={handleSubmit} className="auth-form connexion-form">
                             {!isAdminLogin && (
                               <motion.div variants={itemVariants}>

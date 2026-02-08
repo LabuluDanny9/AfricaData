@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, Table, Badge, Spinner, Form, Button, Modal, Toast, ToastContainer } from 'react-bootstrap';
-import { BookOpen, Search, Edit2, ExternalLink, ArrowDownFromLine, Download } from 'lucide-react';
+import { BookOpen, Search, Edit2, ExternalLink, ArrowDownFromLine, Download, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getAllPublicationsForAdmin, updatePublicationStatus, updatePublicationMetadata } from 'services/admin';
 import { isSupabaseConfigured } from 'lib/supabase';
@@ -141,7 +141,18 @@ export default function AdminLibrary() {
                           {p.title?.length > 50 ? '…' : ''}
                         </Link>
                       </td>
-                      <td>{p.author || '—'}</td>
+                      <td>
+                        <div className="d-flex align-items-center gap-2">
+                          {p.author_photo_url ? (
+                            <img src={p.author_photo_url} alt="" className="rounded-circle object-fit-cover" style={{ width: 28, height: 28 }} />
+                          ) : (
+                            <span className="rounded-circle bg-secondary bg-opacity-25 d-inline-flex align-items-center justify-content-center" style={{ width: 28, height: 28 }}>
+                              <User size={14} className="text-secondary" />
+                            </span>
+                          )}
+                          <span>{p.author || '—'}</span>
+                        </div>
+                      </td>
                       <td><Badge bg="light" text="dark">{p.domain || '—'}</Badge></td>
                       <td className="small">{p.type || '—'}</td>
                       <td>{p.views ?? 0}</td>

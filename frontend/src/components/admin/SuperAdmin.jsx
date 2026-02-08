@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, Row, Col, Table, Badge, Tab, Tabs, Spinner, Alert, Button } from 'react-bootstrap';
-import { Users, Clock, CheckCircle } from 'lucide-react';
+import { Users, Clock, CheckCircle, User } from 'lucide-react';
 import { getAdminStats, getAllProfiles, getAllPublicationsForAdmin, updatePublicationStatus } from 'services/admin';
 import { useAuth } from 'context/AuthContext';
 import { isAdminRole, ROLE_LABELS } from 'lib/adminRoles';
@@ -160,7 +160,18 @@ export default function SuperAdmin() {
                             {p.title?.length > 50 ? '…' : ''}
                           </Link>
                         </td>
-                        <td>{p.author}</td>
+                        <td>
+                          <div className="d-flex align-items-center gap-2">
+                            {p.author_photo_url ? (
+                              <img src={p.author_photo_url} alt="" className="rounded-circle object-fit-cover" style={{ width: 28, height: 28 }} />
+                            ) : (
+                              <span className="rounded-circle bg-secondary bg-opacity-25 d-inline-flex align-items-center justify-content-center" style={{ width: 28, height: 28 }}>
+                                <User size={14} className="text-secondary" />
+                              </span>
+                            )}
+                            <span>{p.author || '—'}</span>
+                          </div>
+                        </td>
                         <td>{p.type}</td>
                         <td>{p.domain}</td>
                         <td>

@@ -82,6 +82,7 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
+  const [signupSuccessNeedsConfirm, setSignupSuccessNeedsConfirm] = useState(false);
   const navigate = useNavigate();
   const { user, setUser, authLoading: authLoadingContext } = useAuth();
 
@@ -95,6 +96,53 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
   if (user) {
     // Sur la plateforme (inscription), tout le monde va au tableau de bord utilisateur.
     return <Navigate to="/dashboard" replace />;
+  }
+
+  if (signupSuccessNeedsConfirm) {
+    return (
+      <div className="auth-page inscription-page min-vh-100 d-flex flex-column">
+        <AfricadataHeader />
+        <main className="auth-main inscription-main">
+          <Container className="w-100">
+            <Row className="justify-content-center">
+              <Col lg="6" xl="5">
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <Card className="auth-card border-0 shadow-lg overflow-hidden">
+                    <Card.Body className="p-4 p-lg-5 text-center">
+                      <div className="d-inline-flex align-items-center justify-content-center rounded-circle bg-success bg-opacity-10 text-success mb-3" style={{ width: 64, height: 64 }}>
+                        <Mail size={32} />
+                      </div>
+                      <h2 className="h5 fw-bold mb-3">Inscription enregistrée</h2>
+                      <p className="text-body-secondary mb-4">
+                        Rendez-vous sur votre <strong>boîte email</strong> pour confirmer votre adresse. Cliquez sur le lien reçu pour activer votre compte.
+                      </p>
+                      <p className="small text-body-secondary mb-4">
+                        Une fois l’email confirmé, cliquez sur le bouton ci-dessous pour vous connecter.
+                      </p>
+                      <Button
+                        as={Link}
+                        to="/connexion"
+                        variant="danger"
+                        size="lg"
+                        className="rounded-pill px-4 d-inline-flex align-items-center gap-2"
+                      >
+                        Se connecter
+                        <ArrowRight size={18} />
+                      </Button>
+                    </Card.Body>
+                  </Card>
+                </motion.div>
+              </Col>
+            </Row>
+          </Container>
+        </main>
+        <AfricadataFooter />
+      </div>
+    );
   }
 
   const handleSubmit = async (e) => {
@@ -127,9 +175,9 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
             const needsConfirm = /invalid login credentials|email not confirmed|confirm your email/i.test(msg);
             setAuthLoading(false);
             if (needsConfirm) {
-              navigate('/connexion', { replace: true, state: { message: 'Compte créé. Vérifiez votre boîte mail, confirmez votre email puis connectez-vous.' } });
+              setSignupSuccessNeedsConfirm(true);
             } else {
-              navigate('/connexion', { replace: true, state: { message: 'Compte créé. Connectez-vous pour accéder à votre tableau de bord.' } });
+              setSignupSuccessNeedsConfirm(true);
             }
             return;
           }
@@ -152,7 +200,7 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
           // Redirection directe vers le tableau de bord après mise à jour du contexte (setUser asynchrone)
           setTimeout(() => navigate('/dashboard', { replace: true }), 0);
         } else if (data?.user) {
-          navigate('/connexion', { replace: true, state: { message: 'Compte créé. Connectez-vous pour accéder à votre tableau de bord.' } });
+          setSignupSuccessNeedsConfirm(true);
         }
       } else {
         setAuthError('Inscription non configurée. En production : ajoutez REACT_APP_SUPABASE_URL et REACT_APP_SUPABASE_ANON_KEY dans les variables d\'environnement (Vercel/Netlify). Voir DEPLOIEMENT.md.');
@@ -160,7 +208,7 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
     } catch (err) {
       const msg = err?.message || '';
       if (/invalid login credentials|email not confirmed/i.test(msg)) {
-        setAuthError('Compte créé. Vérifiez votre boîte mail pour confirmer votre email, puis connectez-vous.');
+        setSignupSuccessNeedsConfirm(true);
       } else {
         setAuthError(msg || 'Inscription impossible. Réessayez.');
       }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, Table, Badge, Spinner, Alert, Button, Form, Modal, Toast, ToastContainer } from 'react-bootstrap';
-import { Search, Eye, CheckCircle, XCircle, Trash2, Download } from 'lucide-react';
+import { Search, Eye, CheckCircle, XCircle, Trash2, Download, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getAllPublicationsForAdmin, updatePublicationStatus, deletePublication } from 'services/admin';
 import { useAuth } from 'context/AuthContext';
@@ -150,7 +150,18 @@ export default function AdminPublications() {
                         {p.title?.length > 50 ? '…' : ''}
                       </Link>
                     </td>
-                    <td>{p.author || '—'}</td>
+                    <td>
+                      <div className="d-flex align-items-center gap-2">
+                        {p.author_photo_url ? (
+                          <img src={p.author_photo_url} alt="" className="rounded-circle object-fit-cover" style={{ width: 28, height: 28 }} />
+                        ) : (
+                          <span className="rounded-circle bg-secondary bg-opacity-25 d-inline-flex align-items-center justify-content-center" style={{ width: 28, height: 28 }}>
+                            <User size={14} className="text-secondary" />
+                          </span>
+                        )}
+                        <span>{p.author || '—'}</span>
+                      </div>
+                    </td>
                     <td>{p.domain || '—'}</td>
                     <td>{p.type || '—'}</td>
                     <td>

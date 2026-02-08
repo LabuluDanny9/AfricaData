@@ -108,7 +108,7 @@ export async function getAllPublicationsForAdmin() {
   if (!isSupabaseConfigured()) return { data: [], error: null };
   const { data, error } = await supabase
     .from('publications')
-    .select('id, title, author, type, domain, status, views, downloads, pdf_url, created_at')
+    .select('id, title, author, author_photo_url, type, domain, status, views, downloads, pdf_url, created_at')
     .order('created_at', { ascending: false });
   return { data: data || [], error };
 }
