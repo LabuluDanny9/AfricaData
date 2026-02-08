@@ -69,11 +69,18 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
-  const { user, setUser } = useAuth();
+  const { user, setUser, authLoading: authLoadingContext } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const isAdminLogin = location.pathname === '/connexion-admin';
 
+  if (authLoadingContext) {
+    return (
+      <div className="d-flex align-items-center justify-content-center min-vh-100">
+        <div className="spinner-border text-danger" role="status"><span className="visually-hidden">Chargement…</span></div>
+      </div>
+    );
+  }
   if (user) {
     // Depuis la plateforme : tout le monde (y compris admin) va au tableau de bord utilisateur.
     // Depuis /connexion-admin : l'admin va directement à l'interface superadmin.
@@ -100,15 +107,10 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
           const { data: profile } = await getProfile(uid);
           const role = profile?.role ?? 'chercheur';
           setUser({ ...baseUser, role });
-          // Connexion depuis /connexion-admin en tant qu'admin → interface superadmin.
-          // Sinon (plateforme ou non-admin) → tableau de bord utilisateur.
-          if (isAdminLogin && isAdminRole(role)) {
-            navigate('/superadmin', { replace: true });
-          } else if (isAdminLogin && !isAdminRole(role)) {
-            navigate('/dashboard', { replace: true, state: { message: 'Accès réservé aux administrateurs. Vous êtes connecté en tant qu\'utilisateur.' } });
-          } else {
-            navigate('/dashboard', { replace: true });
-          }
+          // Redirection après mise à jour du contexte (setUser asynchrone)
+          const redirectPath = isAdminLogin && isAdminRole(role) ? '/superadmin' : '/dashboard';
+          const redirectState = isAdminLogin && !isAdminRole(role) ? { message: 'Accès réservé aux administrateurs. Vous êtes connecté en tant qu\'utilisateur.' } : undefined;
+          setTimeout(() => navigate(redirectPath, { replace: true, state: redirectState }), 0);
         }
       } else {
         setAuthError('Connexion email non configurée. Configurez Supabase (voir .env.example).');

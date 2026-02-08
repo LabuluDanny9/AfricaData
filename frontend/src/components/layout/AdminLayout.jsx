@@ -26,7 +26,7 @@ const SIDEBAR_SECTIONS = [
 ];
 
 export default function AdminLayout() {
-  const { user, logout } = useAuth();
+  const { user, logout, authLoading } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const [notifications] = useState([]);
@@ -34,6 +34,13 @@ export default function AdminLayout() {
   const [toast, setToast] = useState({ show: false, message: '', type: 'info' });
   // Notifications temps réel : installer socket.io-client et définir REACT_APP_SOCKET_URL pour activer
 
+  if (authLoading) {
+    return (
+      <div className="d-flex align-items-center justify-content-center min-vh-100">
+        <div className="spinner-border text-danger" role="status"><span className="visually-hidden">Chargement…</span></div>
+      </div>
+    );
+  }
   if (!user) {
     return <Navigate to="/connexion-admin" replace />;
   }

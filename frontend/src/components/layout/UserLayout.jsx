@@ -25,7 +25,7 @@ const SIDEBAR_LINKS = [
 
 export default function UserLayout() {
   const { theme, toggleTheme } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, logout, authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -79,6 +79,13 @@ export default function UserLayout() {
     if (searchQuery.trim()) navigate(`/librairie?search=${encodeURIComponent(searchQuery.trim())}`);
   };
 
+  if (authLoading) {
+    return (
+      <div className="d-flex align-items-center justify-content-center min-vh-100">
+        <div className="spinner-border text-danger" role="status"><span className="visually-hidden">Chargement…</span></div>
+      </div>
+    );
+  }
   if (!user) {
     return <Navigate to="/connexion" replace />;
   }

@@ -161,8 +161,17 @@ export default function PublicationDetails() {
               {publication.language && <Badge bg="info" className="publication-details-badge">{publication.language}</Badge>}
               {publication.region && <Badge bg="light" text="dark" className="publication-details-badge">{publication.region}</Badge>}
             </div>
-            <div className="publication-details-meta text-body-secondary small d-flex flex-wrap gap-3">
-              <span className="d-flex align-items-center gap-1"><User size={14} /> {publication.author}</span>
+            <div className="publication-details-meta text-body-secondary small d-flex flex-wrap gap-3 align-items-center">
+              <span className="d-flex align-items-center gap-2">
+                {publication.author_photo_url ? (
+                  <img src={publication.author_photo_url} alt="" className="rounded-circle object-fit-cover" style={{ width: 32, height: 32 }} />
+                ) : (
+                  <span className="rounded-circle bg-secondary bg-opacity-25 d-inline-flex align-items-center justify-content-center" style={{ width: 32, height: 32 }}>
+                    <User size={16} className="text-secondary" />
+                  </span>
+                )}
+                {publication.author}
+              </span>
               <span className="d-flex align-items-center gap-1"><Calendar size={14} /> {publication.year}</span>
               <span className="d-flex align-items-center gap-1"><Eye size={14} /> {publication.views ?? 0} vues</span>
               <span className="d-flex align-items-center gap-1"><Download size={14} /> {publication.downloads ?? 0} téléchargements</span>

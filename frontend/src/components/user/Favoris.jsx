@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Row, Col, Button, Badge } from 'react-bootstrap';
-import { Star, BookOpen, Download } from 'lucide-react';
+import { Star, BookOpen, Download, User } from 'lucide-react';
 import RatingStars from 'components/ui/RatingStars';
 import { getFavorites, getPublications, toggleFavorite } from 'services/publications';
 import { useAuth } from 'context/AuthContext';
@@ -100,7 +100,16 @@ export default function Favoris() {
                   <Card.Title as={Link} to={`/publication/${pub.id}`} className="h6 fw-semibold text-body text-decoration-none d-block mb-2">
                     {pub.title?.length > 60 ? pub.title.slice(0, 60) + '…' : pub.title}
                   </Card.Title>
-                  <p className="small text-body-secondary mb-2">{pub.author} · {pub.year}</p>
+                  <div className="d-flex align-items-center gap-2 small text-body-secondary mb-2">
+                    {pub.author_photo_url ? (
+                      <img src={pub.author_photo_url} alt="" className="rounded-circle object-fit-cover" style={{ width: 24, height: 24 }} />
+                    ) : (
+                      <span className="rounded-circle bg-secondary bg-opacity-25 d-inline-flex align-items-center justify-content-center" style={{ width: 24, height: 24 }}>
+                        <User size={12} className="text-secondary" />
+                      </span>
+                    )}
+                    <span>{pub.author} · {pub.year}</span>
+                  </div>
                   <div className="d-flex align-items-center gap-2 small text-body-secondary mb-3">
                     <RatingStars value={pub.rating ?? 0} count={pub.ratingCount ?? 0} size={14} />
                     <span>{pub.views ?? 0} vues · {pub.downloads ?? 0} téléch.</span>

@@ -83,8 +83,15 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const navigate = useNavigate();
-  const { user, setUser } = useAuth();
+  const { user, setUser, authLoading: authLoadingContext } = useAuth();
 
+  if (authLoadingContext) {
+    return (
+      <div className="d-flex align-items-center justify-content-center min-vh-100">
+        <div className="spinner-border text-danger" role="status"><span className="visually-hidden">Chargement…</span></div>
+      </div>
+    );
+  }
   if (user) {
     // Sur la plateforme (inscription), tout le monde va au tableau de bord utilisateur.
     return <Navigate to="/dashboard" replace />;
@@ -142,8 +149,8 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
             userRole = role;
           }
           setUser({ ...baseUser, role: userRole });
-          // Inscription valide → redirection directe vers le tableau de bord utilisateur
-          navigate('/dashboard', { replace: true });
+          // Redirection directe vers le tableau de bord après mise à jour du contexte (setUser asynchrone)
+          setTimeout(() => navigate('/dashboard', { replace: true }), 0);
         } else if (data?.user) {
           navigate('/connexion', { replace: true, state: { message: 'Compte créé. Connectez-vous pour accéder à votre tableau de bord.' } });
         }

@@ -98,7 +98,26 @@ Les prochains push sur la branche connectée déclencheront un nouveau déploiem
 
 ---
 
-## 4. Supabase (Auth, URLs de redirection)
+## 4. Activer l'inscription (Supabase)
+
+Pour que les utilisateurs puissent **s'inscrire** (email ou Google), vérifiez dans **Supabase Dashboard** :
+
+1. **Authentication** → **Providers** → **Email**  
+   - Le fournisseur **Email** doit être **activé** (Enable).  
+   - **Enable email signup** doit être **activé** (cocher / laisser activé). Si cette option est désactivée, les inscriptions par email sont bloquées.
+
+2. **Authentication** → **Providers** → **Google** (optionnel)  
+   - Activez le fournisseur et renseignez Client ID + Client Secret (voir **backend/supabase/GOOGLE-AUTH-SETUP.md**).
+
+3. **Authentication** → **URL Configuration**  
+   - **Site URL** = l’URL de votre site (ex. `https://xxx.vercel.app`).  
+   - **Redirect URLs** = ajoutez `https://xxx.vercel.app` et `https://xxx.vercel.app/dashboard`.
+
+Sans ces réglages, l’inscription peut être refusée ou la redirection après inscription peut échouer.
+
+---
+
+## 5. Supabase (Auth, URLs de redirection)
 
 Après mise en ligne, dans **Supabase Dashboard** :
 
@@ -140,6 +159,7 @@ Cela signifie que les variables Supabase **ne sont pas définies** sur Vercel (o
 | « Invalid login credentials » juste après l’inscription | Souvent dû à la **confirmation email** activée dans Supabase : le compte est créé mais la connexion automatique échoue. Le site affiche maintenant un message clair et redirige vers la page connexion. L’utilisateur doit confirmer son email (lien dans la boîte mail) puis se connecter. Pour éviter cette étape : Supabase → **Authentication** → **Providers** → **Email** → désactiver **Confirm email**. |
 | « Compte créé. Confirmez votre email » puis rien | Normal si la **confirmation email** est activée. L’utilisateur doit cliquer sur le lien dans l’email. Vérifiez que **Site URL** dans Supabase pointe vers votre site en prod (sinon le lien de confirmation peut renvoyer vers localhost). |
 | Connexion Google ne marche pas en prod | **Google Cloud Console** → **APIs & Services** → **Credentials** → votre client OAuth. Dans **Authorized JavaScript origins**, ajoutez l’URL de production (ex. `https://xxx.vercel.app`). Dans **Authorized redirect URIs**, gardez exactement l’URL de callback Supabase (voir **Supabase** → **Authentication** → **Providers** → **Google**). Voir aussi **backend/supabase/GOOGLE-AUTH-SETUP.md**. |
+| Inscription refusée ou « Signup disabled » | Dans **Supabase** → **Authentication** → **Providers** → **Email**, activez **Enable email signup** (autoriser les inscriptions par email). |
 
 ---
 

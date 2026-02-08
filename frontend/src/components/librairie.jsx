@@ -13,7 +13,7 @@ import {
   Badge,
   Pagination,
 } from 'react-bootstrap';
-import { Search, Filter, Star, BookOpen, Download, X, Eye, TrendingUp } from 'lucide-react';
+import { Search, Filter, Star, BookOpen, Download, X, Eye, TrendingUp, User } from 'lucide-react';
 import AfricadataHeader from 'components/layout/AfricadataHeader';
 import AfricadataFooter from 'components/layout/AfricadataFooter';
 import RatingStars from 'components/ui/RatingStars';
@@ -318,7 +318,16 @@ export default function Librairie({ embedded = false }) {
                           <div className="d-flex align-items-center gap-2 mb-2">
                             <RatingStars value={pub.rating ?? 0} count={pub.ratingCount ?? 0} size={14} />
                           </div>
-                          <p className="small text-body-secondary mb-1">{pub.author}</p>
+                          <div className="d-flex align-items-center gap-2 small text-body-secondary mb-1">
+                            {pub.author_photo_url ? (
+                              <img src={pub.author_photo_url} alt="" className="rounded-circle object-fit-cover" style={{ width: 28, height: 28 }} />
+                            ) : (
+                              <span className="rounded-circle bg-secondary bg-opacity-25 d-inline-flex align-items-center justify-content-center" style={{ width: 28, height: 28 }}>
+                                <User size={14} className="text-secondary" />
+                              </span>
+                            )}
+                            <span>{pub.author}</span>
+                          </div>
                           <p className="small text-body-secondary mb-1">{pub.domain}{pub.region ? ` · ${pub.region}` : ''} · {pub.year}</p>
                           <p className="small text-body-secondary librairie-card-summary">{truncate(pub.summary)}</p>
                           <div className="d-flex align-items-center gap-3 mt-2 small text-body-secondary">

@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from 'lib/supabase';
+import { getProfile } from 'services/profile';
 
 function mapPublication(row) {
   if (!row) return null;
@@ -6,6 +7,7 @@ function mapPublication(row) {
     id: row.id,
     title: row.title,
     author: row.author,
+    author_photo_url: row.author_photo_url || null,
     type: row.type,
     domain: row.domain,
     language: row.language || null,
@@ -231,16 +233,44 @@ export async function uploadPublicationPdf(file, userId = 'anonymous') {
   return { data: urlData?.publicUrl ?? null, error: null };
 }
 
+/**
+ * Upload la photo de l'auteur (optionnel). Stocke dans le bucket publications, chemin author-photos/.
+ * @param {File} file - Image (JPEG, PNG, WebP)
+ * @param {string} [userId] - ID utilisateur pour le chemin
+ * @returns {{ data: string | null, error: Error | null }}
+ */
+export async function uploadAuthorPhoto(file, userId = 'anonymous') {
+  if (!isSupabaseConfigured()) return { data: null, error: new Error('Supabase non configuré.') };
+  const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+  if (!file || !allowed.includes(file.type)) {
+    return { data: null, error: new Error('Format accepté : JPG, PNG ou WebP.') };
+  }
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+  const path = `author-photos/${userId}/${Date.now()}-author.${ext}`;
+  const { data: uploadData, error: uploadError } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (uploadError) return { data: null, error: uploadError };
+  const { data: urlData } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(uploadData.path);
+  return { data: urlData?.publicUrl ?? null, error: null };
+}
+
 export async function createPublication(payload) {
   if (!isSupabaseConfigured()) return { data: null, error: new Error('Supabase non configuré.') };
   const { data: { user } } = await supabase.auth.getUser();
   const status = payload.status === 'published' ? 'published' : 'draft';
+  let authorPhotoUrl = payload.author_photo_url || null;
+  if (!authorPhotoUrl && user?.id) {
+    const { data: profile } = await getProfile(user.id);
+    authorPhotoUrl = profile?.avatar_url || null;
+  }
   const { data, error } = await supabase
     .from('publications')
     .insert({
       user_id: user?.id ?? null,
       title: payload.title,
       author: payload.author,
+      author_photo_url: authorPhotoUrl,
       type: payload.type || 'Article',
       domain: payload.domain || 'Sciences économiques',
       language: payload.language || null,

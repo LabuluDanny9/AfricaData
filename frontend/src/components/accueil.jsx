@@ -345,7 +345,18 @@ function Accueil() {
                     {pub.title}
                   </Link>
                   <div className="d-flex flex-wrap align-items-center gap-3 small text-body-secondary">
-                    {pub.author && <span className="d-flex align-items-center gap-1"><User size={14} /> {pub.author}</span>}
+                    {pub.author && (
+                      <span className="d-flex align-items-center gap-2">
+                        {pub.author_photo_url ? (
+                          <img src={pub.author_photo_url} alt="" className="rounded-circle object-fit-cover" style={{ width: 24, height: 24 }} />
+                        ) : (
+                          <span className="rounded-circle bg-secondary bg-opacity-25 d-inline-flex align-items-center justify-content-center" style={{ width: 24, height: 24 }}>
+                            <User size={12} className="text-secondary" />
+                          </span>
+                        )}
+                        {pub.author}
+                      </span>
+                    )}
                     <span className="d-flex align-items-center gap-1"><Calendar size={14} /> {pub.created_at ? new Date(pub.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : pub.year}</span>
                     <span className="d-flex align-items-center gap-1"><Eye size={14} /> {pub.views ?? 0}</span>
                     <span className="d-flex align-items-center gap-1"><Download size={14} /> {pub.downloads ?? 0}</span>

@@ -196,6 +196,9 @@ export default function Profil() {
             <Card.Body className="p-4">
               {/* Bloc photo + identité visuelle */}
               <div className="profil-hero text-center mb-4">
+                <p className="small text-body-secondary mb-2">
+                  Photo de profil (utilisée par défaut comme photo auteur sur vos publications)
+                </p>
                 <div
                   className="profil-avatar-wrap position-relative d-inline-block"
                   onClick={() => fileInputRef.current?.click()}

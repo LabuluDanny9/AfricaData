@@ -33,17 +33,23 @@ async function userWithProfile(session) {
 
 export function AuthProvider({ children }) {
   const [user, setUserState] = useState(null);
+  const [authLoading, setAuthLoading] = useState(!!isSupabaseConfigured());
 
   useEffect(() => {
     if (isSupabaseConfigured()) {
-      getSession().then(({ data: { session } }) => {
-        userWithProfile(session).then(setUserState);
-      });
+      getSession()
+        .then((res) => {
+          const session = res?.data?.session ?? null;
+          return userWithProfile(session).then(setUserState);
+        })
+        .catch(() => setUserState(null))
+        .finally(() => setAuthLoading(false));
       const unsubscribe = onAuthStateChange((_event, session) => {
         userWithProfile(session).then(setUserState);
       });
       return unsubscribe;
     }
+    setAuthLoading(false);
     try {
       const stored = localStorage.getItem(AUTH_STORAGE_KEY);
       if (stored) setUserState(JSON.parse(stored));
@@ -68,7 +74,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, logout }}>
+    <AuthContext.Provider value={{ user, setUser, logout, authLoading }}>
       {children}
     </AuthContext.Provider>
   );

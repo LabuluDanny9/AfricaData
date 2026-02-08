@@ -7,16 +7,16 @@ import AfricadataHeader from 'components/layout/AfricadataHeader';
 export default function About() {
   const team = [
     {
-      name: 'PHD. ROGER',
+      name: 'HERVE DUBOIS',
       role: 'Fondateur & Directeur',
       bio: 'Expert en systèmes d\'information scientifique',
-      image: '/roger.png'
+      image: null
     },
     {
-      name: 'Prof. ROGER',
+      name: 'CEDRIC DE SABRE',
       role: 'Directeur Salle du Numérique UNILU',
       bio: 'Chercheur en données ouvertes',
-      image: '/roger.png'
+      image: null
     },
     {
       name: 'RACHEL',
@@ -258,14 +258,14 @@ export default function About() {
                 <div key={idx} className="africadata-card text-center">
                   <div className="mb-4 flex justify-center">
                     {member.image ? (
-                      <img src={member.image} alt={member.name} className="rounded-full object-cover w-14 h-14 md:w-16 md:h-16" />
+                      <img src={member.image} alt={member.name} className="rounded-full object-cover w-12 h-12 md:w-14 md:h-14" />
                     ) : (
-                      <div className="rounded-full bg-muted/50 flex items-center justify-center text-muted w-14 h-14 md:w-16 md:h-16">
+                      <div className="rounded-full bg-muted/50 flex items-center justify-center text-muted w-12 h-12 md:w-14 md:h-14">
                         <Users className="w-6 h-6 md:w-7 md:h-7" />
                       </div>
                     )}
                   </div>
-                  <h3 className="text-lg font-bold mb-1">{member.name}</h3>
+                  <h3 className="text-lg font-bold mb-1 text-black">{member.name}</h3>
                   <p className="text-sm text-primary font-semibold mb-2">{member.role}</p>
                   <p className="text-sm text-muted-foreground">{member.bio}</p>
                 </div>

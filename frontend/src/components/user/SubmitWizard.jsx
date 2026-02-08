@@ -3,8 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Card, Form, Button, Row, Col, Nav, InputGroup, OverlayTrigger, Tooltip, Toast, ToastContainer, Spinner, Badge, Modal,
 } from 'react-bootstrap';
-import { FileText, GraduationCap, Upload, CreditCard, Info, CheckCircle2 } from 'lucide-react';
-import { createPublication, uploadPublicationPdf } from 'services/publications';
+import { FileText, GraduationCap, Upload, CreditCard, Info, CheckCircle2, User } from 'lucide-react';
+import { createPublication, uploadPublicationPdf, uploadAuthorPhoto } from 'services/publications';
 import { checkWaiverCode, consumeWaiverCode } from 'services/waiverCodes';
 import { useAuth } from 'context/AuthContext';
 import { isAdminRole } from 'lib/adminRoles';
@@ -94,6 +94,8 @@ export default function SubmitWizard() {
   const [pdfFile, setPdfFile] = useState(null);
   const [uploadingPdf, setUploadingPdf] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [authorPhotoFile, setAuthorPhotoFile] = useState(null);
+  const [authorPhotoPreview, setAuthorPhotoPreview] = useState(null);
   const [waiverCodeInput, setWaiverCodeInput] = useState('');
   const [waiverCodeValid, setWaiverCodeValid] = useState(null);
   const [waiverCodeChecking, setWaiverCodeChecking] = useState(false);
@@ -204,10 +206,17 @@ export default function SubmitWizard() {
           const { success, error: useErr } = await consumeWaiverCode(waiverCodeInput.trim());
           if (!success || useErr) throw new Error(useErr?.message || 'Code déjà utilisé ou invalide.');
         }
+        let authorPhotoUrl = null;
+        if (authorPhotoFile) {
+          const { data: photoUrl, error: photoErr } = await uploadAuthorPhoto(authorPhotoFile, user?.id);
+          if (photoErr) throw photoErr;
+          authorPhotoUrl = photoUrl || null;
+        }
         const status = isAdmin && submitAsPublished ? 'published' : 'draft';
         const { data, error: err } = await createPublication({
           title: form.title.trim(),
           author: user?.name || form.studentName || 'Anonyme',
+          author_photo_url: authorPhotoUrl,
           type: form.type,
           domain: form.domain,
           year: form.year,
@@ -447,6 +456,34 @@ export default function SubmitWizard() {
                   </Form.Group>
                 </Col>
               </Row>
+              <Form.Group className="mb-3">
+                <Form.Label className="d-flex align-items-center gap-2">
+                  <User size={18} /> Photo de l'auteur <span className="text-muted small">(optionnel)</span>
+                </Form.Label>
+                <Form.Control
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) {
+                      setAuthorPhotoFile(f);
+                      setAuthorPhotoPreview(URL.createObjectURL(f));
+                    } else {
+                      setAuthorPhotoFile(null);
+                      if (authorPhotoPreview) URL.revokeObjectURL(authorPhotoPreview);
+                      setAuthorPhotoPreview(null);
+                    }
+                    e.target.value = '';
+                  }}
+                  className="submit-wizard-input"
+                />
+                {authorPhotoPreview && (
+                  <div className="mt-2 d-flex align-items-center gap-2">
+                    <img src={authorPhotoPreview} alt="Aperçu auteur" className="rounded-circle object-fit-cover" style={{ width: 40, height: 40 }} />
+                    <Button type="button" variant="outline-secondary" size="sm" onClick={() => { setAuthorPhotoFile(null); URL.revokeObjectURL(authorPhotoPreview); setAuthorPhotoPreview(null); }}>Retirer</Button>
+                  </div>
+                )}
+              </Form.Group>
             </div>
           )}
 
