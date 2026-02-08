@@ -22,6 +22,59 @@ function mapPublication(row) {
   };
 }
 
+/**
+ * Statistiques publiques pour l'accueil (sans auth).
+ * Retourne les comptes réels : publications publiées, utilisateurs, vues, téléchargements.
+ */
+export async function getPublicStats() {
+  if (!isSupabaseConfigured()) return { data: null, error: null };
+  const [pubsCountRes, profilesRes, viewsRes] = await Promise.all([
+    supabase.from('publications').select('id', { count: 'exact', head: true }).eq('status', 'published'),
+    supabase.from('profiles').select('id', { count: 'exact', head: true }),
+    supabase.from('publications').select('views, downloads').eq('status', 'published'),
+  ]);
+  const totalViews = (viewsRes.data || []).reduce((acc, p) => acc + (Number(p.views) || 0), 0);
+  const totalDownloads = (viewsRes.data || []).reduce((acc, p) => acc + (Number(p.downloads) || 0), 0);
+  return {
+    data: {
+      publicationsCount: pubsCountRes.count ?? 0,
+      usersCount: profilesRes.count ?? 0,
+      totalViews,
+      totalDownloads,
+    },
+    error: pubsCountRes.error || profilesRes.error || viewsRes.error,
+  };
+}
+
+/**
+ * Statistiques de l'utilisateur connecté : mes publications (par statut) et favoris.
+ */
+export async function getMyPublicationStats(userId) {
+  if (!isSupabaseConfigured() || !userId) return { data: null, error: null };
+  const [myPubsRes, favRes] = await Promise.all([
+    supabase.from('publications').select('id, status').eq('user_id', userId),
+    supabase.from('favorites').select('publication_id', { count: 'exact', head: true }).eq('user_id', userId),
+  ]);
+  const myPubs = myPubsRes.data || [];
+  const total = myPubs.length;
+  const draft = myPubs.filter((p) => p.status === 'draft').length;
+  const published = myPubs.filter((p) => p.status === 'published').length;
+  const rejected = myPubs.filter((p) => p.status === 'rejected').length;
+  const inReview = myPubs.filter((p) => p.status !== 'draft' && p.status !== 'published' && p.status !== 'rejected').length;
+  const inAnalysis = draft + inReview;
+  return {
+    data: {
+      total,
+      draft,
+      published,
+      rejected,
+      inAnalysis: inAnalysis || (total - published - rejected),
+      favoritesCount: favRes.count ?? 0,
+    },
+    error: myPubsRes.error || favRes.error,
+  };
+}
+
 export async function getPublications(filters = {}) {
   if (!isSupabaseConfigured()) return { data: null, error: null };
 

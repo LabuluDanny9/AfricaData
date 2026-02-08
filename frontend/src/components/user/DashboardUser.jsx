@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Card, Row, Col, ListGroup, ProgressBar, Alert, Spinner } from 'react-bootstrap';
 import { FileText, Clock, CheckCircle, Star, ArrowRight, PlusCircle, BookOpen } from 'lucide-react';
-import { getMyPublicationStats } from 'services/publications';
+import { getMyPublicationStats } from '../../services/publications';
 import { useAuth } from 'context/AuthContext';
 import { isSupabaseConfigured } from 'lib/supabase';
 import { supabase } from 'lib/supabase';
