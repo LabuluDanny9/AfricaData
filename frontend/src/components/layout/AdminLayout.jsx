@@ -8,6 +8,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useAuth } from 'context/AuthContext';
 import { useTheme } from 'context/ThemeContext';
+import { AdminDataProvider } from 'context/AdminDataContext';
 import { isAdminRole, canAccess, ROLE_LABELS } from 'lib/adminRoles';
 import AdminBreadcrumb from 'components/admin/AdminBreadcrumb';
 import './AdminLayout.css';
@@ -62,6 +63,7 @@ export default function AdminLayout() {
   const visibleSections = SIDEBAR_SECTIONS.filter((s) => canAccess(user.role, s.section));
 
   return (
+    <AdminDataProvider>
     <div className="admin-layout d-flex min-vh-100">
       {/* Sidebar desktop */}
       <aside className="admin-sidebar d-none d-lg-flex flex-column">
@@ -218,5 +220,6 @@ export default function AdminLayout() {
         </Toast>
       </ToastContainer>
     </div>
+    </AdminDataProvider>
   );
 }
