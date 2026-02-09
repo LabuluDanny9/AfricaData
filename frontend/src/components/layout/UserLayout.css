@@ -45,10 +45,18 @@
   font-size: 0.9375rem;
 }
 
-.user-sidebar-item:hover,
+.user-sidebar-item:hover {
+  background: rgba(196, 30, 58, 0.08) !important;
+  color: var(--bs-body-color);
+}
+
+/* Section active (page en cours) : toujours en rouge */
 .user-sidebar-item.active {
-  background: rgba(196, 30, 58, 0.1) !important;
-  color: var(--bs-danger);
+  background: rgba(196, 30, 58, 0.15) !important;
+  color: var(--bs-danger) !important;
+  font-weight: 600 !important;
+  border-left: 3px solid var(--bs-danger);
+  padding-left: calc(1rem - 3px) !important;
 }
 
 .user-main {

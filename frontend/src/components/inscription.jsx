@@ -123,11 +123,11 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
                         {t('auth.signupSuccessMessage')}
                       </p>
                       <p className="small text-body-secondary mb-4">
-                        Une fois l’email confirmé, cliquez sur le bouton ci-dessous pour vous connecter.
+                        Une fois l’email confirmé, cliquez sur le bouton {t('auth.signupSuccessNext')}
                       </p>
                       <Button
                         as={Link}
-                        to="/connexion"
+                        to={{ pathname: '/connexion', state: { fromSignup: true, message: t('auth.signupSuccessMessage') } }}
                         variant="danger"
                         size="lg"
                         className="rounded-pill px-4 d-inline-flex align-items-center gap-2"
@@ -165,25 +165,20 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
         });
         setAuthError('');
         const uid = data?.user?.id;
-        let session = data?.session;
-        // Si pas de session (confirmation email activée dans Supabase), tenter une connexion automatique
+        const session = data?.session;
+
+        // Confirmation email activée dans Supabase : pas de session → on affiche le message
+        // "Rendez-vous sur votre boîte email, puis cliquez sur Se connecter" (sans tenter de connexion auto)
         if (data?.user && !session) {
+          setAuthLoading(false);
+          setSignupSuccessNeedsConfirm(true);
           try {
-            const signInRes = await signIn({ email: email.trim(), password });
-            session = signInRes?.session;
-          } catch (signInErr) {
-            // "Invalid login credentials" ou "Email not confirmed" = email à confirmer
-            const msg = signInErr?.message || '';
-            const needsConfirm = /invalid login credentials|email not confirmed|confirm your email/i.test(msg);
-            setAuthLoading(false);
-            if (needsConfirm) {
-              setSignupSuccessNeedsConfirm(true);
-            } else {
-              setSignupSuccessNeedsConfirm(true);
-            }
-            return;
-          }
+            sessionStorage.setItem('africadata-signup-pending-confirm', '1');
+          } catch (_) {}
+          return;
         }
+
+        // Pas de confirmation email : session présente → connexion directe et redirection
         if (uid && session) {
           const baseUser = {
             id: uid,
@@ -199,18 +194,25 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
             userRole = role;
           }
           setUser({ ...baseUser, role: userRole });
-          // Redirection directe vers le tableau de bord après mise à jour du contexte (setUser asynchrone)
           setTimeout(() => navigate('/dashboard', { replace: true }), 0);
         } else if (data?.user) {
+          setAuthLoading(false);
           setSignupSuccessNeedsConfirm(true);
+          try {
+            sessionStorage.setItem('africadata-signup-pending-confirm', '1');
+          } catch (_) {}
+          return;
         }
       } else {
         setAuthError('Inscription non configurée. En production : ajoutez REACT_APP_SUPABASE_URL et REACT_APP_SUPABASE_ANON_KEY dans les variables d\'environnement (Vercel/Netlify). Voir DEPLOIEMENT.md.');
       }
     } catch (err) {
       const msg = err?.message || '';
-      if (/invalid login credentials|email not confirmed/i.test(msg)) {
+      if (/invalid login credentials|email not confirmed|confirm your email|signup/i.test(msg)) {
         setSignupSuccessNeedsConfirm(true);
+        try {
+          sessionStorage.setItem('africadata-signup-pending-confirm', '1');
+        } catch (_) {}
       } else {
         setAuthError(msg || 'Inscription impossible. Réessayez.');
       }

@@ -146,15 +146,20 @@
   color: #fff;
 }
 
+/* Section active (page en cours) : toujours en rouge */
 .admin-sidebar-item.active {
-  background: rgba(220, 53, 69, 0.25) !important;
-  color: #ff6b7a !important;
-  font-weight: 600;
+  background: rgba(220, 53, 69, 0.2) !important;
+  color: var(--bs-danger) !important;
+  font-weight: 700 !important;
+  border-left: 3px solid var(--bs-danger);
+  padding-left: calc(1rem - 3px) !important;
 }
 
 [data-bs-theme="dark"] .admin-sidebar-item.active {
-  background: rgba(220, 53, 69, 0.25) !important;
+  background: rgba(220, 53, 69, 0.3) !important;
   color: #ff6b7a !important;
+  font-weight: 700 !important;
+  border-left: 3px solid #ff6b7a;
 }
 
 /* ----- Main ----- */

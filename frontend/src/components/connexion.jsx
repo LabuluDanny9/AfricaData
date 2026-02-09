@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -72,10 +72,27 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
+  const [signupConfirmMessage, setSignupConfirmMessage] = useState(null);
   const { user, setUser, authLoading: authLoadingContext } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const isAdminLogin = location.pathname === '/connexion-admin';
+
+  // Message de confirmation après inscription : state de la navigation ou sessionStorage (secours)
+  useEffect(() => {
+    const fromState = location.state?.message;
+    if (fromState) {
+      setSignupConfirmMessage(fromState);
+      return;
+    }
+    try {
+      if (sessionStorage.getItem('africadata-signup-pending-confirm') === '1') {
+        sessionStorage.removeItem('africadata-signup-pending-confirm');
+        setSignupConfirmMessage(t('auth.signupSuccessMessage'));
+      }
+    } catch (_) {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state?.message]);
 
   if (authLoadingContext) {
     return (
@@ -167,9 +184,9 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
                       {/* Formulaire */}
                       <Col lg="7">
                         <Card.Body className="p-4 p-lg-5">
-                          {!isAdminLogin && location.state?.message && (
+                          {!isAdminLogin && signupConfirmMessage && (
                             <Alert variant="info" className="mb-3 mb-lg-4 small">
-                              {location.state.message}
+                              {signupConfirmMessage}
                             </Alert>
                           )}
                           <Form onSubmit={handleSubmit} className="auth-form connexion-form">
