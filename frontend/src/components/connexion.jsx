@@ -190,21 +190,20 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
                             </Alert>
                           )}
                           <Form onSubmit={handleSubmit} className="auth-form connexion-form">
-                            {!isAdminLogin && (
-                              <motion.div variants={itemVariants}>
-                                <Button
-                                  type="button"
-                                  variant="light"
-                                  size="lg"
-                                  className="w-100 auth-google-btn mb-2"
-                                  onClick={onGoogleAuth}
-                                  disabled={googleLoading}
-                                >
-                                  <GoogleIcon size={22} />
-                                  {googleLoading ? t('auth.signingIn') : t('auth.signInWithGoogle')}
-                                </Button>
-                              </motion.div>
-                            )}
+                            {/* Connexion Google directement (utilisateur et admin) */}
+                            <motion.div variants={itemVariants}>
+                              <Button
+                                type="button"
+                                variant="light"
+                                size="lg"
+                                className="w-100 auth-google-btn mb-2"
+                                onClick={onGoogleAuth}
+                                disabled={googleLoading}
+                              >
+                                <GoogleIcon size={22} />
+                                {googleLoading ? t('auth.signingIn') : t('auth.signInWithGoogle')}
+                              </Button>
+                            </motion.div>
                             {isAdminLogin && (
                               <motion.div variants={itemVariants}>
                                 <p className="small text-body-secondary mb-2">

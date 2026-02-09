@@ -84,7 +84,7 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
-  const [signupSuccessNeedsConfirm, setSignupSuccessNeedsConfirm] = useState(false);
+  const [signupSuccessNeedsConfirm] = useState(false); // après inscription on redirige vers /connexion, ce bloc n'est plus affiché
   const navigate = useNavigate();
   const { user, setUser, authLoading: authLoadingContext } = useAuth();
 
@@ -167,14 +167,13 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
         const uid = data?.user?.id;
         const session = data?.session;
 
-        // Confirmation email activée dans Supabase : pas de session → on affiche le message
-        // "Rendez-vous sur votre boîte email, puis cliquez sur Se connecter" (sans tenter de connexion auto)
+        // Confirmation email activée dans Supabase : pas de session → redirection vers la page de connexion avec le message
         if (data?.user && !session) {
           setAuthLoading(false);
-          setSignupSuccessNeedsConfirm(true);
           try {
             sessionStorage.setItem('africadata-signup-pending-confirm', '1');
           } catch (_) {}
+          navigate('/connexion', { replace: true, state: { message: t('auth.signupSuccessMessage') } });
           return;
         }
 
@@ -197,10 +196,10 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
           setTimeout(() => navigate('/dashboard', { replace: true }), 0);
         } else if (data?.user) {
           setAuthLoading(false);
-          setSignupSuccessNeedsConfirm(true);
           try {
             sessionStorage.setItem('africadata-signup-pending-confirm', '1');
           } catch (_) {}
+          navigate('/connexion', { replace: true, state: { message: t('auth.signupSuccessMessage') } });
           return;
         }
       } else {
@@ -209,10 +208,10 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
     } catch (err) {
       const msg = err?.message || '';
       if (/invalid login credentials|email not confirmed|confirm your email|signup/i.test(msg)) {
-        setSignupSuccessNeedsConfirm(true);
         try {
           sessionStorage.setItem('africadata-signup-pending-confirm', '1');
         } catch (_) {}
+        navigate('/connexion', { replace: true, state: { message: t('auth.signupSuccessMessage') } });
       } else {
         setAuthError(msg || t('auth.signupFailed'));
       }

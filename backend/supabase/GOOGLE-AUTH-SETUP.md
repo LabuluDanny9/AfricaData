@@ -6,9 +6,22 @@ La plateforme utilise **Supabase Auth** avec le fournisseur **Google**. Les iden
 
 ## 1. Google Cloud Console — Créer les identifiants OAuth
 
-1. Allez sur **[Google Cloud Console](https://console.cloud.google.com/)**.
-2. Créez un projet ou sélectionnez un projet existant.
-3. **APIs & Services** → **OAuth consent screen** :
+**Objectif :** obtenir un **Client ID** et un **Client Secret** que vous collerez plus tard dans Supabase pour que « Se connecter avec Google » fonctionne.
+
+### 1.1 Ouvrir Google Cloud et choisir un projet
+
+1. Ouvrez votre navigateur et allez sur : **https://console.cloud.google.com/**
+2. Connectez-vous avec votre compte Google.
+3. En haut de la page, cliquez sur le nom du projet (à côté de « Google Cloud »).
+   - Si vous n'avez pas encore de projet : cliquez sur **Nouveau projet**, donnez un nom (ex. AfricaData), puis **Créer**.
+   - Si vous avez déjà un projet : sélectionnez-le dans la liste.
+
+### 1.2 Configurer l'écran de consentement OAuth (une seule fois par projet)
+
+4. Dans le menu de gauche (☰), allez dans : **APIs et services** → **Écran de consentement OAuth** (OAuth consent screen).
+5. Choisissez le type d'utilisateur : **Externe** (External) — pour que n'importe quel compte Google puisse se connecter.
+6. Cliquez sur **Créer** (Create).
+7. Remplissez au minimum :
    - Type : **External** (ou Internal si G Suite).
    - Renseignez **App name** (ex. AfricaData), **User support email**, **Developer contact**.
    - **Authorized domains** : ajoutez **`supabase.co`** (pour que Google autorise le callback Supabase).
@@ -38,16 +51,41 @@ La plateforme utilise **Supabase Auth** avec le fournisseur **Google**. Les iden
 
 ---
 
-## 3. Supabase — URLs de redirection
+## 3. Supabase — URLs de redirection (où renvoyer l’utilisateur après connexion Google)
 
-1. **Authentication** → **URL Configuration**.
-2. **Site URL** : mettez l’URL principale de votre app (ex. `https://votre-app.vercel.app` ou `http://localhost:3000` en dev).
-3. **Redirect URLs** — ajoutez toutes les URLs vers lesquelles Supabase peut rediriger après connexion :
-   - `http://localhost:3000/dashboard`
-   - `http://localhost:3000`
-   - En production : `https://votre-app.vercel.app/dashboard`, `https://votre-app.vercel.app`, etc.
+**Objectif :** dire à Supabase vers quelles adresses de votre site il a le droit d’envoyer l’utilisateur après qu’il s’est connecté avec Google. Sans ça, Supabase bloque la redirection et vous pouvez avoir une erreur ou une page blanche.
 
-Sans ces URLs, Supabase refusera la redirection après connexion Google.
+### 3.1 Où faire la configuration
+
+- Allez sur **https://supabase.com/dashboard** et ouvrez votre projet.
+- Dans le menu de gauche : **Authentication** → **URL Configuration** (souvent en bas de la liste sous « Authentication »).
+
+### 3.2 Site URL
+
+- **Site URL** : c’est la page d’accueil de votre application.
+  - En développement sur votre PC : mettez **`http://localhost:3000`**
+  - En production (site en ligne) : mettez l’URL de votre site, ex. **`https://votre-app.vercel.app`**
+
+### 3.3 Redirect URLs (liste des URLs autorisées)
+
+- **Redirect URLs** : c’est une liste d’URLs. Supabase ne peut renvoyer l’utilisateur **que** vers des URLs présentes dans cette liste.
+- Cliquez sur **« Add URL »** (ou le champ prévu) et ajoutez **une URL par ligne**, par exemple :
+
+  **Pour le développement en local :**
+  - `http://localhost:3000`
+  - `http://localhost:3000/dashboard`
+  - `http://localhost:3000/superadmin`
+
+  **Si vous avez un site en production**, ajoutez aussi :
+  - `https://votre-domaine.com`
+  - `https://votre-domaine.com/dashboard`
+  - `https://votre-domaine.com/superadmin`
+
+  (Remplacez `votre-domaine.com` par votre vraie URL, ex. `africadata.vercel.app`.)
+
+- Enregistrez (bouton **Save** ou équivalent).
+
+**En résumé :** après la connexion Google, l’utilisateur est renvoyé vers une page de votre app (ex. `/dashboard`). Supabase vérifie que cette URL est dans la liste « Redirect URLs ». Si elle n’y est pas, la redirection est refusée.
 
 ---
 
