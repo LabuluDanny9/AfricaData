@@ -50,7 +50,7 @@
     "alreadyAccount": "Already have an account?",
     "termsAccept": "I accept the terms of use and privacy policy of AfricaData, scientific publishing platform.",
     "signupSuccessTitle": "Registration complete",
-    "signupSuccessMessage": "Please check your email to confirm your address. Click the link you received to activate your account.",
+    "signupSuccessMessage": "Please confirm your email address. Check your inbox.",
     "signupSuccessNext": "Once your email is confirmed, click the button below to log in.",
     "connectButton": "Log in",
     "forgotPassword": "Forgot password?",
