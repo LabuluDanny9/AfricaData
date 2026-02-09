@@ -164,42 +164,14 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
           role,
         });
         setAuthError('');
-        const uid = data?.user?.id;
-        const session = data?.session;
 
-        // Confirmation email activée dans Supabase : pas de session → redirection vers la page de connexion avec le message
-        if (data?.user && !session) {
+        // Après toute inscription réussie : redirection vers la page de connexion avec le message « Consultez votre boîte email »
+        if (data?.user) {
           setAuthLoading(false);
           try {
             sessionStorage.setItem('africadata-signup-pending-confirm', '1');
           } catch (_) {}
-          navigate('/connexion', { replace: true, state: { message: t('auth.signupSuccessMessage') } });
-          return;
-        }
-
-        // Pas de confirmation email : session présente → connexion directe et redirection
-        if (uid && session) {
-          const baseUser = {
-            id: uid,
-            email: data.user.email,
-            name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0],
-            picture: data.user.user_metadata?.avatar_url,
-            sub: uid,
-          };
-          const { data: profile, error: profileErr } = await getProfile(uid);
-          let userRole = profile?.role ?? role;
-          if (profileErr && !profile) {
-            await updateProfile(uid, { full_name: baseUser.name, email: data.user.email, role });
-            userRole = role;
-          }
-          setUser({ ...baseUser, role: userRole });
-          setTimeout(() => navigate('/dashboard', { replace: true }), 0);
-        } else if (data?.user) {
-          setAuthLoading(false);
-          try {
-            sessionStorage.setItem('africadata-signup-pending-confirm', '1');
-          } catch (_) {}
-          navigate('/connexion', { replace: true, state: { message: t('auth.signupSuccessMessage') } });
+          navigate('/connexion', { replace: true, state: { message: t('auth.signupSuccessMessage'), fromSignup: true } });
           return;
         }
       } else {
@@ -211,7 +183,7 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
         try {
           sessionStorage.setItem('africadata-signup-pending-confirm', '1');
         } catch (_) {}
-        navigate('/connexion', { replace: true, state: { message: t('auth.signupSuccessMessage') } });
+        navigate('/connexion', { replace: true, state: { message: t('auth.signupSuccessMessage'), fromSignup: true } });
       } else {
         setAuthError(msg || t('auth.signupFailed'));
       }

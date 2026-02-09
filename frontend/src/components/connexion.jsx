@@ -101,6 +101,63 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
       </div>
     );
   }
+  // Arrivée depuis l'inscription : afficher le message de confirmation email puis accès au tableau de bord
+  const fromSignupWithMessage = location.state?.fromSignup && location.state?.message;
+  if (user && fromSignupWithMessage && !isAdminLogin) {
+    const message = location.state.message;
+    return (
+      <div className="auth-page connexion-page min-vh-100 d-flex flex-column">
+        <AfricadataHeader />
+        <main className="auth-main connexion-main">
+          <Container className="w-100">
+            <motion.div
+              className="text-center mb-4 mb-lg-5"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              <Badge bg="danger" className="mb-2 px-3 py-2 rounded-pill d-inline-flex align-items-center gap-2">
+                <LogIn size={18} />
+                {t('auth.login')}
+              </Badge>
+              <h1 className="h2 fw-bold mb-2">{t('auth.loginToAfricaData')}</h1>
+              <p className="text-body-secondary mb-0">{t('auth.loginSubtitle')}</p>
+            </motion.div>
+            <Row className="justify-content-center">
+              <Col lg="8" xl="7">
+                <motion.div
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.45 }}
+                >
+                  <Card className="auth-card border-0 shadow-lg overflow-hidden">
+                    <Card.Body className="p-4 p-lg-5 text-center">
+                      <Alert variant="info" className="mb-4">
+                        {message}
+                      </Alert>
+                      <p className="text-body-secondary small mb-4">
+                        Une fois votre email confirmé, vous pourrez vous connecter avec votre mot de passe. Vous pouvez aussi accéder à votre espace si vous êtes déjà connecté.
+                      </p>
+                      <Button
+                        variant="danger"
+                        size="lg"
+                        className="rounded-pill px-4 d-inline-flex align-items-center gap-2"
+                        onClick={() => navigate('/dashboard', { replace: true })}
+                      >
+                        Accéder au tableau de bord
+                        <ArrowRight size={18} />
+                      </Button>
+                    </Card.Body>
+                  </Card>
+                </motion.div>
+              </Col>
+            </Row>
+          </Container>
+        </main>
+        <AfricadataFooter />
+      </div>
+    );
+  }
   if (user) {
     // Depuis la plateforme : tout le monde (y compris admin) va au tableau de bord utilisateur.
     // Depuis /connexion-admin : l'admin va directement à l'interface superadmin.
