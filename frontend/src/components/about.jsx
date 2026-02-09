@@ -1,97 +1,49 @@
 import { ArrowRight, Award, Globe, Users, BookOpen, Zap, ShieldCheck, BarChart3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from 'components/ui/button';
+import { useTranslation } from 'react-i18next';
 import AfricadataHeader from 'components/layout/AfricadataHeader';
 
-
 export default function About() {
+  const { t } = useTranslation();
+
   const team = [
-    {
-      name: 'HERVE DUBOIS',
-      role: 'Fondateur & Directeur',
-      bio: 'Expert en systèmes d\'information scientifique',
-      image: null
-    },
-    {
-      name: 'CEDRIC DE SABRE',
-      role: 'Directeur Salle du Numérique UNILU',
-      bio: 'Chercheur en données ouvertes',
-      image: null
-    },
-    {
-      name: 'RACHEL',
-      role: 'Directrice Technique',
-      bio: 'Architecte infrastructure numérique',
-      image: null
-    },
-    {
-      name: 'Danny LABULU IBAM',
-      role: 'Ir en génie informatique et IA',
-      bio: 'Spécialiste en IA et DevOps',
-      image: '/danny.png'
-    }
+    { name: 'HERVE DUBOIS', roleKey: 'about.team1Role', bioKey: 'about.team1Bio', image: null },
+    { name: 'CEDRIC DE SABRE', roleKey: 'about.team2Role', bioKey: 'about.team2Bio', image: null },
+    { name: 'RACHEL', roleKey: 'about.team3Role', bioKey: 'about.team3Bio', image: null },
+    { name: 'Danny LABULU IBAM', roleKey: 'about.team4Role', bioKey: 'about.team4Bio', image: '/danny.png' },
   ];
 
   const stats = [
-    { number: '12+', label: 'Domaines scientifiques', icon: Globe },
-    { number: '5000+', label: 'Publications actives', icon: BookOpen },
-    { number: '2000+', label: 'Chercheurs inscrits', icon: Users },
-    { number: '50+', label: 'Institutions partenaires', icon: Award }
+    { number: '12+', labelKey: 'about.stat1Label', icon: Globe },
+    { number: '5000+', labelKey: 'about.stat2Label', icon: BookOpen },
+    { number: '2000+', labelKey: 'about.stat3Label', icon: Users },
+    { number: '50+', labelKey: 'about.stat4Label', icon: Award },
   ];
 
   const values = [
-    {
-      icon: Globe,
-      title: 'Accessibilité',
-      description: 'Rendre la science africaine accessible à tous sans barrières géographiques ou économiques.'
-    },
-    {
-      icon: Zap,
-      title: 'Innovation',
-      description: 'Utiliser les technologies les plus modernes pour promouvoir la recherche scientifique.'
-    },
-    {
-      icon: Users,
-      title: 'Collaboration',
-      description: 'Créer des espaces d\'échange et de collaboration entre chercheurs africains.'
-    },
-    {
-      icon: Award,
-      title: 'Excellence',
-      description: 'Maintenir les plus hauts standards de qualité et de rigueur scientifique.'
-    }
+    { icon: Globe, titleKey: 'about.value1Title', descKey: 'about.value1Desc' },
+    { icon: Zap, titleKey: 'about.value2Title', descKey: 'about.value2Desc' },
+    { icon: Users, titleKey: 'about.value3Title', descKey: 'about.value3Desc' },
+    { icon: Award, titleKey: 'about.value4Title', descKey: 'about.value4Desc' },
   ];
 
   const pillars = [
-    {
-      icon: Globe,
-      title: 'Portée Africaine',
-      description: 'Accédez à des données scientifiques issues de toutes les régions du continent africain.'
-    },
-    {
-      icon: ShieldCheck,
-      title: 'Données Validées',
-      description: 'Chaque contenu est vérifié par des comités scientifiques et des experts sectoriels.'
-    },
-    {
-      icon: Zap,
-      title: 'Indexation Rapide',
-      description: 'Publication instantanée et moteur de recherche avancé pour retrouver en quelques secondes les travaux pertinents.'
-    },
+    { icon: Globe, titleKey: 'about.pillar1Title', descKey: 'about.pillar1Desc' },
+    { icon: ShieldCheck, titleKey: 'about.pillar2Title', descKey: 'about.pillar2Desc' },
+    { icon: Zap, titleKey: 'about.pillar3Title', descKey: 'about.pillar3Desc' },
     {
       icon: BarChart3,
-      title: 'Analytics Complets',
-      description: 'Mesurez l’impact, les téléchargements et la portée continentale de vos publications.'
+      titleKey: 'about.pillar4Title',
+      descKey: 'about.pillar4Desc',
+      _oldDesc: 'Mesurez l’impact, les téléchargements et la portée continentale de vos publications.'
     },
-    {
-      icon: Users,
-      title: 'Collaboration',
-      description: 'Mettez en relation des chercheurs, laboratoires et universités africaines autour de projets communs.'
-    },
+    { icon: Users, titleKey: 'about.pillar5Title', descKey: 'about.pillar5Desc' },
     {
       icon: BookOpen,
-      title: 'Open Access',
-      description: 'Diffusion en accès ouvert pour maximiser la visibilité et l’impact de la recherche africaine.'
+      titleKey: 'about.pillar6Title',
+      descKey: 'about.pillar6Desc',
+      _oldDesc: 'Diffusion en accès ouvert pour maximiser la visibilité et l’impact de la recherche africaine.'
     }
   ];
 
@@ -105,9 +57,9 @@ export default function About() {
           <div className="max-w-6xl mx-auto px-4">
             <div className="text-center">
               <img src="/logo.png" alt="AfricaData" className="about-hero-logo mx-auto mb-6" />
-              <h1 className="about-hero-title text-4xl md:text-5xl font-bold mb-4">À Propos d'AfricaData</h1>
+              <h1 className="about-hero-title text-4xl md:text-5xl font-bold mb-4">{t('about.heroTitle')}</h1>
               <p className="about-hero-subtitle text-xl max-w-2xl mx-auto">
-                Le centre numérique africain de collecte, validation et diffusion de données scientifiques
+                {t('about.heroSubtitle')}
               </p>
             </div>
           </div>
@@ -118,16 +70,16 @@ export default function About() {
           <div className="max-w-6xl mx-auto px-4">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Notre Mission</h2>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">{t('about.missionTitle')}</h2>
                 <p className="text-lg text-muted-foreground mb-4">
-                  AfricaData est une plateforme numérique innovante dédiée à la promotion et à la diffusion de la recherche scientifique africaine. Nous croyons que la science africaine doit avoir une visibilité mondiale et un impact durable.
+                  {t('about.missionText1')}
                 </p>
                 <p className="text-lg text-muted-foreground mb-6">
-                  Notre mission est de créer un écosystème numérique intégré où chercheurs, académiciens et professionnels peuvent collaborer, partager leurs découvertes et contribuer au progrès scientifique du continent.
+                  {t('about.missionText2')}
                 </p>
                 <Link to="/librairie">
                   <Button className="btn-primary inline-flex items-center gap-2">
-                    Découvrir nos publications <ArrowRight className="h-4 w-4" />
+                    {t('about.discoverPublications')} <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
               </div>
@@ -142,7 +94,7 @@ export default function About() {
         <section className="py-16 md:py-24 bg-muted/5">
           <div className="max-w-6xl mx-auto px-4">
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-              Nos Fondamentaux
+              {t('about.pillarsTitle')}
             </h2>
             <div className="grid md:grid-cols-2 gap-6">
               {pillars.map((pillar, idx) => {
@@ -167,8 +119,8 @@ export default function About() {
                       </span>
                     </div>
                     <div className="relative">
-                      <h3 className="text-xl font-semibold text-red-700 mb-1">{pillar.title}</h3>
-                      <p className="text-sm text-red-600/80">{pillar.description}</p>
+                      <h3 className="text-xl font-semibold text-red-700 mb-1">{t(pillar.titleKey)}</h3>
+                      <p className="text-sm text-red-600/80">{t(pillar.descKey)}</p>
                     </div>
                   </div>
                 );
@@ -180,7 +132,7 @@ export default function About() {
         {/* Values Section */}
         <section className="py-16 md:py-24 bg-muted/10">
           <div className="max-w-6xl mx-auto px-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Nos Valeurs</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">{t('about.valuesTitle')}</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {values.map((value, idx) => {
                 const Icon = value.icon;
@@ -204,8 +156,8 @@ export default function About() {
                       </span>
                     </div>
                     <div className="relative mt-4">
-                      <h3 className="text-lg font-semibold text-red-700">{value.title}</h3>
-                      <p className="mt-1 text-sm text-red-600/80">{value.description}</p>
+                      <h3 className="text-lg font-semibold text-red-700">{t(value.titleKey)}</h3>
+                      <p className="mt-1 text-sm text-red-600/80">{t(value.descKey)}</p>
                     </div>
                   </div>
                 );
@@ -217,7 +169,7 @@ export default function About() {
         {/* Statistics */}
         <section className="py-16 md:py-24 bg-white">
           <div className="max-w-6xl mx-auto px-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">En Chiffres</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">{t('about.statsTitle')}</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
               {stats.map((stat, idx) => {
                 const Icon = stat.icon;
@@ -241,7 +193,7 @@ export default function About() {
                       </span>
                     </div>
                     <div className="relative text-4xl font-bold text-red-700 mb-2">{stat.number}</div>
-                    <p className="relative text-sm font-medium text-red-600/80">{stat.label}</p>
+                    <p className="relative text-sm font-medium text-red-600/80">{t(stat.labelKey)}</p>
                   </div>
                 );
               })}
@@ -252,7 +204,7 @@ export default function About() {
         {/* Team Section */}
         <section className="py-16 md:py-24 bg-muted/10">
           <div className="max-w-6xl mx-auto px-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Notre Équipe</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">{t('about.teamTitle')}</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
               {team.map((member, idx) => (
                 <div key={idx} className="africadata-card text-center">
@@ -266,8 +218,8 @@ export default function About() {
                     )}
                   </div>
                   <h3 className="text-lg font-bold mb-1 text-black">{member.name}</h3>
-                  <p className="text-sm text-primary font-semibold mb-2">{member.role}</p>
-                  <p className="text-sm text-muted-foreground">{member.bio}</p>
+                  <p className="text-sm text-primary font-semibold mb-2">{t(member.roleKey)}</p>
+                  <p className="text-sm text-muted-foreground">{t(member.bioKey)}</p>
                 </div>
               ))}
             </div>
@@ -277,19 +229,19 @@ export default function About() {
         {/* CTA Section */}
         <section className="py-16 md:py-24 bg-gradient-primary text-white">
           <div className="max-w-6xl mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">Rejoignez Notre Communauté</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">{t('about.ctaTitle')}</h2>
             <p className="text-xl text-white/90 max-w-2xl mx-auto mb-8">
-              Devenez part de la révolution scientifique africaine. Partagez vos recherches avec le monde.
+              {t('about.ctaSubtitle')}
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link to="/inscription">
                 <Button className="bg-white text-primary hover:bg-white/90 inline-flex items-center gap-2">
-                  S'inscrire maintenant <ArrowRight className="h-4 w-4" />
+                  {t('about.signupNow')} <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <Link to="/librairie">
                 <Button variant="outline" className="border-white text-white hover:bg-white/10 inline-flex items-center gap-2">
-                  Explorer les publications <ArrowRight className="h-4 w-4" />
+                  {t('about.explorePublications')} <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
             </div>

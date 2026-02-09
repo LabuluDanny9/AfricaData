@@ -18,6 +18,7 @@ import AfricadataHeader from 'components/layout/AfricadataHeader';
 import AfricadataFooter from 'components/layout/AfricadataFooter';
 import RatingStars from 'components/ui/RatingStars';
 import { getPublications, getFavorites, toggleFavorite as apiToggleFavorite, subscribeToPublications } from 'services/publications';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from 'context/AuthContext';
 import { isSupabaseConfigured } from 'lib/supabase';
 import 'components/layout/AfricadataHeader.css';
@@ -50,6 +51,7 @@ function truncate(str, maxLines = 2) {
 }
 
 export default function Librairie({ embedded = false }) {
+  const { t } = useTranslation();
   const [searchInput, setSearchInput] = useState('');
   const [domain, setDomain] = useState('');
   const [typeDoc, setTypeDoc] = useState('');
@@ -161,53 +163,53 @@ export default function Librairie({ embedded = false }) {
     <>
       <Accordion defaultActiveKey={['0', '1', '2', '3', '4', '5']} alwaysOpen className="librairie-accordion" flush>
         <Accordion.Item eventKey="0">
-          <Accordion.Header>📂 Domaine</Accordion.Header>
+          <Accordion.Header>📂 {t('library.filterDomain')}</Accordion.Header>
           <Accordion.Body className="librairie-filter-list">
             {DOMAINS.map((d) => (
               <Form.Check key={d} type="radio" id={`domain-${d}`} name="domain" label={d} checked={domain === d} onChange={() => setDomain(d)} />
             ))}
-            <Button variant="link" size="sm" className="p-0 mt-1" onClick={() => setDomain('')}>Tous</Button>
+            <Button variant="link" size="sm" className="p-0 mt-1" onClick={() => setDomain('')}>{t('common.all')}</Button>
           </Accordion.Body>
         </Accordion.Item>
         <Accordion.Item eventKey="1">
-          <Accordion.Header>📄 Type de document</Accordion.Header>
+          <Accordion.Header>📄 {t('library.filterType')}</Accordion.Header>
           <Accordion.Body className="librairie-filter-list">
-            {TYPES.map((t) => (
-              <Form.Check key={t} type="radio" id={`type-${t}`} name="typeDoc" label={t} checked={typeDoc === t} onChange={() => setTypeDoc(t)} />
+            {TYPES.map((typ) => (
+              <Form.Check key={typ} type="radio" id={`type-${typ}`} name="typeDoc" label={typ} checked={typeDoc === typ} onChange={() => setTypeDoc(typ)} />
             ))}
-            <Button variant="link" size="sm" className="p-0 mt-1" onClick={() => setTypeDoc('')}>Tous</Button>
+            <Button variant="link" size="sm" className="p-0 mt-1" onClick={() => setTypeDoc('')}>{t('common.all')}</Button>
           </Accordion.Body>
         </Accordion.Item>
         <Accordion.Item eventKey="2">
-          <Accordion.Header>🌐 Langue</Accordion.Header>
+          <Accordion.Header>🌐 {t('library.filterLanguage')}</Accordion.Header>
           <Accordion.Body className="librairie-filter-list">
             {LANGUES.map((lang) => (
               <Form.Check key={lang} type="radio" id={`lang-${lang}`} name="language" label={lang} checked={language === lang} onChange={() => setLanguage(lang)} />
             ))}
-            <Button variant="link" size="sm" className="p-0 mt-1" onClick={() => setLanguage('')}>Toutes</Button>
+            <Button variant="link" size="sm" className="p-0 mt-1" onClick={() => setLanguage('')}>{t('common.all_female')}</Button>
           </Accordion.Body>
         </Accordion.Item>
         <Accordion.Item eventKey="3">
-          <Accordion.Header>🗺️ Région</Accordion.Header>
+          <Accordion.Header>🗺️ {t('library.filterRegion')}</Accordion.Header>
           <Accordion.Body className="librairie-filter-list">
             {REGIONS.map((r) => (
               <Form.Check key={r} type="radio" id={`region-${r}`} name="region" label={r} checked={region === r} onChange={() => setRegion(r)} />
             ))}
-            <Button variant="link" size="sm" className="p-0 mt-1" onClick={() => setRegion('')}>Toutes</Button>
+            <Button variant="link" size="sm" className="p-0 mt-1" onClick={() => setRegion('')}>{t('common.all_female')}</Button>
           </Accordion.Body>
         </Accordion.Item>
         <Accordion.Item eventKey="4">
-          <Accordion.Header>📅 Année</Accordion.Header>
+          <Accordion.Header>📅 {t('library.filterYear')}</Accordion.Header>
           <Accordion.Body className="librairie-filter-list">
             {ANNEES.map((y) => (
               <Form.Check key={y} type="radio" id={`year-${y}`} name="year" label={y} checked={year === y} onChange={() => setYear(y)} />
             ))}
-            <Button variant="link" size="sm" className="p-0 mt-1" onClick={() => setYear('')}>Toutes</Button>
+            <Button variant="link" size="sm" className="p-0 mt-1" onClick={() => setYear('')}>{t('common.all_female')}</Button>
           </Accordion.Body>
         </Accordion.Item>
       </Accordion>
       <Button variant="outline-secondary" size="sm" className="w-100 mt-3" onClick={resetFilters}>
-        <X size={16} className="me-1" /> Réinitialiser les filtres
+        <X size={16} className="me-1" /> {t('library.resetFilters')}
       </Button>
     </>
   );
@@ -225,8 +227,8 @@ export default function Librairie({ embedded = false }) {
             </InputGroup.Text>
             <Form.Control
               type="search"
-              placeholder="Rechercher par titre, auteur, domaine, mots-clés..."
-              aria-label="Recherche"
+              placeholder={t('library.searchPlaceholder')}
+              aria-label={t('library.searchAria')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="librairie-search-input"
@@ -239,7 +241,7 @@ export default function Librairie({ embedded = false }) {
           <aside className="col-lg-3 d-none d-lg-block">
             <div className="librairie-filters-card card border-0 shadow-sm sticky-top">
               <Card.Body>
-                <h3 className="h6 fw-bold mb-3">Filtres</h3>
+                <h3 className="h6 fw-bold mb-3">{t('library.filters')}</h3>
                 <FiltersContent />
               </Card.Body>
             </div>
@@ -250,13 +252,13 @@ export default function Librairie({ embedded = false }) {
             {/* Mobile: bouton Filtrer → Offcanvas */}
             <div className="d-lg-none mb-3">
               <Button variant="outline-primary" className="w-100 w-sm-auto" onClick={() => setShowFilters(true)}>
-                <Filter size={18} className="me-2" /> Filtrer {hasActiveFilters && `(${[domain, typeDoc, language, region, year].filter(Boolean).length})`}
+                <Filter size={18} className="me-2" /> {t('library.filterButton')} {hasActiveFilters && `(${[domain, typeDoc, language, region, year].filter(Boolean).length})`}
               </Button>
             </div>
 
             <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
               <p className="text-body-secondary mb-0 small">
-                <strong>{filtered.length}</strong> publication{filtered.length !== 1 ? 's' : ''} trouvée{filtered.length !== 1 ? 's' : ''}
+                {t('library.publicationsFound', { count: filtered.length })}
               </p>
             </div>
 
@@ -265,7 +267,7 @@ export default function Librairie({ embedded = false }) {
               <Card className="border-0 shadow-sm mb-4 librairie-recommendations">
                 <Card.Body className="py-3">
                   <h3 className="h6 fw-bold mb-3 d-flex align-items-center gap-2">
-                    <TrendingUp size={20} className="text-danger" /> Recommandées pour vous
+                    <TrendingUp size={20} className="text-danger" /> {t('library.recommended')}
                   </h3>
                   <Row className="row-cols-1 row-cols-md-3 g-3">
                     {filtered.slice(0, 3).map((pub) => (
@@ -292,14 +294,14 @@ export default function Librairie({ embedded = false }) {
               <Card className="border-0 shadow-sm">
                 <Card.Body className="text-center py-5">
                   <div className="spinner-border text-danger mb-2" role="status" aria-hidden="true" />
-                  <p className="text-body-secondary mb-0">Chargement des publications…</p>
+                  <p className="text-body-secondary mb-0">{t('library.loading')}</p>
                 </Card.Body>
               </Card>
             ) : paginated.length === 0 ? (
               <Card className="border-0 shadow-sm">
                 <Card.Body className="text-center py-5">
-                  <p className="text-body-secondary mb-0">Aucune publication ne correspond à vos critères.</p>
-                  <Button variant="outline-danger" size="sm" className="mt-3" onClick={resetFilters}>Réinitialiser les filtres</Button>
+                  <p className="text-body-secondary mb-0">{t('library.noResults')}</p>
+                  <Button variant="outline-danger" size="sm" className="mt-3" onClick={resetFilters}>{t('library.resetFilters')}</Button>
                 </Card.Body>
               </Card>
             ) : (
@@ -331,16 +333,16 @@ export default function Librairie({ embedded = false }) {
                           <p className="small text-body-secondary mb-1">{pub.domain}{pub.region ? ` · ${pub.region}` : ''} · {pub.year}</p>
                           <p className="small text-body-secondary librairie-card-summary">{truncate(pub.summary)}</p>
                           <div className="d-flex align-items-center gap-3 mt-2 small text-body-secondary">
-                            <span className="d-flex align-items-center gap-1"><Eye size={12} /> {pub.views ?? 0} vues</span>
-                            <span className="d-flex align-items-center gap-1"><Download size={12} /> {pub.downloads ?? 0} téléch.</span>
+                            <span className="d-flex align-items-center gap-1"><Eye size={12} /> {pub.views ?? 0} {t('library.views')}</span>
+                            <span className="d-flex align-items-center gap-1"><Download size={12} /> {pub.downloads ?? 0} {t('library.downloads')}</span>
                           </div>
                         </Card.Body>
                         <Card.Footer className="bg-transparent border-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
                           <Link to={`/publication/${pub.id}`} className="btn btn-sm btn-danger">
-                            <BookOpen size={14} className="me-1" /> Lire
+                            <BookOpen size={14} className="me-1" /> {t('library.read')}
                           </Link>
                           <div className="d-flex gap-1">
-                            <Button variant="outline-secondary" size="sm" className="btn-sm" as={Link} to={`/publication/${pub.id}`} title="Télécharger">
+                            <Button variant="outline-secondary" size="sm" className="btn-sm" as={Link} to={`/publication/${pub.id}`} title={t('library.download')}>
                               <Download size={14} />
                             </Button>
                             <Button variant={favorites.has(pub.id) ? 'warning' : 'outline-secondary'} size="sm" onClick={() => toggleFavorite(pub.id)} title="Favori">
@@ -378,7 +380,7 @@ export default function Librairie({ embedded = false }) {
       {/* Offcanvas filtres — Mobile */}
       <Offcanvas show={showFilters} onHide={() => setShowFilters(false)} placement="start" className="librairie-offcanvas" >
         <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Filtres</Offcanvas.Title>
+          <Offcanvas.Title>{t('library.filters')}</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body>
           <FiltersContent />

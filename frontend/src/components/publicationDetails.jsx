@@ -6,6 +6,7 @@ import AfricadataHeader from 'components/layout/AfricadataHeader';
 import AfricadataFooter from 'components/layout/AfricadataFooter';
 import RatingStars from 'components/ui/RatingStars';
 import { getPublicationById, getComments, addComment as apiAddComment, addRating as apiAddRating, getRecommendations as apiGetRecommendations, incrementView, incrementDownload, toggleFavorite as apiToggleFavorite, getFavorites } from 'services/publications';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from 'context/AuthContext';
 import { isSupabaseConfigured } from 'lib/supabase';
 import 'components/layout/AfricadataHeader.css';
@@ -41,6 +42,7 @@ function getRecommendations(currentId, domain, typeDoc, max = 4) {
 }
 
 export default function PublicationDetails() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const [publication, setPublication] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -89,7 +91,7 @@ export default function PublicationDetails() {
         <AfricadataHeader />
         <Container className="flex-grow-1 py-5 text-center">
           <div className="spinner-border text-danger" role="status" />
-          <p className="mt-2 text-body-secondary">Chargement…</p>
+          <p className="mt-2 text-body-secondary">{t('publication.loading')}</p>
         </Container>
         <AfricadataFooter />
       </div>
@@ -102,11 +104,11 @@ export default function PublicationDetails() {
         <AfricadataHeader />
         <Container className="flex-grow-1 py-5">
           <Link to="/librairie" className="publication-details-back d-inline-flex align-items-center gap-2 mb-4">
-            <ArrowLeft size={18} /> Retour à la librairie
+            <ArrowLeft size={18} /> {t('publication.backToLibrary')}
           </Link>
           <Card className="border-0 shadow-sm">
             <Card.Body className="text-center py-5">
-              <p className="text-body-secondary mb-0">Publication introuvable.</p>
+              <p className="text-body-secondary mb-0">{t('publication.notFound')}</p>
             </Card.Body>
           </Card>
         </Container>
@@ -148,7 +150,7 @@ export default function PublicationDetails() {
 
       <Container className="publication-details-container flex-grow-1 py-4">
         <Link to="/librairie" className="publication-details-back d-inline-flex align-items-center gap-2 mb-4">
-          <ArrowLeft size={18} /> Retour à la librairie
+          <ArrowLeft size={18} /> {t('publication.backToLibrary')}
         </Link>
 
         {/* Titre + Métadonnées */}
@@ -173,8 +175,8 @@ export default function PublicationDetails() {
                 {publication.author}
               </span>
               <span className="d-flex align-items-center gap-1"><Calendar size={14} /> {publication.year}</span>
-              <span className="d-flex align-items-center gap-1"><Eye size={14} /> {publication.views ?? 0} vues</span>
-              <span className="d-flex align-items-center gap-1"><Download size={14} /> {publication.downloads ?? 0} téléchargements</span>
+              <span className="d-flex align-items-center gap-1"><Eye size={14} /> {publication.views ?? 0} {t('publication.viewsLabel')}</span>
+              <span className="d-flex align-items-center gap-1"><Download size={14} /> {publication.downloads ?? 0} {t('publication.downloadsLabel')}</span>
             </div>
             <div className="mt-2">
               <RatingStars value={publication.rating ?? 0} count={publication.ratingCount ?? 0} size={18} />
@@ -185,21 +187,21 @@ export default function PublicationDetails() {
         {/* Notation par l'utilisateur */}
         <Card className="publication-details-card border-0 shadow-sm mb-4">
           <Card.Body className="py-3">
-            <p className="small fw-semibold mb-2">Donnez votre note</p>
+            <p className="small fw-semibold mb-2">{t('publication.giveRating')}</p>
             <RatingStars
               value={userRating ?? publication.rating ?? 0}
               interactive
               onChange={handleRating}
               size={22}
             />
-            {userRating != null && <p className="small text-body-secondary mt-2 mb-0">Merci pour votre avis.</p>}
+            {userRating != null && <p className="small text-body-secondary mt-2 mb-0">{t('publication.thanksForReview')}</p>}
           </Card.Body>
         </Card>
 
         {/* Résumé complet */}
         <Card className="publication-details-card border-0 shadow-sm mb-4">
           <Card.Header className="bg-transparent border-0 d-flex align-items-center gap-2 fw-bold">
-            <FileText size={18} /> Résumé
+            <FileText size={18} /> {t('publication.abstract')}
           </Card.Header>
           <Card.Body className="pt-0">
             <p className="publication-details-abstract mb-0">{publication.abstract}</p>
@@ -209,17 +211,17 @@ export default function PublicationDetails() {
         {/* Actions */}
         <div className="d-flex flex-wrap gap-2 mb-4">
           <Button variant="danger" className="d-inline-flex align-items-center gap-2">
-            <Download size={18} /> Télécharger le PDF
+            <Download size={18} /> {t('publication.download')}
           </Button>
           <Button variant={favorite ? 'warning' : 'outline-secondary'} onClick={handleToggleFavorite} className="d-inline-flex align-items-center gap-2">
-            <Star size={18} fill={favorite ? 'currentColor' : 'none'} /> {favorite ? 'Dans les favoris' : 'Ajouter aux favoris'}
+            <Star size={18} fill={favorite ? 'currentColor' : 'none'} /> {favorite ? t('publication.inFavorites') : t('publication.addToFavorites')}
           </Button>
         </div>
 
         {/* Lecture PDF inline avec barre d'outils */}
         <Card className={`publication-details-card border-0 shadow-sm mb-4 ${pdfFullscreen ? 'publication-details-pdf-fullscreen' : ''}`}>
           <Card.Header className="bg-transparent border-0 d-flex align-items-center justify-content-between flex-wrap gap-2 py-2">
-            <span className="fw-bold">Document PDF</span>
+            <span className="fw-bold">{t('publication.pdfDocument')}</span>
             <div className="d-flex align-items-center gap-2 publication-details-pdf-toolbar">
               <Button variant="outline-secondary" size="sm" onClick={() => setPdfZoom((z) => Math.max(50, z - 25))} title="Réduire" aria-label="Réduire zoom">
                 <ZoomOut size={16} />
@@ -232,11 +234,11 @@ export default function PublicationDetails() {
                 {pdfFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
               </Button>
               {publication.pdf_url ? (
-                <Button variant="outline-danger" size="sm" as="a" href={publication.pdf_url} download target="_blank" rel="noopener noreferrer" title="Télécharger le PDF" onClick={() => isSupabaseConfigured() && publication?.id && incrementDownload(publication.id)}>
-                  <Download size={16} /> Télécharger
+                <Button variant="outline-danger" size="sm" as="a" href={publication.pdf_url} download target="_blank" rel="noopener noreferrer" title={t('publication.download')} onClick={() => isSupabaseConfigured() && publication?.id && incrementDownload(publication.id)}>
+                  <Download size={16} /> {t('publication.downloadButton')}
                 </Button>
               ) : (
-                <span className="small text-body-secondary">PDF non disponible</span>
+                <span className="small text-body-secondary">{t('publication.pdfNotAvailable')}</span>
               )}
             </div>
           </Card.Header>
@@ -264,7 +266,7 @@ export default function PublicationDetails() {
               <div className="d-flex align-items-center justify-content-center text-body-secondary py-5" style={{ minHeight: 280 }}>
                 <div className="text-center">
                   <FileText size={48} className="mb-2 opacity-50" />
-                  <p className="mb-0 small">Aucun fichier PDF associé à cette publication.</p>
+                  <p className="mb-0 small">{t('publication.noPdf')}</p>
                 </div>
               </div>
             )}
@@ -274,7 +276,7 @@ export default function PublicationDetails() {
         {/* Section Avis / Commentaires */}
         <Card className="publication-details-card border-0 shadow-sm mb-4">
           <Card.Header className="bg-transparent border-0 d-flex align-items-center gap-2 fw-bold">
-            <MessageCircle size={18} /> Avis et commentaires ({comments.length})
+            <MessageCircle size={18} /> {t('publication.commentsSection')} ({comments.length})
           </Card.Header>
           <Card.Body>
             <Form onSubmit={handlePublishComment} className="mb-4">
@@ -282,13 +284,13 @@ export default function PublicationDetails() {
                 <Form.Control
                   as="textarea"
                   rows={3}
-                  placeholder="Partagez votre avis ou posez une question..."
+                  placeholder={t('publication.commentPlaceholder')}
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   className="publication-details-comment-input"
                 />
               </Form.Group>
-              <Button type="submit" variant="danger" size="sm">Publier</Button>
+              <Button type="submit" variant="danger" size="sm">{t('publication.publish')}</Button>
             </Form>
             <ListGroup variant="flush" className="publication-details-comments">
               {comments.map((c) => (
@@ -312,7 +314,7 @@ export default function PublicationDetails() {
         {/* Publications similaires (recommandations automatiques) */}
         {recommendations.length > 0 && (
           <Card className="publication-details-card border-0 shadow-sm mb-4">
-            <Card.Header className="bg-transparent border-0 fw-bold">Publications similaires</Card.Header>
+            <Card.Header className="bg-transparent border-0 fw-bold">{t('publication.similar')}</Card.Header>
             <Card.Body className="pt-0">
               <Row className="row-cols-1 row-cols-md-2 g-3">
                 {recommendations.map((rec) => (
