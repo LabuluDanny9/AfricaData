@@ -6,6 +6,7 @@ import {
 import { FileText, GraduationCap, Upload, CreditCard, Info, CheckCircle2, User } from 'lucide-react';
 import { createPublication, uploadPublicationPdf, uploadAuthorPhoto } from 'services/publications';
 import { checkWaiverCode, consumeWaiverCode } from 'services/waiverCodes';
+import { getPlatformSettings } from 'services/settings';
 import { useAuth } from 'context/AuthContext';
 import { isAdminRole } from 'lib/adminRoles';
 import { isSupabaseConfigured } from 'lib/supabase';
@@ -100,6 +101,8 @@ export default function SubmitWizard() {
   const [waiverCodeValid, setWaiverCodeValid] = useState(null);
   const [waiverCodeChecking, setWaiverCodeChecking] = useState(false);
   const [submitAsPublished, setSubmitAsPublished] = useState(false);
+  const [paymentEnabled, setPaymentEnabled] = useState(true);
+  const [successToastMessage, setSuccessToastMessage] = useState('');
 
   // Validation instantanée
   const titleInvalid = form.title.trim().length > 0 && form.title.trim().length < MIN_TITLE_LENGTH;
@@ -112,6 +115,15 @@ export default function SubmitWizard() {
   const amountError = amountInvalid ? `Veuillez saisir un montant valide (min. ${AMOUNT_MIN} ${form.currency === 'USD' ? 'USD' : 'FCFA'}).` : null;
 
   const isAcademicType = useMemo(() => ACADEMIC_TYPES.includes(form.type), [form.type]);
+
+  // Paramètre plateforme : paiement activé ou non
+  useEffect(() => {
+    let cancelled = false;
+    getPlatformSettings().then(({ payment_enabled, error }) => {
+      if (!cancelled && !error) setPaymentEnabled(payment_enabled !== false);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   // Brouillon : chargement au montage
   useEffect(() => {
@@ -178,7 +190,7 @@ export default function SubmitWizard() {
   };
 
   const isAdmin = isAdminRole(user?.role);
-  const skipPayment = isAdmin || waiverCodeValid === true;
+  const skipPayment = isAdmin || waiverCodeValid === true || paymentEnabled === false;
 
   const handleSubmit = async () => {
     setError('');
@@ -227,6 +239,12 @@ export default function SubmitWizard() {
         });
         if (err) throw err;
         setPaymentPending(false);
+        if (paymentEnabled === false && !isAdmin) {
+          setSuccessToastMessage('Votre publication a été soumise. Veuillez consulter votre boîte email pour plus de détails.');
+          // TODO: déclencher l'envoi d'un email avec les détails de paiement (banque / mobile money) côté backend (Edge Function ou service email).
+        } else {
+          setSuccessToastMessage('');
+        }
         setShowToast(true);
         try { localStorage.removeItem(DRAFT_STORAGE_KEY); } catch (_) {}
         const pubId = data?.id;
@@ -699,11 +717,17 @@ export default function SubmitWizard() {
                 </>
               )}
 
-              {!isAdmin && waiverCodeValid === true && (
+              {!isAdmin && (waiverCodeValid === true || paymentEnabled === false) && (
                 <>
                   <div className="alert alert-success mb-4 d-flex align-items-center gap-2">
                     <CheckCircle2 size={20} className="flex-shrink-0" />
-                    <span><strong>Code valide.</strong> Publication gratuite — le formulaire de paiement n'est pas nécessaire.</span>
+                    <span>
+                      {waiverCodeValid === true ? (
+                        <><strong>Code valide.</strong> Publication gratuite — le formulaire de paiement n'est pas nécessaire.</>
+                      ) : (
+                        <><strong>Soumission gratuite.</strong> Vous pouvez soumettre sans payer. Vous recevrez un email avec les détails de paiement (banque / mobile money) pour plus d'informations.</>
+                      )}
+                    </span>
                   </div>
                   <Button
                     variant="danger"
@@ -724,7 +748,7 @@ export default function SubmitWizard() {
                 </>
               )}
 
-              {!isAdmin && waiverCodeValid !== true && (
+              {!isAdmin && waiverCodeValid !== true && paymentEnabled !== false && (
                 <>
                   <Form.Group className="mb-4">
                     <Form.Label className="d-flex align-items-center gap-1">
@@ -907,11 +931,11 @@ export default function SubmitWizard() {
       </Card>
 
       <ToastContainer position="top-center" className="p-3">
-        <Toast show={showToast} onClose={() => setShowToast(false)} bg="success" autohide delay={3000}>
+        <Toast show={showToast} onClose={() => { setShowToast(false); setSuccessToastMessage(''); }} bg="success" autohide delay={5000}>
           <Toast.Header closeButton>
-            <strong className="me-auto">Publication enregistrée</strong>
+            <strong className="me-auto">{successToastMessage ? 'Publication soumise' : 'Publication enregistrée'}</strong>
           </Toast.Header>
-          <Toast.Body>Redirection en cours…</Toast.Body>
+          <Toast.Body>{successToastMessage || 'Redirection en cours…'}</Toast.Body>
         </Toast>
         <Toast show={showDraftToast} onClose={() => setShowDraftToast(false)} className="bg-body-secondary">
           <Toast.Body className="small">Brouillon sauvegardé automatiquement</Toast.Body>

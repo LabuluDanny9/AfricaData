@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { Card, Row, Col, Form, Button, Toast, ToastContainer } from 'react-bootstrap';
-import { Lock, BookOpen, FileType, Tag, Wrench, Mail } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Card, Row, Col, Form, Button, Toast, ToastContainer, Spinner } from 'react-bootstrap';
+import { Lock, BookOpen, FileType, Tag, Wrench, Mail, CreditCard } from 'lucide-react';
 import { useAuth } from 'context/AuthContext';
 import { canChangeSettings } from 'lib/adminRoles';
+import { getPlatformSettings, updatePaymentEnabled } from 'services/settings';
 import './AdminPages.css';
 
 const SECTIONS = [
@@ -17,6 +18,34 @@ export default function AdminSettings() {
   const { user } = useAuth();
   const canEdit = canChangeSettings(user?.role);
   const [toast, setToast] = useState({ show: false, message: '' });
+  const [paymentEnabled, setPaymentEnabled] = useState(true);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentSaving, setPaymentSaving] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setPaymentLoading(true);
+    getPlatformSettings().then(({ payment_enabled, error }) => {
+      if (!cancelled) {
+        setPaymentLoading(false);
+        if (!error) setPaymentEnabled(payment_enabled !== false);
+      }
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  const handlePaymentToggle = async (enabled) => {
+    if (!canEdit) return;
+    setPaymentSaving(true);
+    const { error } = await updatePaymentEnabled(enabled);
+    setPaymentSaving(false);
+    if (error) {
+      setToast({ show: true, message: 'Erreur : ' + (error.message || 'impossible d\'enregistrer.') });
+      return;
+    }
+    setPaymentEnabled(enabled);
+    setToast({ show: true, message: enabled ? 'Paiement activé.' : 'Paiement désactivé — les utilisateurs peuvent soumettre gratuitement.' });
+  };
 
   const handleSave = () => {
     setToast({ show: true, message: 'Paramètres enregistrés.' });
@@ -42,6 +71,33 @@ export default function AdminSettings() {
           </Card.Body>
         </Card>
       )}
+
+      {/* Paiement : activer / désactiver (soumission gratuite) */}
+      <Card className="admin-card admin-section-card mb-4 border-primary">
+        <Card.Header className="d-flex align-items-center gap-2">
+          <CreditCard size={18} />
+          Paiement à la soumission
+        </Card.Header>
+        <Card.Body>
+          <p className="small text-muted mb-3">
+            Désactiver le paiement permet aux utilisateurs de soumettre une publication gratuitement. Un message de confirmation et un email avec les détails de paiement (banque / mobile money) leur seront envoyés.
+          </p>
+          {paymentLoading ? (
+            <Spinner animation="border" size="sm" />
+          ) : canEdit ? (
+            <Form.Check
+              type="switch"
+              id="payment-enabled"
+              label={paymentEnabled ? 'Paiement activé' : 'Paiement désactivé (soumission gratuite)'}
+              checked={paymentEnabled}
+              disabled={paymentSaving}
+              onChange={(e) => handlePaymentToggle(e.target.checked)}
+            />
+          ) : (
+            <p className="small text-muted mb-0">{paymentEnabled ? 'Paiement activé' : 'Paiement désactivé'}</p>
+          )}
+        </Card.Body>
+      </Card>
 
       <Row className="g-3">
         {SECTIONS.map(({ icon: Icon, title, desc, placeholder }) => (

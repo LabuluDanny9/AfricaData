@@ -299,17 +299,14 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
                                 </>
                               )}
                             </motion.p>
-                            <motion.p variants={itemVariants} className="text-center small text-body-secondary mb-0 mt-2">
-                              {isAdminLogin ? (
+                            {/* Lien "Connexion administrateur" masqué sur la page connexion publique ; les admins peuvent toujours aller sur /connexion-admin directement */}
+                            {isAdminLogin && (
+                              <motion.p variants={itemVariants} className="text-center small text-body-secondary mb-0 mt-2">
                                 <Link to="/connexion" className="fw-semibold text-danger text-decoration-none">
                                   {t('auth.loginUser')}
                                 </Link>
-                              ) : (
-                                <Link to="/connexion-admin" className="fw-semibold text-body-secondary text-decoration-none">
-                                  {t('auth.loginAdmin')}
-                                </Link>
-                              )}
-                            </motion.p>
+                              </motion.p>
+                            )}
 
                             <motion.div
                               variants={itemVariants}
