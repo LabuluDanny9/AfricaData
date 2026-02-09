@@ -2,18 +2,20 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Table, Badge, Button, Modal } from 'react-bootstrap';
 import { FileText, Eye, AlertCircle, User } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { supabase, isSupabaseConfigured } from 'lib/supabase';
 import { useAuth } from 'context/AuthContext';
 import './MesPublications.css';
 
-const STATUS_LABELS = {
-  draft: { label: 'Brouillon', variant: 'secondary' },
-  pending: { label: 'En analyse', variant: 'warning' },
-  published: { label: 'Validée', variant: 'success' },
-  rejected: { label: 'Rejetée', variant: 'danger' },
+const STATUS_KEYS = {
+  draft: { labelKey: 'user.statusDraft', variant: 'secondary' },
+  pending: { labelKey: 'user.statusPending', variant: 'warning' },
+  published: { labelKey: 'user.statusPublished', variant: 'success' },
+  rejected: { labelKey: 'user.statusRejected', variant: 'danger' },
 };
 
 export default function MesPublications() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [publications, setPublications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -56,8 +58,8 @@ export default function MesPublications() {
   return (
     <div className="mes-publications">
       <header className="mb-4">
-        <h1 className="h3 fw-bold mb-1">Mes publications</h1>
-        <p className="text-body-secondary mb-0 small">Suivi de vos soumissions</p>
+        <h1 className="h3 fw-bold mb-1">{t('user.myPublications')}</h1>
+        <p className="text-body-secondary mb-0 small">{t('user.myPublicationsSubtitle')}</p>
       </header>
 
       <Card className="border-0 shadow-sm overflow-hidden">
@@ -65,23 +67,23 @@ export default function MesPublications() {
           {loading ? (
             <div className="text-center py-5">
               <div className="spinner-border text-danger" role="status" />
-              <p className="mt-2 small text-body-secondary">Chargement…</p>
+              <p className="mt-2 small text-body-secondary">{t('common.loading')}</p>
             </div>
           ) : (
             <Table responsive hover className="mb-0 mes-publications-table">
               <thead>
                 <tr>
-                  <th>Auteur</th>
-                  <th>Titre</th>
-                  <th>Type</th>
-                  <th>Statut</th>
-                  <th>Date</th>
-                  <th className="text-end">Action</th>
+                  <th>{t('user.author')}</th>
+                  <th>{t('user.title')}</th>
+                  <th>{t('user.type')}</th>
+                  <th>{t('user.status')}</th>
+                  <th>{t('user.date')}</th>
+                  <th className="text-end">{t('user.action')}</th>
                 </tr>
               </thead>
               <tbody>
                 {publications.map((pub) => {
-                  const statusInfo = STATUS_LABELS[pub.status] || STATUS_LABELS.pending;
+                  const statusInfo = STATUS_KEYS[pub.status] || STATUS_KEYS.pending;
                   return (
                     <tr key={pub.id}>
                       <td>
@@ -103,14 +105,14 @@ export default function MesPublications() {
                       </td>
                       <td className="small">{pub.type}</td>
                       <td>
-                        <Badge bg={statusInfo.variant} className="rounded-pill">{statusInfo.label}</Badge>
+                        <Badge bg={statusInfo.variant} className="rounded-pill">{t(statusInfo.labelKey)}</Badge>
                         {pub.status === 'rejected' && (
                           <Button
                             variant="link"
                             size="sm"
                             className="p-0 ms-1 text-danger"
                             onClick={() => setSelectedRejet({ title: pub.title, comment: pub.admin_comment })}
-                            title="Voir commentaire admin"
+                            title={t('admin.viewAdminComment')}
                           >
                             <AlertCircle size={16} />
                           </Button>
@@ -119,7 +121,7 @@ export default function MesPublications() {
                       <td className="small text-body-secondary">{pub.date}</td>
                       <td className="text-end">
                         <Button as={Link} to={`/publication/${pub.id}`} variant="outline-danger" size="sm" className="d-inline-flex align-items-center gap-1">
-                          <Eye size={14} /> Voir
+                          <Eye size={14} /> {t('user.view')}
                         </Button>
                       </td>
                     </tr>
@@ -131,8 +133,8 @@ export default function MesPublications() {
           {!loading && publications.length === 0 && (
             <div className="text-center py-5 text-body-secondary">
               <FileText size={48} className="mb-2 opacity-50" />
-              <p className="mb-0">Aucune publication.</p>
-              <Link to="/submit" className="btn btn-danger btn-sm mt-3 rounded-pill">Soumettre une publication</Link>
+              <p className="mb-0">{t('user.noPublications')}</p>
+              <Link to="/submit" className="btn btn-danger btn-sm mt-3 rounded-pill">{t('user.submitPublication')}</Link>
             </div>
           )}
         </Card.Body>
@@ -140,13 +142,13 @@ export default function MesPublications() {
 
       <Modal show={!!selectedRejet} onHide={() => setSelectedRejet(null)} centered>
         <Modal.Header closeButton>
-          <Modal.Title className="small">Commentaire de l'administrateur</Modal.Title>
+          <Modal.Title className="small">{t('admin.adminComment')}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {selectedRejet && (
             <>
               <p className="small fw-semibold mb-2">{selectedRejet.title}</p>
-              <p className="small text-body-secondary mb-0">{selectedRejet.comment || 'Aucun commentaire fourni.'}</p>
+              <p className="small text-body-secondary mb-0">{selectedRejet.comment || t('admin.noComment')}</p>
             </>
           )}
         </Modal.Body>

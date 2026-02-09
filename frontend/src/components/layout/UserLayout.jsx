@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, Outlet, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { Navbar, Nav, Container, Button, Dropdown, Offcanvas, Form, InputGroup, ListGroup } from 'react-bootstrap';
 import {
-  Sun, Moon, LogOut, User, Bell, Search, LayoutDashboard, BookOpen, PlusCircle, FileText, Star, MessageCircle, Menu, Shield,
+  Sun, Moon, LogOut, User, Bell, Search, LayoutDashboard, BookOpen, PlusCircle, FileText, Star, MessageCircle, Menu, Shield, Globe,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from 'context/ThemeContext';
@@ -24,9 +24,16 @@ const SIDEBAR_LINKS = [
   { to: '/profil', icon: User, labelKey: 'user.profile' },
 ];
 
+const LANG_STORAGE_KEY = 'africadata-lang';
+
 export default function UserLayout() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { theme, toggleTheme } = useTheme();
+
+  const setLanguage = (lng) => {
+    i18n.changeLanguage(lng);
+    if (typeof window !== 'undefined') window.localStorage.setItem(LANG_STORAGE_KEY, lng);
+  };
   const { user, logout, authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -84,7 +91,7 @@ export default function UserLayout() {
   if (authLoading) {
     return (
       <div className="d-flex align-items-center justify-content-center min-vh-100">
-        <div className="spinner-border text-danger" role="status"><span className="visually-hidden">Chargement…</span></div>
+        <div className="spinner-border text-danger" role="status"><span className="visually-hidden">{t('common.loading')}</span></div>
       </div>
     );
   }
@@ -108,7 +115,7 @@ export default function UserLayout() {
           >
             <Menu size={24} />
           </Button>
-          <Navbar.Brand as={Link} to="/" className="d-flex align-items-center gap-2 fw-bold me-3" title="Retour à l'accueil">
+          <Navbar.Brand as={Link} to="/" className="d-flex align-items-center gap-2 fw-bold me-3" title={t('nav.backToHome')}>
             <img src="/logo.png" alt="AfricaData" className="user-layout-logo" />
             <span className="d-none d-sm-inline">AfricaData</span>
           </Navbar.Brand>
@@ -122,18 +129,27 @@ export default function UserLayout() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="user-navbar-search"
               />
-              <Button type="submit" variant="outline-secondary" aria-label="Rechercher">
+              <Button type="submit" variant="outline-secondary" aria-label={t('common.search')}>
                 <Search size={18} />
               </Button>
             </InputGroup>
           </Form>
 
           <Nav className="ms-auto align-items-center gap-1">
+            <Dropdown align="end" className="d-flex align-items-center">
+              <Dropdown.Toggle variant="link" className="text-body p-2 rounded-circle d-flex align-items-center justify-content-center" id="user-lang-dropdown" aria-label={t('common.language')}>
+                <Globe size={22} />
+              </Dropdown.Toggle>
+              <Dropdown.Menu align="end">
+                <Dropdown.Item onClick={() => setLanguage('fr')} active={i18n.language === 'fr' || (i18n.language || '').startsWith('fr')}>{t('common.fr')}</Dropdown.Item>
+                <Dropdown.Item onClick={() => setLanguage('en')} active={i18n.language === 'en'}>{t('common.en')}</Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
             <Button
               variant="link"
               className="position-relative p-2 text-body rounded-circle"
               onClick={() => setShowNotifications(true)}
-              aria-label="Notifications"
+              aria-label={t('user.notifications')}
             >
               <Bell size={22} />
               {unreadCount > 0 && (
@@ -142,7 +158,7 @@ export default function UserLayout() {
                 </span>
               )}
             </Button>
-            <Button variant="link" className="p-2 text-body rounded-circle" onClick={toggleTheme} aria-label="Thème">
+            <Button variant="link" className="p-2 text-body rounded-circle" onClick={toggleTheme} aria-label={theme === 'dark' ? t('common.switchToLight') : t('common.switchToDark')}>
               {theme === 'dark' ? <Sun size={22} /> : <Moon size={22} />}
             </Button>
             <Dropdown align="end">
@@ -244,7 +260,7 @@ export default function UserLayout() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <Button type="submit" variant="outline-secondary" aria-label="Rechercher">
+              <Button type="submit" variant="outline-secondary" aria-label={t('common.search')}>
                 <Search size={18} />
               </Button>
             </InputGroup>
@@ -299,16 +315,16 @@ export default function UserLayout() {
                 <p className="small mb-1 fw-medium">{n.title}</p>
                 {n.message && <p className="small mb-1 text-body-secondary">{n.message}</p>}
                 {n.publicationId && (
-                  <span className="small text-danger">Voir la publication →</span>
+                  <span className="small text-danger">{t('user.viewPublication')} →</span>
                 )}
                 <span className="d-block text-body-secondary small mt-1">
-                  {n.createdAt ? new Date(n.createdAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
+                  {n.createdAt ? new Date(n.createdAt).toLocaleDateString((i18n.language || 'fr').startsWith('en') ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
                 </span>
               </ListGroup.Item>
             ))}
             {notifications.length === 0 && (
               <ListGroup.Item className="border-0 text-center text-body-secondary py-5">
-                Aucune notification. Les nouvelles publications apparaîtront ici.
+                {t('user.noNotificationsEmpty')}
               </ListGroup.Item>
             )}
           </ListGroup>

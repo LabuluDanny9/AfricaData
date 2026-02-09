@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Outlet, Navigate, Link, useLocation } from 'react-router-dom';
-import { Navbar, Nav, Container, Button, ListGroup, Offcanvas, Toast, ToastContainer } from 'react-bootstrap';
+import { Navbar, Nav, Container, Button, ListGroup, Offcanvas, Toast, ToastContainer, Dropdown } from 'react-bootstrap';
 import {
   LayoutDashboard, LogOut, FileText, Users, CreditCard, BookOpen, MessageCircle,
-  Bell, BarChart3, Settings, ScrollText, Sun, Moon, KeyRound, Menu,
+  Bell, BarChart3, Settings, ScrollText, Sun, Moon, KeyRound, Menu, Globe,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from 'context/AuthContext';
@@ -26,10 +26,17 @@ const SIDEBAR_SECTIONS = [
   { to: '/superadmin/audit', icon: ScrollText, labelKey: 'admin.audit', section: 'audit' },
 ];
 
+const LANG_STORAGE_KEY = 'africadata-lang';
+
 export default function AdminLayout() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user, logout, authLoading } = useAuth();
   const { theme, toggleTheme } = useTheme();
+
+  const setLanguage = (lng) => {
+    i18n.changeLanguage(lng);
+    if (typeof window !== 'undefined') window.localStorage.setItem(LANG_STORAGE_KEY, lng);
+  };
   const location = useLocation();
   const [notifications] = useState([]);
   const [showOffcanvas, setShowOffcanvas] = useState(false);
@@ -102,6 +109,15 @@ export default function AdminLayout() {
             <Navbar.Collapse id="admin-top-nav">
               <Nav className="me-auto" />
               <Nav className="align-items-center gap-2">
+                <Dropdown align="end" className="d-flex align-items-center">
+                  <Dropdown.Toggle variant="link" className="text-body p-2 rounded-circle d-flex align-items-center justify-content-center" id="admin-lang-dropdown" aria-label={t('common.language')}>
+                    <Globe size={20} />
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu align="end">
+                    <Dropdown.Item onClick={() => setLanguage('fr')} active={i18n.language === 'fr' || (i18n.language || '').startsWith('fr')}>{t('common.fr')}</Dropdown.Item>
+                    <Dropdown.Item onClick={() => setLanguage('en')} active={i18n.language === 'en'}>{t('common.en')}</Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
                 <Button
                   variant="link"
                   className="p-2 text-body rounded-circle"

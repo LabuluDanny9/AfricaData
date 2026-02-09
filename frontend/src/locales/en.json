@@ -309,10 +309,30 @@
     "inReview": "In review",
     "published": "Published",
     "downloadsCount": "Downloads",
-    "exploreLibrary": "Explore the library"
+    "exploreLibrary": "Explore the library",
+    "viewPublication": "View publication",
+    "noNotificationsEmpty": "No notifications. New publications will appear here.",
+    "myPublicationsSubtitle": "Track your submissions",
+    "author": "Author",
+    "title": "Title",
+    "type": "Type",
+    "status": "Status",
+    "date": "Date",
+    "action": "Action",
+    "statusDraft": "Draft",
+    "statusPending": "Under review",
+    "statusPublished": "Published",
+    "statusRejected": "Rejected",
+    "favoritesTitle": "Favorites",
+    "favoritesEmpty": "No favorites yet.",
+    "removeFromFavorites": "Remove from favorites",
+    "read": "Read",
+    "noPublications": "No publications.",
+    "favoritesSubtitle": "Saved publications"
   },
   "common": {
     "loading": "Loading…",
+    "search": "Search",
     "seeMore": "See more",
     "save": "Save",
     "cancel": "Cancel",
@@ -347,6 +367,9 @@
     "notificationsAria": "Notifications",
     "backToPlatform": "Back to platform",
     "menuAdmin": "Admin menu",
-    "noNotifications": "No notifications."
+    "noNotifications": "No notifications.",
+    "adminComment": "Administrator comment",
+    "viewAdminComment": "View admin comment",
+    "noComment": "No comment provided."
   }
 }
