@@ -5,6 +5,7 @@ import {
   LayoutDashboard, LogOut, FileText, Users, CreditCard, BookOpen, MessageCircle,
   Bell, BarChart3, Settings, ScrollText, Sun, Moon, KeyRound, Menu,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from 'context/AuthContext';
 import { useTheme } from 'context/ThemeContext';
 import { isAdminRole, canAccess, ROLE_LABELS } from 'lib/adminRoles';
@@ -12,20 +13,21 @@ import AdminBreadcrumb from 'components/admin/AdminBreadcrumb';
 import './AdminLayout.css';
 
 const SIDEBAR_SECTIONS = [
-  { to: '/superadmin', icon: LayoutDashboard, label: 'Dashboard', section: 'dashboard' },
-  { to: '/superadmin/publications', icon: FileText, label: 'Publications', section: 'publications' },
-  { to: '/superadmin/utilisateurs', icon: Users, label: 'Utilisateurs', section: 'users' },
-  { to: '/superadmin/paiements', icon: CreditCard, label: 'Paiements', section: 'payments' },
-  { to: '/superadmin/codes-publication', icon: KeyRound, label: 'Codes publication gratuite', section: 'waiver_codes' },
-  { to: '/superadmin/bibliotheque', icon: BookOpen, label: 'Bibliothèque', section: 'library' },
-  { to: '/superadmin/commentaires', icon: MessageCircle, label: 'Commentaires', section: 'comments' },
-  { to: '/superadmin/notifications', icon: Bell, label: 'Notifications', section: 'notifications' },
-  { to: '/superadmin/statistiques', icon: BarChart3, label: 'Statistiques', section: 'statistics' },
-  { to: '/superadmin/parametres', icon: Settings, label: 'Paramètres', section: 'settings' },
-  { to: '/superadmin/audit', icon: ScrollText, label: 'Audit logs', section: 'audit' },
+  { to: '/superadmin', icon: LayoutDashboard, labelKey: 'admin.dashboard', section: 'dashboard' },
+  { to: '/superadmin/publications', icon: FileText, labelKey: 'admin.publications', section: 'publications' },
+  { to: '/superadmin/utilisateurs', icon: Users, labelKey: 'admin.users', section: 'users' },
+  { to: '/superadmin/paiements', icon: CreditCard, labelKey: 'admin.payments', section: 'payments' },
+  { to: '/superadmin/codes-publication', icon: KeyRound, labelKey: 'admin.waiverCodes', section: 'waiver_codes' },
+  { to: '/superadmin/bibliotheque', icon: BookOpen, labelKey: 'admin.library', section: 'library' },
+  { to: '/superadmin/commentaires', icon: MessageCircle, labelKey: 'admin.comments', section: 'comments' },
+  { to: '/superadmin/notifications', icon: Bell, labelKey: 'admin.notifications', section: 'notifications' },
+  { to: '/superadmin/statistiques', icon: BarChart3, labelKey: 'admin.statistics', section: 'statistics' },
+  { to: '/superadmin/parametres', icon: Settings, labelKey: 'admin.settings', section: 'settings' },
+  { to: '/superadmin/audit', icon: ScrollText, labelKey: 'admin.audit', section: 'audit' },
 ];
 
 export default function AdminLayout() {
+  const { t } = useTranslation();
   const { user, logout, authLoading } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
@@ -38,7 +40,7 @@ export default function AdminLayout() {
   if (authLoading) {
     return (
       <div className="d-flex align-items-center justify-content-center min-vh-100">
-        <div className="spinner-border text-danger" role="status"><span className="visually-hidden">Chargement…</span></div>
+        <div className="spinner-border text-danger" role="status"><span className="visually-hidden">{t('common.loading')}</span></div>
       </div>
     );
   }
@@ -57,7 +59,7 @@ export default function AdminLayout() {
       {/* Sidebar desktop */}
       <aside className="admin-sidebar d-none d-lg-flex flex-column">
         <div className="admin-sidebar-header d-flex align-items-center gap-2">
-          <Link to="/" className="d-flex align-items-center flex-shrink-0" title="Retour à l'accueil de la plateforme" aria-label="Accueil AfricaData">
+          <Link to="/" className="d-flex align-items-center flex-shrink-0" title={t('admin.backToHome')} aria-label={t('admin.homeAria')}>
             <img src="/logo.png" alt="AfricaData" className="admin-sidebar-logo" />
           </Link>
           <Link to="/superadmin" className="d-flex flex-column text-decoration-none flex-grow-1 min-w-0">
@@ -66,9 +68,9 @@ export default function AdminLayout() {
           </Link>
         </div>
         <nav className="admin-sidebar-nav flex-grow-1 overflow-auto" aria-label="Menu admin">
-          <div className="px-3 py-2 small text-uppercase text-muted opacity-75" style={{ color: 'rgba(255,255,255,0.6)' }}>Navigation</div>
+          <div className="px-3 py-2 small text-uppercase text-muted opacity-75" style={{ color: 'rgba(255,255,255,0.6)' }}>{t('admin.navigation')}</div>
           <ListGroup variant="flush" className="border-0 px-2 pb-3">
-            {visibleSections.map(({ to, icon: Icon, label, section }) => (
+            {visibleSections.map(({ to, icon: Icon, labelKey, section }) => (
               <ListGroup.Item
                 key={section}
                 as={Link}
@@ -77,7 +79,7 @@ export default function AdminLayout() {
                 className={`admin-sidebar-item border-0 rounded-3 mb-1 d-flex align-items-center gap-2 ${location.pathname === to ? 'active' : ''}`}
               >
                 <Icon size={20} className="flex-shrink-0" />
-                <span>{label}</span>
+                <span>{t(labelKey)}</span>
               </ListGroup.Item>
             ))}
           </ListGroup>
@@ -92,7 +94,7 @@ export default function AdminLayout() {
               variant="link"
               className="d-lg-none me-2 p-2 text-body"
               onClick={() => setShowSidebarMobile(true)}
-              aria-label="Menu"
+              aria-label={t('admin.menu')}
             >
               <Menu size={24} />
             </Button>
@@ -104,8 +106,8 @@ export default function AdminLayout() {
                   variant="link"
                   className="p-2 text-body rounded-circle"
                   onClick={toggleTheme}
-                  aria-label={theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
-                  title={theme === 'dark' ? 'Mode clair' : 'Mode sombre'}
+                  aria-label={theme === 'dark' ? t('common.switchToLight') : t('common.switchToDark')}
+                  title={theme === 'dark' ? t('common.switchToLight') : t('common.switchToDark')}
                 >
                   {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
                 </Button>
@@ -114,7 +116,7 @@ export default function AdminLayout() {
                   size="sm"
                   className="position-relative d-inline-flex align-items-center border"
                   onClick={() => setShowOffcanvas(true)}
-                  aria-label="Notifications"
+                  aria-label={t('admin.notificationsAria')}
                 >
                   <Bell size={18} />
                   {notifications.length > 0 && (
@@ -124,11 +126,11 @@ export default function AdminLayout() {
                   )}
                 </Button>
                 <Button as={Link} to="/" variant="outline-primary" size="sm" className="rounded-pill px-3 text-decoration-none">
-                  Retour à la plateforme
+                  {t('admin.backToPlatform')}
                 </Button>
                 <Button variant="outline-danger" size="sm" onClick={logout} className="rounded-pill px-3">
                   <LogOut size={16} className="me-1" />
-                  Déconnexion
+                  {t('nav.logout')}
                 </Button>
               </Nav>
             </Navbar.Collapse>
@@ -147,12 +149,12 @@ export default function AdminLayout() {
         <Offcanvas.Header closeButton>
           <Offcanvas.Title className="d-flex align-items-center gap-2">
             <img src="/logo.png" alt="" width={32} height={32} />
-            Menu Admin
+            {t('admin.menuAdmin')}
           </Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body className="p-0">
           <ListGroup variant="flush" className="border-0">
-            {visibleSections.map(({ to, icon: Icon, label, section }) => (
+            {visibleSections.map(({ to, icon: Icon, labelKey, section }) => (
               <ListGroup.Item
                 key={section}
                 as={Link}
@@ -162,7 +164,7 @@ export default function AdminLayout() {
                 onClick={() => setShowSidebarMobile(false)}
               >
                 <Icon size={20} />
-                {label}
+                {t(labelKey)}
               </ListGroup.Item>
             ))}
           </ListGroup>
@@ -173,12 +175,12 @@ export default function AdminLayout() {
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>
             <Bell size={20} className="me-2" />
-            Notifications
+            {t('admin.notifications')}
           </Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body className="p-0">
           {notifications.length === 0 ? (
-            <p className="text-body-secondary text-center py-4 mb-0">Aucune notification.</p>
+            <p className="text-body-secondary text-center py-4 mb-0">{t('admin.noNotifications')}</p>
           ) : (
             <ListGroup variant="flush">
               {notifications.map((n, i) => (

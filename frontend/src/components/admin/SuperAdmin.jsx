@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, Row, Col, Table, Badge, Tab, Tabs, Spinner, Alert, Button } from 'react-bootstrap';
 import { Users, Clock, CheckCircle, User } from 'lucide-react';
 import { getAdminStats, getAllProfiles, getAllPublicationsForAdmin, updatePublicationStatus } from 'services/admin';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from 'context/AuthContext';
 import { isAdminRole, ROLE_LABELS } from 'lib/adminRoles';
 import { isSupabaseConfigured } from 'lib/supabase';
@@ -10,6 +11,7 @@ import './AdminPages.css';
 import './SuperAdmin.css';
 
 export default function SuperAdmin() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
   const [profiles, setProfiles] = useState([]);
@@ -221,7 +223,7 @@ export default function SuperAdmin() {
                     <th>Nom</th>
                     <th>Email</th>
                     <th>Rôle</th>
-                    <th>Inscription</th>
+                    <th>{t('admin.signupDate')}</th>
                   </tr>
                 </thead>
                 <tbody>

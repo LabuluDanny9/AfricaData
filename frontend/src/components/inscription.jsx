@@ -33,7 +33,7 @@ import AfricadataHeader from 'components/layout/AfricadataHeader';
 import AfricadataFooter from 'components/layout/AfricadataFooter';
 import { GoogleIcon } from 'components/ui/GoogleIcon';
 import { useAuth } from 'context/AuthContext';
-import { signUp, signIn, signInWithOAuth } from 'services/auth';
+import { signUp, signInWithOAuth } from 'services/auth';
 import { getProfile, updateProfile } from 'services/profile';
 import { isSupabaseConfigured as hasSupabase } from 'lib/supabase';
 import 'components/layout/AfricadataHeader.css';
@@ -41,16 +41,16 @@ import 'components/auth.css';
 import './inscription.css';
 
 const ROLES = [
-  { value: 'chercheur', label: 'Chercheur / Auteur', desc: 'Soumettre et gérer vos publications' },
-  { value: 'lecteur', label: 'Lecteur', desc: 'Consulter et télécharger les publications' },
-  { value: 'editeur', label: 'Éditeur', desc: 'Valider et gérer les soumissions' },
+  { value: 'chercheur', labelKey: 'auth.roleResearcher', descKey: 'auth.roleResearcherDesc' },
+  { value: 'lecteur', labelKey: 'auth.roleReader', descKey: 'auth.roleReaderDesc' },
+  { value: 'editeur', labelKey: 'auth.roleEditor', descKey: 'auth.roleEditorDesc' },
 ];
 
-const SIDEBAR_BENEFITS = [
-  { icon: Shield, title: 'Environnement sécurisé', text: 'Données protégées et conformes RGPD' },
-  { icon: BookOpen, title: 'Open Science', text: 'DOI, OAI-PMH et indexation internationale' },
-  { icon: GraduationCap, title: 'Réseau international', text: 'Partenaires et institutions du monde entier' },
-  { icon: Fingerprint, title: 'ORCID optionnel', text: 'Liez votre identifiant chercheur' },
+const SIDEBAR_BENEFIT_KEYS = [
+  { icon: Shield, titleKey: 'auth.sidebarSecure', textKey: 'auth.sidebarSecureDesc' },
+  { icon: BookOpen, titleKey: 'auth.sidebarOpenScience', textKey: 'auth.sidebarOpenScienceDesc' },
+  { icon: GraduationCap, titleKey: 'auth.sidebarNetwork', textKey: 'auth.sidebarNetworkDesc' },
+  { icon: Fingerprint, titleKey: 'auth.sidebarOrcid', textKey: 'auth.sidebarOrcidDesc' },
 ];
 
 const containerVariants = {
@@ -70,7 +70,7 @@ const itemVariants = {
   },
 };
 
-const MSG_GOOGLE_NON_CONFIG = 'Inscription Google non configurée. Activez le fournisseur Google dans Supabase (Authentication > Providers) et configurez les identifiants dans Google Cloud Console.';
+const MSG_GOOGLE_NON_CONFIG_KEY = 'auth.signupGoogleNotConfigured';
 
 function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
   const { t } = useTranslation();
@@ -91,7 +91,7 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
   if (authLoadingContext) {
     return (
       <div className="d-flex align-items-center justify-content-center min-vh-100">
-        <div className="spinner-border text-danger" role="status"><span className="visually-hidden">Chargement…</span></div>
+        <div className="spinner-border text-danger" role="status"><span className="visually-hidden">{t('common.loading')}</span></div>
       </div>
     );
   }
@@ -151,7 +151,7 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
     e.preventDefault();
     setAuthError('');
     if (password !== confirmPassword) {
-      setAuthError('Les deux mots de passe ne correspondent pas.');
+      setAuthError(t('auth.passwordMismatch'));
       return;
     }
     setAuthLoading(true);
@@ -204,7 +204,7 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
           return;
         }
       } else {
-        setAuthError('Inscription non configurée. En production : ajoutez REACT_APP_SUPABASE_URL et REACT_APP_SUPABASE_ANON_KEY dans les variables d\'environnement (Vercel/Netlify). Voir DEPLOIEMENT.md.');
+        setAuthError(t('auth.signupNotConfigured'));
       }
     } catch (err) {
       const msg = err?.message || '';
@@ -214,7 +214,7 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
           sessionStorage.setItem('africadata-signup-pending-confirm', '1');
         } catch (_) {}
       } else {
-        setAuthError(msg || 'Inscription impossible. Réessayez.');
+        setAuthError(msg || t('auth.signupFailed'));
       }
     } finally {
       setAuthLoading(false);
@@ -235,11 +235,11 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
           >
             <Badge bg="danger" className="mb-2 px-3 py-2 rounded-pill d-inline-flex align-items-center gap-2 inscription-badge">
               <UserPlus size={18} />
-              Créer un compte
+              {t('auth.signupBadge')}
             </Badge>
-            <h1 className="h2 fw-bold mb-2">Inscription à AfricaData</h1>
+            <h1 className="h2 fw-bold mb-2">{t('auth.signupTitle')}</h1>
             <p className="text-body-secondary mb-0">
-              Rejoignez la plateforme de collecte et de publication scientifiques. Compte gratuit.
+              {t('auth.signupSubtitle')}
             </p>
           </motion.div>
 
@@ -272,7 +272,7 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
                               disabled={googleLoading}
                             >
                               <GoogleIcon size={22} />
-                              {googleLoading ? 'Inscription en cours…' : "S'inscrire avec Google"}
+                              {googleLoading ? t('auth.signupInProgress') : t('auth.signUpWithGoogle')}
                             </Button>
                             {(googleError || authError) && (
                               <p className="small text-danger mb-0 mt-2">{googleError || authError}</p>
@@ -280,18 +280,18 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
                           </motion.div>
 
                           <motion.div variants={itemVariants} className="auth-divider my-3">
-                            <span className="small text-body-secondary">ou avec le formulaire</span>
+                            <span className="small text-body-secondary">{t('auth.orWithForm')}</span>
                           </motion.div>
 
                           <motion.div variants={itemVariants} className="row g-3">
                             <Col xs="12" sm="6">
                               <Form.Group>
                                 <Form.Label className="small fw-semibold text-body-secondary d-flex align-items-center gap-1">
-                                  <User size={14} /> Prénom
+                                  <User size={14} /> {t('auth.firstName')}
                                 </Form.Label>
                                 <Form.Control
                                   type="text"
-                                  placeholder="Prénom"
+                                  placeholder={t('auth.firstName')}
                                   required
                                   className="auth-input"
                                   size="lg"
@@ -304,11 +304,11 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
                             <Col xs="12" sm="6">
                               <Form.Group>
                                 <Form.Label className="small fw-semibold text-body-secondary d-flex align-items-center gap-1">
-                                  <User size={14} /> Nom
+                                  <User size={14} /> {t('auth.lastName')}
                                 </Form.Label>
                                 <Form.Control
                                   type="text"
-                                  placeholder="Nom"
+                                  placeholder={t('auth.lastName')}
                                   required
                                   className="auth-input"
                                   size="lg"
@@ -323,11 +323,11 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
                           <motion.div variants={itemVariants}>
                             <Form.Group className="mt-3">
                               <Form.Label className="small fw-semibold text-body-secondary d-flex align-items-center gap-1">
-                                <Mail size={14} /> Adresse email professionnelle
+                                <Mail size={14} /> {t('auth.professionalEmail')}
                               </Form.Label>
                               <Form.Control
                                 type="email"
-                                placeholder="prenom.nom@institution.org"
+                                placeholder={t('auth.emailPlaceholder')}
                                 required
                                 className="auth-input"
                                 size="lg"
@@ -336,7 +336,7 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
                                 disabled={authLoading}
                               />
                               <Form.Text className="small text-body-secondary">
-                                De préférence une adresse institutionnelle.
+                                {t('auth.institutionalPreferred')}
                               </Form.Text>
                             </Form.Group>
                           </motion.div>
@@ -344,7 +344,7 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
                           <motion.div variants={itemVariants}>
                             <Form.Group className="mt-3">
                               <Form.Label className="small fw-semibold text-body-secondary d-flex align-items-center gap-1">
-                                <Sparkles size={14} /> Profil d'utilisation
+                                <Sparkles size={14} /> {t('auth.profileType')}
                               </Form.Label>
                               <Form.Select
                                 value={role}
@@ -354,12 +354,12 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
                               >
                                 {ROLES.map((r) => (
                                   <option key={r.value} value={r.value}>
-                                    {r.label}
+                                    {t(r.labelKey)}
                                   </option>
                                 ))}
                               </Form.Select>
                               <Form.Text className="small text-body-secondary">
-                                {ROLES.find((r) => r.value === role)?.desc}
+                                {t(ROLES.find((r) => r.value === role)?.descKey || '')}
                               </Form.Text>
                             </Form.Group>
                           </motion.div>
@@ -367,11 +367,11 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
                           <motion.div variants={itemVariants}>
                             <Form.Group className="mt-3">
                               <Form.Label className="small fw-semibold text-body-secondary d-flex align-items-center gap-1">
-                                <Building2 size={14} /> Institution <span className="text-muted fw-normal">(optionnel)</span>
+                                <Building2 size={14} /> {t('auth.institution')} <span className="text-muted fw-normal">({t('auth.institutionOptional')})</span>
                               </Form.Label>
                               <Form.Control
                                 type="text"
-                                placeholder="Université, laboratoire, organisation"
+                                placeholder={t('auth.institutionPlaceholder')}
                                 className="auth-input"
                                 size="lg"
                               />
@@ -381,16 +381,16 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
                           <motion.div variants={itemVariants}>
                             <Form.Group className="mt-3">
                               <Form.Label className="small fw-semibold text-body-secondary d-flex align-items-center gap-1">
-                                <Fingerprint size={14} /> ORCID <span className="text-muted fw-normal">(optionnel)</span>
+                                <Fingerprint size={14} /> ORCID <span className="text-muted fw-normal">({t('auth.orcidOptional')})</span>
                               </Form.Label>
                               <Form.Control
                                 type="text"
-                                placeholder="0000-0000-0000-0000"
+                                placeholder={t('auth.orcidPlaceholder')}
                                 className="auth-input"
                                 size="lg"
                               />
                               <Form.Text className="small text-body-secondary">
-                                Identifiant chercheur pour lier vos publications.
+                                {t('auth.orcidHelp')}
                               </Form.Text>
                             </Form.Group>
                           </motion.div>
@@ -398,7 +398,7 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
                           <motion.div variants={itemVariants}>
                             <Form.Group className="mt-3">
                               <Form.Label className="small fw-semibold text-body-secondary d-flex align-items-center gap-1">
-                                <Lock size={14} /> Mot de passe
+                                <Lock size={14} /> {t('auth.password')}
                               </Form.Label>
                               <InputGroup size="lg" className="auth-input-group">
                                 <Form.Control
@@ -416,7 +416,7 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
                                   variant="outline-secondary"
                                   className="auth-password-toggle border-start-0 d-flex align-items-center justify-content-center"
                                   onClick={() => setShowPassword(!showPassword)}
-                                  aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                                  aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                                 >
                                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                 </Button>
@@ -430,11 +430,11 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
                           <motion.div variants={itemVariants}>
                             <Form.Group className="mt-3">
                               <Form.Label className="small fw-semibold text-body-secondary">
-                                Confirmer le mot de passe
+                                {t('auth.confirmPassword')}
                               </Form.Label>
                               <Form.Control
                                 type={showPassword ? 'text' : 'password'}
-                                placeholder="Saisissez à nouveau le mot de passe"
+                                placeholder={t('auth.confirmPasswordPlaceholder')}
                                 required
                                 minLength={8}
                                 className="auth-input"
@@ -453,11 +453,7 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
                                 id="cgu"
                                 label={
                                   <span className="small">
-                                    J'accepte les{' '}
-                                    <Link to="/about" className="text-danger text-decoration-none">
-                                      conditions d'utilisation
-                                    </Link>{' '}
-                                    et la politique de confidentialité d'AfricaData, plateforme de publication scientifique.
+                                    {t('auth.termsAccept')}
                                   </span>
                                 }
                                 checked={agreed}
@@ -476,15 +472,15 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
                               className="w-100 mt-4 rounded-pill auth-submit-btn inscription-submit-btn d-flex align-items-center justify-content-center gap-2"
                               disabled={!agreed || authLoading}
                             >
-                              {authLoading ? 'Inscription…' : 'Créer mon compte'}
+                              {authLoading ? t('auth.signupInProgress') : t('auth.createAccount')}
                               <ArrowRight size={20} />
                             </Button>
                           </motion.div>
 
                           <motion.p variants={itemVariants} className="text-center small text-body-secondary mt-4 mb-0">
-                            Déjà un compte ?{' '}
+                            {t('auth.alreadyAccount')}{' '}
                             <Link to="/connexion" className="fw-semibold text-danger text-decoration-none">
-                              Se connecter
+                              {t('nav.login')}
                             </Link>
                           </motion.p>
                         </Form>
@@ -496,14 +492,14 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
                       <Card.Body className="auth-sidebar p-4 p-lg-5 d-flex flex-column justify-content-center">
                         <h3 className="h6 fw-bold text-white mb-3 d-flex align-items-center gap-2">
                           <CheckCircle2 size={20} />
-                          Pourquoi s'inscrire ?
+                          {t('auth.whySignUp')}
                         </h3>
                         <ListGroup variant="flush" className="auth-benefits-list">
-                          {SIDEBAR_BENEFITS.map((b, i) => {
+                          {SIDEBAR_BENEFIT_KEYS.map((b, i) => {
                             const Icon = b.icon;
                             return (
                               <motion.div
-                                key={b.title}
+                                key={b.titleKey}
                                 initial={{ opacity: 0, x: 10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.2 + i * 0.08, duration: 0.3 }}
@@ -513,8 +509,8 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
                                     <Icon size={18} />
                                   </span>
                                   <div>
-                                    <span className="fw-semibold small d-block">{b.title}</span>
-                                    <span className="small opacity-85">{b.text}</span>
+                                    <span className="fw-semibold small d-block">{t(b.titleKey)}</span>
+                                    <span className="small opacity-85">{t(b.textKey)}</span>
                                   </div>
                                 </ListGroup.Item>
                               </motion.div>
@@ -522,7 +518,7 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
                           })}
                         </ListGroup>
                         <p className="small text-white opacity-75 mt-4 mb-0">
-                          Inscription gratuite. Accès aux publications selon votre profil.
+                          {t('auth.signupFreeNote')}
                         </p>
                       </Card.Body>
                     </Col>
@@ -541,6 +537,7 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
 }
 
 function InscriptionWithSupabase() {
+  const { t } = useTranslation();
   const [googleError, setGoogleError] = useState(null);
   const [googleLoading, setGoogleLoading] = useState(false);
 
@@ -551,7 +548,7 @@ function InscriptionWithSupabase() {
       await signInWithOAuth('google', '/dashboard');
       // signInWithOAuth redirige vers Google ; après connexion, Supabase redirige vers /dashboard avec session
     } catch (err) {
-      setGoogleError(err?.message || 'Inscription Google impossible. Vérifiez que le fournisseur Google est activé dans Supabase.');
+      setGoogleError(err?.message || t('auth.signupGoogleNotConfigured'));
       setGoogleLoading(false);
     }
   };
@@ -566,10 +563,11 @@ function InscriptionWithSupabase() {
 }
 
 function InscriptionNoSupabase() {
+  const { t } = useTranslation();
   const [googleError, setGoogleError] = useState(null);
 
   const handleGoogleAuth = () => {
-    setGoogleError(MSG_GOOGLE_NON_CONFIG);
+    setGoogleError(t(MSG_GOOGLE_NON_CONFIG_KEY));
   };
 
   return (

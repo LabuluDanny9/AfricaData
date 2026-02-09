@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, Table, Badge, Spinner, Alert, Button, Form, Modal, Toast, ToastContainer } from 'react-bootstrap';
 import { Search, Trash2, UserCog } from 'lucide-react';
 import { getAllProfiles, deleteUser, updateUserRole } from 'services/admin';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from 'context/AuthContext';
 import { canManageUsers, ROLE_LABELS } from 'lib/adminRoles';
 import { isSupabaseConfigured } from 'lib/supabase';
@@ -19,6 +20,7 @@ const USER_ROLES_OPTIONS = [
 ];
 
 export default function AdminUsers() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -138,7 +140,7 @@ export default function AdminUsers() {
                 <th>Nom</th>
                 <th>Email</th>
                 <th>Rôle</th>
-                <th>Inscription</th>
+                <th>{t('admin.signupDate')}</th>
                 {canManage && <th>Actions</th>}
               </tr>
             </thead>

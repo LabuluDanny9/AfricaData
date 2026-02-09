@@ -39,11 +39,11 @@ import 'components/layout/AfricadataHeader.css';
 import 'components/auth.css';
 import './connexion.css';
 
-const SIDEBAR_BENEFITS = [
-  { icon: FileText, title: 'Vos publications', text: 'Accédez à l\'ensemble de vos travaux et métadonnées' },
-  { icon: LayoutDashboard, title: 'Tableau de bord', text: 'Suivez les consultations et téléchargements' },
-  { icon: Send, title: 'Soumettre des travaux', text: 'Déposez de nouvelles publications en quelques clics' },
-  { icon: Shield, title: 'Données sécurisées', text: 'Environnement conforme et traçable' },
+const SIDEBAR_BENEFIT_KEYS = [
+  { icon: FileText, titleKey: 'auth.benefitPublications', textKey: 'auth.benefitPublicationsDesc' },
+  { icon: LayoutDashboard, titleKey: 'auth.benefitDashboard', textKey: 'auth.benefitDashboardDesc' },
+  { icon: Send, titleKey: 'auth.benefitSubmit', textKey: 'auth.benefitSubmitDesc' },
+  { icon: Shield, titleKey: 'auth.benefitSecure', textKey: 'auth.benefitSecureDesc' },
 ];
 
 const containerVariants = {
@@ -63,7 +63,7 @@ const itemVariants = {
   },
 };
 
-const MSG_GOOGLE_NON_CONFIG = 'Connexion Google non configurée. Activez le fournisseur Google dans Supabase (Authentication > Providers) et configurez les identifiants dans Google Cloud Console.';
+const MSG_GOOGLE_NON_CONFIG_KEY = 'auth.googleNotConfigured';
 
 function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
   const { t } = useTranslation();
@@ -97,7 +97,7 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
   if (authLoadingContext) {
     return (
       <div className="d-flex align-items-center justify-content-center min-vh-100">
-        <div className="spinner-border text-danger" role="status"><span className="visually-hidden">Chargement…</span></div>
+        <div className="spinner-border text-danger" role="status"><span className="visually-hidden">{t('common.loading')}</span></div>
       </div>
     );
   }
@@ -129,14 +129,14 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
           setUser({ ...baseUser, role });
           // Redirection après mise à jour du contexte (setUser asynchrone)
           const redirectPath = isAdminLogin && isAdminRole(role) ? '/superadmin' : '/dashboard';
-          const redirectState = isAdminLogin && !isAdminRole(role) ? { message: 'Accès réservé aux administrateurs. Vous êtes connecté en tant qu\'utilisateur.' } : undefined;
+          const redirectState = isAdminLogin && !isAdminRole(role) ? { message: t('auth.adminOnlyAccess') } : undefined;
           setTimeout(() => navigate(redirectPath, { replace: true, state: redirectState }), 0);
         }
       } else {
-        setAuthError('Connexion email non configurée. Configurez Supabase (voir .env.example).');
+        setAuthError(t('auth.emailNotConfigured'));
       }
     } catch (err) {
-      setAuthError(err.message || 'Email ou mot de passe incorrect.');
+      setAuthError(err.message || t('auth.emailOrPasswordInvalid'));
     } finally {
       setAuthLoading(false);
     }
@@ -208,7 +208,7 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
                             {isAdminLogin && (
                               <motion.div variants={itemVariants}>
                                 <p className="small text-body-secondary mb-2">
-                                  Utilisez votre email et mot de passe du compte administrateur.
+                                  {t('auth.useAdminCredentials')}
                                 </p>
                               </motion.div>
                             )}
@@ -259,14 +259,14 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
                                     variant="outline-secondary"
                                     className="auth-password-toggle border-start-0 d-flex align-items-center justify-content-center"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                                    aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                                   >
                                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                   </Button>
                                 </InputGroup>
                                 <div className="d-flex justify-content-end mt-1">
                                   <Link to="/mot-de-passe-oublie" className="small text-body-secondary text-decoration-none d-flex align-items-center gap-1">
-                                    <KeyRound size={14} /> Mot de passe oublié ?
+                                    <KeyRound size={14} /> {t('auth.forgotPassword')}
                                   </Link>
                                 </div>
                               </Form.Group>
@@ -280,21 +280,21 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
                                 disabled={authLoading}
                                 className="w-100 rounded-pill auth-submit-btn d-flex align-items-center justify-content-center gap-2"
                               >
-                                {authLoading ? 'Connexion…' : 'Se connecter'}
+                                {authLoading ? t('auth.signingIn') : t('auth.connectButton')}
                                 <ArrowRight size={20} />
                               </Button>
                             </motion.div>
 
                             <motion.div variants={itemVariants} className="auth-divider my-4">
-                              <span className="small text-body-secondary">ou</span>
+                              <span className="small text-body-secondary">{t('auth.or')}</span>
                             </motion.div>
 
                             <motion.p variants={itemVariants} className="text-center small text-body-secondary mb-0">
                               {!isAdminLogin && (
                                 <>
-                                  Pas encore de compte ?{' '}
+                                  {t('auth.noAccountYet')}{' '}
                                   <Link to="/inscription" className="fw-semibold text-danger text-decoration-none">
-                                    Créer un compte
+                                    {t('auth.createAccountLink')}
                                   </Link>
                                 </>
                               )}
@@ -302,11 +302,11 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
                             <motion.p variants={itemVariants} className="text-center small text-body-secondary mb-0 mt-2">
                               {isAdminLogin ? (
                                 <Link to="/connexion" className="fw-semibold text-danger text-decoration-none">
-                                  Connexion utilisateur
+                                  {t('auth.loginUser')}
                                 </Link>
                               ) : (
                                 <Link to="/connexion-admin" className="fw-semibold text-body-secondary text-decoration-none">
-                                  Connexion administrateur
+                                  {t('auth.loginAdmin')}
                                 </Link>
                               )}
                             </motion.p>
@@ -316,7 +316,7 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
                               className="d-flex align-items-center justify-content-center gap-2 mt-4 pt-3 border-top border-secondary"
                             >
                               <Shield size={16} className="text-body-secondary" />
-                              <span className="small text-body-secondary">Connexion sécurisée</span>
+                              <span className="small text-body-secondary">{t('auth.secureLogin')}</span>
                             </motion.div>
                           </Form>
                         </Card.Body>
@@ -327,14 +327,14 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
                         <Card.Body className="auth-sidebar p-4 p-lg-5 d-flex flex-column justify-content-center">
                           <h3 className="h6 fw-bold text-white mb-3 d-flex align-items-center gap-2">
                             <LayoutDashboard size={20} />
-                            Pourquoi se connecter ?
+                            {t('auth.whySignIn')}
                           </h3>
                           <ListGroup variant="flush" className="auth-benefits-list">
-                            {SIDEBAR_BENEFITS.map((b, i) => {
+                            {SIDEBAR_BENEFIT_KEYS.map((b, i) => {
                               const Icon = b.icon;
                               return (
                                 <motion.div
-                                  key={b.title}
+                                  key={b.titleKey}
                                   initial={{ opacity: 0, x: 10 }}
                                   animate={{ opacity: 1, x: 0 }}
                                   transition={{ delay: 0.15 + i * 0.07, duration: 0.3 }}
@@ -344,8 +344,8 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
                                       <Icon size={18} />
                                     </span>
                                     <div>
-                                      <span className="fw-semibold small d-block">{b.title}</span>
-                                      <span className="small opacity-85">{b.text}</span>
+                                      <span className="fw-semibold small d-block">{t(b.titleKey)}</span>
+                                      <span className="small opacity-85">{t(b.textKey)}</span>
                                     </div>
                                   </ListGroup.Item>
                                 </motion.div>
@@ -353,7 +353,7 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
                             })}
                           </ListGroup>
                           <p className="small text-white opacity-75 mt-4 mb-0">
-                            Accès selon votre profil : lecteur, auteur ou éditeur.
+                            {t('auth.benefitDashboardDesc')}
                           </p>
                         </Card.Body>
                       </Col>
@@ -372,6 +372,7 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
 }
 
 function ConnexionWithSupabase() {
+  const { t } = useTranslation();
   const [googleError, setGoogleError] = useState(null);
   const [googleLoading, setGoogleLoading] = useState(false);
   const location = useLocation();
@@ -385,7 +386,7 @@ function ConnexionWithSupabase() {
       await signInWithOAuth('google', redirectPath);
       // signInWithOAuth redirige vers Google ; si erreur avant redirection, on l'affiche
     } catch (err) {
-      setGoogleError(err?.message || 'Connexion Google impossible. Vérifiez que le fournisseur Google est activé dans Supabase.');
+      setGoogleError(err?.message || t('auth.googleNotConfigured'));
       setGoogleLoading(false);
     }
   };
@@ -400,10 +401,11 @@ function ConnexionWithSupabase() {
 }
 
 function ConnexionNoSupabase() {
+  const { t } = useTranslation();
   const [googleError, setGoogleError] = useState(null);
 
   const handleGoogleAuth = () => {
-    setGoogleError(MSG_GOOGLE_NON_CONFIG);
+    setGoogleError(t(MSG_GOOGLE_NON_CONFIG_KEY));
   };
 
   return (

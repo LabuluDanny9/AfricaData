@@ -111,7 +111,7 @@ export default function AfricadataHeader() {
               size="sm"
               className="text-body p-2 rounded-circle d-flex align-items-center justify-content-center theme-toggle"
               onClick={toggleTheme}
-              aria-label={theme === 'light' ? 'Passer en mode sombre' : 'Passer en mode clair'}
+              aria-label={theme === 'light' ? t('common.switchToDark') : t('common.switchToLight')}
             >
               {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
             </Button>

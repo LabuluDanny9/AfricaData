@@ -32,26 +32,31 @@
   background: var(--bs-secondary-bg) !important;
 }
 
-/* Onglets non sélectionnés : jamais de rouge, ni texte ni fond */
+/* Tous les onglets (nav-link) : encadré comme S'inscrire — bordure, padding, transition */
 .africadata-navbar .nav-link {
   color: var(--bs-body-color) !important;
   background: transparent !important;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.375rem;
+  padding: 0.35rem 0.75rem !important;
+  margin: 0 0.1rem;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
 }
 
 .africadata-navbar .nav-link:hover {
   color: var(--bs-secondary-color) !important;
-  background: transparent !important;
+  background: var(--bs-secondary-bg) !important;
+  border-color: var(--bs-border-color);
 }
 
-/* Section active : toujours en rouge pour indiquer la page en cours */
+/* Section active : rouge + encadré (même design que S'inscrire actif) */
 .africadata-navbar .nav-link.active {
   color: var(--bs-danger) !important;
   font-weight: 700 !important;
   background: rgba(var(--bs-danger-rgb), 0.12) !important;
   border: 1px solid var(--bs-danger) !important;
-  border-radius: 0.375rem;
-  padding-left: 0.75rem !important;
-  padding-right: 0.75rem !important;
+  box-shadow: 0 0 0 2px rgba(var(--bs-danger-rgb), 0.2);
+  transform: translateY(-1px);
 }
 
 .africadata-navbar .nav-link.active:hover,
@@ -59,9 +64,17 @@
   color: var(--bs-danger) !important;
   background: rgba(var(--bs-danger-rgb), 0.18) !important;
   border-color: var(--bs-danger) !important;
+  box-shadow: 0 0 0 2px rgba(var(--bs-danger-rgb), 0.3);
 }
 
-/* S'inscrire non sélectionné : pas de rouge, style comme les autres onglets */
+/* S'inscrire : même encadré que les nav-link, avec transition */
+.africadata-navbar .btn.btn-danger {
+  border-radius: 0.375rem;
+  padding: 0.35rem 0.75rem;
+  margin: 0 0.1rem;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
 .africadata-navbar .btn.btn-danger:not(.active) {
   background: transparent !important;
   color: var(--bs-body-color) !important;
@@ -74,16 +87,18 @@
   border-color: var(--bs-border-color);
 }
 
-/* S'inscrire sélectionné (page inscription) : rouge + encadré */
+/* S'inscrire sélectionné : rouge + encadré + légère animation */
 .africadata-navbar .btn.btn-danger.active {
   background: var(--bs-danger) !important;
   color: #fff !important;
   border: 1px solid var(--bs-danger);
   box-shadow: 0 0 0 2px rgba(var(--bs-danger-rgb), 0.3);
+  transform: translateY(-1px);
 }
 
 .africadata-navbar .btn.btn-danger.active:hover {
   background: var(--bs-danger) !important;
   color: #fff !important;
   border-color: var(--bs-danger);
+  box-shadow: 0 0 0 2px rgba(var(--bs-danger-rgb), 0.4);
 }
