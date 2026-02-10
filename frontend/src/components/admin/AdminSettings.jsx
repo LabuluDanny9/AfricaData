@@ -88,7 +88,7 @@ export default function AdminSettings() {
         else next.push({ domain, content, updated_at: new Date().toISOString() });
         return next;
       });
-      setToast({ show: true, message: 'Normes enregistrées pour « ' + domain + ».', type: 'success' });
+      setToast({ show: true, message: 'Normes enregistrées pour "' + domain + '".', type: 'success' });
     }
   };
 
@@ -148,7 +148,7 @@ export default function AdminSettings() {
         </Card.Header>
         <Card.Body>
           <p className="small text-muted mb-3">
-            Définissez les modalités ou normes selon chaque domaine pour que les auteurs sachent comment bien publier. Ces normes sont affichées dans l'outil « Examiner » et sur la page « Normes de publication » pour les utilisateurs.
+            Définissez les modalités ou normes selon chaque domaine pour que les auteurs sachent comment bien publier. Ces normes sont affichées dans l'outil "Examiner" et sur la page "Normes de publication" pour les utilisateurs.
           </p>
           {normsLoading ? (
             <Spinner animation="border" size="sm" />
