@@ -38,7 +38,7 @@ export default function AdminSettings() {
     getPlatformSettings().then(({ payment_enabled, error }) => {
       if (!cancelled) {
         setPaymentLoading(false);
-        if (!error) setPaymentEnabled(payment_enabled !== false);
+        setPaymentEnabled(payment_enabled !== false);
       }
     });
     return () => { cancelled = true; };
@@ -49,11 +49,11 @@ export default function AdminSettings() {
     setPaymentSaving(true);
     const { error } = await updatePaymentEnabled(enabled);
     setPaymentSaving(false);
+    setPaymentEnabled(enabled);
     if (error) {
-      setToast({ show: true, message: 'Erreur : ' + (error.message || 'impossible d\'enregistrer.') });
+      setToast({ show: true, message: 'Réglage enregistré localement. Pour le persister en base, exécutez la migration platform_settings dans Supabase (voir backend/supabase/migrations/20250207_platform_settings.sql).' });
       return;
     }
-    setPaymentEnabled(enabled);
     setToast({ show: true, message: enabled ? 'Paiement activé.' : 'Paiement désactivé — les utilisateurs peuvent soumettre gratuitement.' });
   };
 

@@ -119,8 +119,8 @@ export default function SubmitWizard() {
   // Paramètre plateforme : paiement activé ou non
   useEffect(() => {
     let cancelled = false;
-    getPlatformSettings().then(({ payment_enabled, error }) => {
-      if (!cancelled && !error) setPaymentEnabled(payment_enabled !== false);
+    getPlatformSettings().then(({ payment_enabled }) => {
+      if (!cancelled) setPaymentEnabled(payment_enabled !== false);
     });
     return () => { cancelled = true; };
   }, []);
