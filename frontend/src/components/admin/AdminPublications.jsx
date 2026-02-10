@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Card, Table, Badge, Spinner, Alert, Button, Form, Modal, Toast, ToastContainer } from 'react-bootstrap';
-import { Search, Eye, CheckCircle, XCircle, Trash2, Download, User } from 'lucide-react';
+import { Search, Eye, CheckCircle, XCircle, Trash2, Download, User, FileCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getAllPublicationsForAdmin, updatePublicationStatus, deletePublication } from 'services/admin';
+import { getAllPublicationsForAdmin, updatePublicationStatus, deletePublication, notifyPublicationRejected } from 'services/admin';
+import { getDomainNorm } from 'services/domainNorms';
 import { useAuth } from 'context/AuthContext';
 import { canValidatePublications, canDeleteAnyContent } from 'lib/adminRoles';
 import { isSupabaseConfigured } from 'lib/supabase';
@@ -18,6 +19,7 @@ export default function AdminPublications() {
   const [search, setSearch] = useState('');
   const [rejectModal, setRejectModal] = useState({ show: false, pub: null, comment: '' });
   const [deleteModal, setDeleteModal] = useState({ show: false, pub: null });
+  const [examineModal, setExamineModal] = useState({ show: false, pub: null, norm: null, loadingNorm: false });
   const [toast, setToast] = useState({ show: false, message: '' });
 
   const canValidate = canValidatePublications(user?.role);
@@ -40,13 +42,23 @@ export default function AdminPublications() {
     setUpdatingId(pubId);
     setError('');
     const { error: err } = await updatePublicationStatus(pubId, newStatus, newStatus === 'rejected' ? rejectComment : null);
-    setUpdatingId(null);
-    setRejectModal({ show: false, pub: null, comment: '' });
     if (err) {
+      setUpdatingId(null);
+      setRejectModal({ show: false, pub: null, comment: '' });
       setError(err.message || 'Erreur lors de la mise à jour.');
       return;
     }
-    setPublications((prev) => prev.map((p) => (p.id === pubId ? { ...p, status: newStatus } : p)));
+    if (newStatus === 'rejected') {
+      const { error: emailErr } = await notifyPublicationRejected(pubId);
+      if (emailErr) {
+        setToast({ show: true, message: 'Rejet enregistré. L\'email à l\'auteur n\'a pas pu être envoyé (vérifiez l\'Edge Function send-rejection-email).' });
+      } else {
+        setToast({ show: true, message: 'Publication rejetée. Un email avec le motif du rejet a été envoyé à l\'auteur.' });
+      }
+    }
+    setUpdatingId(null);
+    setRejectModal({ show: false, pub: null, comment: '' });
+    setPublications((prev) => prev.map((p) => (p.id === pubId ? { ...p, status: newStatus, admin_comment: newStatus === 'rejected' ? rejectComment : p.admin_comment } : p)));
   };
 
   const openDeleteModal = (pub) => setDeleteModal({ show: true, pub });
@@ -67,6 +79,13 @@ export default function AdminPublications() {
 
   const openRejectModal = (pub) => setRejectModal({ show: true, pub, comment: '' });
   const closeRejectModal = () => setRejectModal({ show: false, pub: null, comment: '' });
+  const openExamineModal = (pub) => {
+    setExamineModal({ show: true, pub, norm: null, loadingNorm: true });
+    getDomainNorm(pub?.domain || '').then(({ data }) => {
+      setExamineModal((prev) => ({ ...prev, norm: data, loadingNorm: false }));
+    }).catch(() => setExamineModal((prev) => ({ ...prev, norm: null, loadingNorm: false })));
+  };
+  const closeExamineModal = () => setExamineModal({ show: false, pub: null, norm: null, loadingNorm: false });
   const confirmReject = () => {
     if (!rejectModal.pub || !rejectModal.comment.trim()) return;
     handleStatusChange(rejectModal.pub.id, 'rejected', rejectModal.comment);
@@ -203,6 +222,15 @@ export default function AdminPublications() {
                             <Download size={14} />
                           </Button>
                         )}
+                        <Button
+                          variant="outline-primary"
+                          size="sm"
+                          onClick={() => openExamineModal(p)}
+                          title="Examiner la conformité"
+                          className="me-1"
+                        >
+                          <FileCheck size={14} />
+                        </Button>
                         {canValidate && p.status === 'draft' && (
                           <>
                             {updatingId === p.id ? (
@@ -214,6 +242,7 @@ export default function AdminPublications() {
                                   size="sm"
                                   onClick={() => handleStatusChange(p.id, 'published')}
                                   title="Valider"
+                                  className="me-1"
                                 >
                                   <CheckCircle size={14} />
                                 </Button>
@@ -276,6 +305,69 @@ export default function AdminPublications() {
           )}
         </Card.Body>
       </Card>
+
+      <Modal show={examineModal.show} onHide={closeExamineModal} size="lg" centered scrollable>
+        <Modal.Header closeButton>
+          <Modal.Title className="d-flex align-items-center gap-2">
+            <FileCheck size={22} />
+            Examiner la conformité
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {examineModal.pub && (
+            <>
+              <h6 className="mb-2">Publication soumise</h6>
+              <Card className="mb-3 bg-light">
+                <Card.Body className="py-3">
+                  <p className="mb-1"><strong>Titre :</strong> {examineModal.pub.title || '—'}</p>
+                  <p className="mb-1"><strong>Domaine :</strong> {examineModal.pub.domain || '—'}</p>
+                  <p className="mb-1"><strong>Type :</strong> {examineModal.pub.type || '—'}</p>
+                  <p className="mb-1"><strong>Résumé :</strong> {(examineModal.pub.summary || '—').slice(0, 200)}{(examineModal.pub.summary?.length || 0) > 200 ? '…' : ''}</p>
+                  <p className="mb-0"><strong>PDF :</strong> {examineModal.pub.pdf_url ? 'Oui' : 'Non'}</p>
+                </Card.Body>
+              </Card>
+              <h6 className="mb-2">Normes / modalités du domaine « {examineModal.pub.domain} »</h6>
+              {examineModal.loadingNorm ? (
+                <Spinner animation="border" size="sm" />
+              ) : examineModal.norm?.content ? (
+                <Card className="mb-3 border-primary">
+                  <Card.Body className="py-3 small">
+                    {examineModal.norm.content}
+                  </Card.Body>
+                </Card>
+              ) : (
+                <p className="text-muted small mb-3">Aucune norme enregistrée pour ce domaine. Vous pouvez en ajouter dans Paramètres → Normes par domaine.</p>
+              )}
+              <h6 className="mb-2">Vérification de conformité</h6>
+              <ul className="small mb-0">
+                <li className={examineModal.pub.title?.trim().length >= 10 ? 'text-success' : 'text-muted'}>
+                  {examineModal.pub.title?.trim().length >= 10 ? '✓' : '○'} Titre rempli (≥ 10 caractères)
+                </li>
+                <li className={(examineModal.pub.summary?.trim().length || 0) >= 50 ? 'text-success' : 'text-muted'}>
+                  {(examineModal.pub.summary?.trim().length || 0) >= 50 ? '✓' : '○'} Résumé rempli (≥ 50 caractères)
+                </li>
+                <li className={examineModal.pub.pdf_url ? 'text-success' : 'text-muted'}>
+                  {examineModal.pub.pdf_url ? '✓' : '○'} Document PDF présent
+                </li>
+                <li className="text-muted">○ Conforme aux normes du domaine (à apprécier par l’examinateur)</li>
+              </ul>
+            </>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={closeExamineModal}>Fermer</Button>
+          {examineModal.pub?.status === 'draft' && canValidate && (
+            <>
+              <Button variant="success" onClick={() => { closeExamineModal(); handleStatusChange(examineModal.pub.id, 'published'); }}>
+                Valider
+              </Button>
+              <Button variant="danger" onClick={() => { closeExamineModal(); openRejectModal(examineModal.pub); }}>
+                Rejeter
+              </Button>
+            </>
+          )}
+        </Modal.Footer>
+      </Modal>
 
       <Modal show={rejectModal.show} onHide={closeRejectModal} centered>
         <Modal.Header closeButton>

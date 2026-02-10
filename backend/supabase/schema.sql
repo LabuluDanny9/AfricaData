@@ -148,6 +148,7 @@ CREATE TABLE IF NOT EXISTS public.publication_comments (
   user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   author_name TEXT NOT NULL,
   content TEXT NOT NULL,
+  hidden BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 

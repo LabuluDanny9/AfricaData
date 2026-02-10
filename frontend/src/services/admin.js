@@ -108,7 +108,7 @@ export async function getAllPublicationsForAdmin() {
   if (!isSupabaseConfigured()) return { data: [], error: null };
   const { data, error } = await supabase
     .from('publications')
-    .select('id, title, author, author_photo_url, type, domain, status, views, downloads, pdf_url, created_at')
+    .select('id, title, author, author_photo_url, type, domain, status, views, downloads, pdf_url, summary, admin_comment, user_id, created_at')
     .order('created_at', { ascending: false });
   return { data: data || [], error };
 }
@@ -161,6 +161,23 @@ export async function updatePublicationStatus(publicationId, status, adminCommen
     .update(updates)
     .eq('id', publicationId);
   return { error };
+}
+
+/**
+ * Déclencher l'envoi d'un email à l'auteur avec la cause du rejet (à appeler après updatePublicationStatus(..., 'rejected', comment)).
+ * Nécessite une Edge Function "send-rejection-email" déployée et configurée (voir backend/supabase/GUIDE-EMAIL-REJET.md).
+ */
+export async function notifyPublicationRejected(publicationId) {
+  if (!isSupabaseConfigured()) return { error: null };
+  try {
+    const { data, error } = await supabase.functions.invoke('send-rejection-email', {
+      body: { publicationId },
+    });
+    if (error) return { error };
+    return { data, error: null };
+  } catch (err) {
+    return { error: err };
+  }
 }
 
 /** PATCH /api/admin/publications/:id — mise à jour métadonnées (titre, domaine, type) */

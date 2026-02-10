@@ -18,6 +18,7 @@ import Favoris from './components/user/Favoris';
 import AvisCommentaires from './components/user/AvisCommentaires';
 import Profil from './components/user/Profil';
 import SubmitWizard from './components/user/SubmitWizard';
+import NormesPublication from './components/user/NormesPublication';
 import SuperAdmin from './components/admin/SuperAdmin';
 import AdminPublications from './components/admin/AdminPublications';
 import AdminUsers from './components/admin/AdminUsers';
@@ -49,6 +50,7 @@ function App() {
             <Route path="dashboard" element={<DashboardUser />} />
             <Route path="librairie" element={<Librairie embedded />} />
             <Route path="submit" element={<SubmitWizard />} />
+            <Route path="normes-de-publication" element={<NormesPublication />} />
             <Route path="mes-publications" element={<MesPublications />} />
             <Route path="favoris" element={<Favoris />} />
             <Route path="avis" element={<AvisCommentaires />} />

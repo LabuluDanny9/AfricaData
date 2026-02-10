@@ -446,18 +446,23 @@ export default function SubmitWizard() {
               </Form.Group>
               <Row>
                 <Col md={6}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Domaine</Form.Label>
-                    <Form.Select
-                      value={form.domain}
-                      onChange={(e) => setForm((f) => ({ ...f, domain: e.target.value }))}
-                      className="submit-wizard-input"
-                    >
-                      {DOMAINS.map((d) => (
-                        <option key={d} value={d}>{d}</option>
-                      ))}
-                    </Form.Select>
-                  </Form.Group>
+<Form.Group className="mb-3">
+                <Form.Label className="d-flex align-items-center justify-content-between">
+                  Domaine
+                  <Link to="/normes-de-publication" className="small text-primary text-decoration-none">
+                    Normes par domaine
+                  </Link>
+                </Form.Label>
+                <Form.Select
+                  value={form.domain}
+                  onChange={(e) => setForm((f) => ({ ...f, domain: e.target.value }))}
+                  className="submit-wizard-input"
+                >
+                  {DOMAINS.map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
                 </Col>
                 <Col md={6}>
                   <Form.Group className="mb-3">

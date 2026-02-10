@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, Outlet, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { Navbar, Nav, Container, Button, Dropdown, Offcanvas, Form, InputGroup, ListGroup } from 'react-bootstrap';
 import {
-  Sun, Moon, LogOut, User, Bell, Search, LayoutDashboard, BookOpen, PlusCircle, FileText, Star, MessageCircle, Menu, Shield, Globe,
+  Sun, Moon, LogOut, User, Bell, Search, LayoutDashboard, BookOpen, PlusCircle, FileText, Star, MessageCircle, Menu, Shield, Globe, FileCheck,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from 'context/ThemeContext';
@@ -18,6 +18,7 @@ const SIDEBAR_LINKS = [
   { to: '/dashboard', icon: LayoutDashboard, labelKey: 'user.dashboard' },
   { to: '/librairie', icon: BookOpen, labelKey: 'user.explorePublications' },
   { to: '/submit', icon: PlusCircle, labelKey: 'user.submitPublication' },
+  { to: '/normes-de-publication', icon: FileCheck, labelKey: 'user.publicationNorms' },
   { to: '/mes-publications', icon: FileText, labelKey: 'user.myPublications' },
   { to: '/favoris', icon: Star, labelKey: 'user.favorites' },
   { to: '/avis', icon: MessageCircle, labelKey: 'user.reviewsComments' },

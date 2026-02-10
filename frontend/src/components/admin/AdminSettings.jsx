@@ -1,10 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Card, Row, Col, Form, Button, Toast, ToastContainer, Spinner } from 'react-bootstrap';
-import { Lock, BookOpen, FileType, Tag, Wrench, Mail, CreditCard } from 'lucide-react';
+import { Lock, BookOpen, FileType, Tag, Wrench, Mail, CreditCard, FileCheck } from 'lucide-react';
 import { useAuth } from 'context/AuthContext';
 import { canChangeSettings } from 'lib/adminRoles';
 import { getPlatformSettings, updatePaymentEnabled } from 'services/settings';
+import { getDomainNorms, updateDomainNorm } from 'services/domainNorms';
 import './AdminPages.css';
+
+const DOMAINS_LIST = [
+  'Informatique', 'IA & Data Science', 'Médecine & Santé', 'Sciences agronomiques',
+  'Sciences économiques', 'Ingénierie', 'Environnement', 'Sciences sociales',
+];
 
 const SECTIONS = [
   { icon: BookOpen, title: 'Domaines scientifiques', desc: 'Liste des domaines proposés aux auteurs.', placeholder: 'Sciences agronomiques, Médecine, Ingénierie…' },
@@ -21,6 +27,10 @@ export default function AdminSettings() {
   const [paymentEnabled, setPaymentEnabled] = useState(true);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentSaving, setPaymentSaving] = useState(false);
+  const [domainNorms, setDomainNorms] = useState([]);
+  const [normsLoading, setNormsLoading] = useState(false);
+  const [normsEditing, setNormsEditing] = useState({}); // domain -> content (draft)
+  const [normsSaving, setNormsSaving] = useState(null); // domain being saved
 
   useEffect(() => {
     let cancelled = false;
@@ -49,6 +59,37 @@ export default function AdminSettings() {
 
   const handleSave = () => {
     setToast({ show: true, message: 'Paramètres enregistrés.' });
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    setNormsLoading(true);
+    getDomainNorms().then(({ data, error }) => {
+      if (!cancelled) {
+        setNormsLoading(false);
+        if (!error && data) setDomainNorms(data);
+      }
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  const normsByDomain = Object.fromEntries((domainNorms || []).map((n) => [n.domain, n]));
+  const handleSaveNorm = async (domain) => {
+    const content = normsEditing[domain] ?? normsByDomain[domain]?.content ?? '';
+    setNormsSaving(domain);
+    const { error } = await updateDomainNorm(domain, content);
+    setNormsSaving(null);
+    if (error) setToast({ show: true, message: 'Erreur : ' + (error.message || 'impossible d\'enregistrer.') });
+    else {
+      setDomainNorms((prev) => {
+        const next = [...(prev || [])];
+        const i = next.findIndex((n) => n.domain === domain);
+        if (i >= 0) next[i] = { ...next[i], content, updated_at: new Date().toISOString() };
+        else next.push({ domain, content, updated_at: new Date().toISOString() });
+        return next;
+      });
+      setToast({ show: true, message: 'Normes enregistrées pour « ' + domain + ».', type: 'success' });
+    }
   };
 
   return (
@@ -95,6 +136,54 @@ export default function AdminSettings() {
             />
           ) : (
             <p className="small text-muted mb-0">{paymentEnabled ? 'Paiement activé' : 'Paiement désactivé'}</p>
+          )}
+        </Card.Body>
+      </Card>
+
+      {/* Normes / modalités par domaine (pour conformité et outil Examiner) */}
+      <Card className="admin-card admin-section-card mb-4 border-info">
+        <Card.Header className="d-flex align-items-center gap-2">
+          <FileCheck size={18} />
+          Normes de publication par domaine
+        </Card.Header>
+        <Card.Body>
+          <p className="small text-muted mb-3">
+            Définissez les modalités ou normes selon chaque domaine pour que les auteurs sachent comment bien publier. Ces normes sont affichées dans l'outil « Examiner » et sur la page « Normes de publication » pour les utilisateurs.
+          </p>
+          {normsLoading ? (
+            <Spinner animation="border" size="sm" />
+          ) : (
+            <div className="d-flex flex-column gap-3">
+              {DOMAINS_LIST.map((domain) => {
+                const norm = normsByDomain[domain];
+                const content = normsEditing[domain] !== undefined ? normsEditing[domain] : (norm?.content ?? '');
+                return (
+                  <div key={domain}>
+                    <Form.Label className="small fw-semibold">{domain}</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      placeholder="Ex. : Titre explicite (≥10 caractères). Résumé structuré. PDF en français ou anglais."
+                      value={content}
+                      onChange={(e) => setNormsEditing((prev) => ({ ...prev, [domain]: e.target.value }))}
+                      disabled={!canEdit}
+                      className="mb-1"
+                    />
+                    {canEdit && (
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        className="rounded-pill"
+                        onClick={() => handleSaveNorm(domain)}
+                        disabled={normsSaving === domain}
+                      >
+                        {normsSaving === domain ? <Spinner animation="border" size="sm" /> : 'Enregistrer'}
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           )}
         </Card.Body>
       </Card>
