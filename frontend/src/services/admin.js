@@ -180,6 +180,23 @@ export async function notifyPublicationRejected(publicationId) {
   }
 }
 
+/**
+ * Déclencher l'envoi de l'email de validation officielle à l'auteur (à appeler après updatePublicationStatus(..., 'published')).
+ * Nécessite une Edge Function "send-validation-email" déployée (voir backend/supabase/GUIDE-EMAIL-VALIDATION-REJET.md).
+ */
+export async function notifyPublicationValidated(publicationId) {
+  if (!isSupabaseConfigured()) return { error: null };
+  try {
+    const { data, error } = await supabase.functions.invoke('send-validation-email', {
+      body: { publicationId },
+    });
+    if (error) return { error };
+    return { data, error: null };
+  } catch (err) {
+    return { error: err };
+  }
+}
+
 /** PATCH /api/admin/publications/:id — mise à jour métadonnées (titre, domaine, type) */
 export async function updatePublicationMetadata(publicationId, payload) {
   if (!isSupabaseConfigured()) return { error: new Error('Non configuré.') };

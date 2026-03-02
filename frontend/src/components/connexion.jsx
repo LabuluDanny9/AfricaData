@@ -29,9 +29,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import AfricadataHeader from 'components/layout/AfricadataHeader';
 import AfricadataFooter from 'components/layout/AfricadataFooter';
-import { GoogleIcon } from 'components/ui/GoogleIcon';
 import { useAuth } from 'context/AuthContext';
-import { signIn, signInWithOAuth } from 'services/auth';
+import { signIn } from 'services/auth';
 import { getProfile } from 'services/profile';
 import { isAdminRole } from 'lib/adminRoles';
 import { isSupabaseConfigured as hasSupabase } from 'lib/supabase';
@@ -63,9 +62,7 @@ const itemVariants = {
   },
 };
 
-const MSG_GOOGLE_NON_CONFIG_KEY = 'auth.googleNotConfigured';
-
-function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
+function ConnexionContent() {
   const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
@@ -247,20 +244,6 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
                             </Alert>
                           )}
                           <Form onSubmit={handleSubmit} className="auth-form connexion-form">
-                            {/* Connexion Google directement (utilisateur et admin) */}
-                            <motion.div variants={itemVariants}>
-                              <Button
-                                type="button"
-                                variant="light"
-                                size="lg"
-                                className="w-100 auth-google-btn mb-2"
-                                onClick={onGoogleAuth}
-                                disabled={googleLoading}
-                              >
-                                <GoogleIcon size={22} />
-                                {googleLoading ? t('auth.signingIn') : t('auth.signInWithGoogle')}
-                              </Button>
-                            </motion.div>
                             {isAdminLogin && (
                               <motion.div variants={itemVariants}>
                                 <p className="small text-body-secondary mb-2">
@@ -268,15 +251,9 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
                                 </p>
                               </motion.div>
                             )}
-                            {!isAdminLogin && (
-                              <motion.div variants={itemVariants} className="auth-divider my-3">
-                                <span className="small text-body-secondary">{t('auth.orWithEmail')}</span>
-                              </motion.div>
+                            {authError && (
+                              <p className="small text-danger mb-2">{authError}</p>
                             )}
-                            {(googleError || authError) && (
-                              <p className="small text-danger mb-0 mt-2">{googleError || authError}</p>
-                            )}
-
                             <motion.div variants={itemVariants}>
                               <Form.Group className="mb-3">
                                 <Form.Label className="small fw-semibold text-body-secondary d-flex align-items-center gap-1">
@@ -425,49 +402,11 @@ function ConnexionContent({ onGoogleAuth, googleError, googleLoading }) {
 }
 
 function ConnexionWithSupabase() {
-  const { t } = useTranslation();
-  const [googleError, setGoogleError] = useState(null);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const location = useLocation();
-  const isAdminLogin = location.pathname === '/connexion-admin';
-
-  const handleGoogleAuth = async () => {
-    setGoogleError(null);
-    setGoogleLoading(true);
-    try {
-      const redirectPath = isAdminLogin ? '/superadmin' : '/dashboard';
-      await signInWithOAuth('google', redirectPath);
-      // signInWithOAuth redirige vers Google ; si erreur avant redirection, on l'affiche
-    } catch (err) {
-      setGoogleError(err?.message || t('auth.googleNotConfigured'));
-      setGoogleLoading(false);
-    }
-  };
-
-  return (
-    <ConnexionContent
-      onGoogleAuth={handleGoogleAuth}
-      googleError={googleError}
-      googleLoading={googleLoading}
-    />
-  );
+  return <ConnexionContent />;
 }
 
 function ConnexionNoSupabase() {
-  const { t } = useTranslation();
-  const [googleError, setGoogleError] = useState(null);
-
-  const handleGoogleAuth = () => {
-    setGoogleError(t(MSG_GOOGLE_NON_CONFIG_KEY));
-  };
-
-  return (
-    <ConnexionContent
-      onGoogleAuth={handleGoogleAuth}
-      googleError={googleError}
-      googleLoading={false}
-    />
-  );
+  return <ConnexionContent />;
 }
 
 export default function Connexion() {

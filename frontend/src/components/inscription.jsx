@@ -31,9 +31,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import AfricadataHeader from 'components/layout/AfricadataHeader';
 import AfricadataFooter from 'components/layout/AfricadataFooter';
-import { GoogleIcon } from 'components/ui/GoogleIcon';
 import { useAuth } from 'context/AuthContext';
-import { signUp, signInWithOAuth } from 'services/auth';
+import { signUp } from 'services/auth';
 import { getProfile, updateProfile } from 'services/profile';
 import { isSupabaseConfigured as hasSupabase } from 'lib/supabase';
 import 'components/layout/AfricadataHeader.css';
@@ -70,9 +69,7 @@ const itemVariants = {
   },
 };
 
-const MSG_GOOGLE_NON_CONFIG_KEY = 'auth.signupGoogleNotConfigured';
-
-function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
+function InscriptionContent() {
   const { t } = useTranslation();
   const [role, setRole] = useState('chercheur');
   const [agreed, setAgreed] = useState(false);
@@ -233,27 +230,11 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
                     <Col lg="7">
                       <Card.Body className="p-4 p-lg-5">
                         <Form onSubmit={handleSubmit} className="auth-form inscription-form">
-                          <motion.div variants={itemVariants}>
-                            <Button
-                              type="button"
-                              variant="light"
-                              size="lg"
-                              className="w-100 auth-google-btn mb-2"
-                              onClick={onGoogleAuth}
-                              disabled={googleLoading}
-                            >
-                              <GoogleIcon size={22} />
-                              {googleLoading ? t('auth.signupInProgress') : t('auth.signUpWithGoogle')}
-                            </Button>
-                            {(googleError || authError) && (
-                              <p className="small text-danger mb-0 mt-2">{googleError || authError}</p>
-                            )}
-                          </motion.div>
-
-                          <motion.div variants={itemVariants} className="auth-divider my-3">
-                            <span className="small text-body-secondary">{t('auth.orWithForm')}</span>
-                          </motion.div>
-
+                          {authError && (
+                            <motion.div variants={itemVariants}>
+                              <p className="small text-danger mb-2">{authError}</p>
+                            </motion.div>
+                          )}
                           <motion.div variants={itemVariants} className="row g-3">
                             <Col xs="12" sm="6">
                               <Form.Group>
@@ -508,46 +489,11 @@ function InscriptionContent({ onGoogleAuth, googleError, googleLoading }) {
 }
 
 function InscriptionWithSupabase() {
-  const { t } = useTranslation();
-  const [googleError, setGoogleError] = useState(null);
-  const [googleLoading, setGoogleLoading] = useState(false);
-
-  const handleGoogleAuth = async () => {
-    setGoogleError(null);
-    setGoogleLoading(true);
-    try {
-      await signInWithOAuth('google', '/dashboard');
-      // signInWithOAuth redirige vers Google ; après connexion, Supabase redirige vers /dashboard avec session
-    } catch (err) {
-      setGoogleError(err?.message || t('auth.signupGoogleNotConfigured'));
-      setGoogleLoading(false);
-    }
-  };
-
-  return (
-    <InscriptionContent
-      onGoogleAuth={handleGoogleAuth}
-      googleError={googleError}
-      googleLoading={googleLoading}
-    />
-  );
+  return <InscriptionContent />;
 }
 
 function InscriptionNoSupabase() {
-  const { t } = useTranslation();
-  const [googleError, setGoogleError] = useState(null);
-
-  const handleGoogleAuth = () => {
-    setGoogleError(t(MSG_GOOGLE_NON_CONFIG_KEY));
-  };
-
-  return (
-    <InscriptionContent
-      onGoogleAuth={handleGoogleAuth}
-      googleError={googleError}
-      googleLoading={false}
-    />
-  );
+  return <InscriptionContent />;
 }
 
 export default function Inscription() {

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, Table, Badge, Spinner, Alert, Button, Form, Modal, Toast, ToastContainer } from 'react-bootstrap';
 import { Search, Eye, CheckCircle, XCircle, Trash2, Download, User, FileCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getAllPublicationsForAdmin, updatePublicationStatus, deletePublication, notifyPublicationRejected } from 'services/admin';
+import { getAllPublicationsForAdmin, updatePublicationStatus, deletePublication, notifyPublicationRejected, notifyPublicationValidated } from 'services/admin';
 import { getDomainNorm } from 'services/domainNorms';
 import { useAuth } from 'context/AuthContext';
 import { canValidatePublications, canDeleteAnyContent } from 'lib/adminRoles';
@@ -54,6 +54,14 @@ export default function AdminPublications() {
         setToast({ show: true, message: 'Rejet enregistré. L\'email à l\'auteur n\'a pas pu être envoyé (vérifiez l\'Edge Function send-rejection-email).' });
       } else {
         setToast({ show: true, message: 'Publication rejetée. Un email avec le motif du rejet a été envoyé à l\'auteur.' });
+      }
+    }
+    if (newStatus === 'published') {
+      const { error: emailErr } = await notifyPublicationValidated(pubId);
+      if (emailErr) {
+        setToast({ show: true, message: 'Publication validée. L\'email de validation à l\'auteur n\'a pas pu être envoyé (vérifiez l\'Edge Function send-validation-email).' });
+      } else {
+        setToast({ show: true, message: 'Publication validée. Un email de validation a été envoyé à l\'auteur.' });
       }
     }
     setUpdatingId(null);

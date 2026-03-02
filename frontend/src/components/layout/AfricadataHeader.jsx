@@ -5,7 +5,6 @@ import { Sun, Moon, LogOut, User, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from 'context/ThemeContext';
 import { useAuth } from 'context/AuthContext';
-import { googleLogout } from '@react-oauth/google';
 
 const LANG_STORAGE_KEY = 'africadata-lang';
 
@@ -30,9 +29,6 @@ export default function AfricadataHeader() {
   }, [user?.picture]);
 
   const handleLogout = () => {
-    if (process.env.REACT_APP_GOOGLE_CLIENT_ID) {
-      try { googleLogout(); } catch (_) {}
-    }
     logout();
   };
 

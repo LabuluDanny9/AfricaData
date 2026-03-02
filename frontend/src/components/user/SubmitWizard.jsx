@@ -4,7 +4,7 @@ import {
   Card, Form, Button, Row, Col, Nav, InputGroup, OverlayTrigger, Tooltip, Toast, ToastContainer, Spinner, Badge, Modal,
 } from 'react-bootstrap';
 import { FileText, GraduationCap, Upload, CreditCard, Info, CheckCircle2, User } from 'lucide-react';
-import { createPublication, uploadPublicationPdf, uploadAuthorPhoto } from 'services/publications';
+import { createPublication, uploadPublicationPdf, uploadAuthorPhoto, notifySubmissionConfirmation } from 'services/publications';
 import { checkWaiverCode, consumeWaiverCode } from 'services/waiverCodes';
 import { getPlatformSettings } from 'services/settings';
 import { useAuth } from 'context/AuthContext';
@@ -239,15 +239,11 @@ export default function SubmitWizard() {
         });
         if (err) throw err;
         setPaymentPending(false);
-        if (paymentEnabled === false && !isAdmin) {
-          setSuccessToastMessage('Votre publication a été soumise. Veuillez consulter votre boîte email pour plus de détails.');
-          // TODO: déclencher l'envoi d'un email avec les détails de paiement (banque / mobile money) côté backend (Edge Function ou service email).
-        } else {
-          setSuccessToastMessage('');
-        }
+        setSuccessToastMessage('Votre publication a été soumise avec succès. Consultez votre adresse email pour plus de détails.');
+        const pubId = data?.id;
+        if (pubId) notifySubmissionConfirmation(pubId).catch(() => {});
         setShowToast(true);
         try { localStorage.removeItem(DRAFT_STORAGE_KEY); } catch (_) {}
-        const pubId = data?.id;
         setTimeout(() => {
           if (pubId) navigate(`/publication/${pubId}`);
           else navigate('/dashboard');

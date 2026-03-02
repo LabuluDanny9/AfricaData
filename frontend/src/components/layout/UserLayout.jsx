@@ -8,7 +8,6 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from 'context/ThemeContext';
 import { useAuth } from 'context/AuthContext';
 import { isAdminRole } from 'lib/adminRoles';
-import { googleLogout } from '@react-oauth/google';
 import { getNotifications, markNotificationAsRead, subscribeToNotifications } from 'services/notifications';
 import { isSupabaseConfigured } from 'lib/supabase';
 import 'components/layout/AfricadataHeader.css';
@@ -78,9 +77,6 @@ export default function UserLayout() {
   };
 
   const handleLogout = () => {
-    if (process.env.REACT_APP_GOOGLE_CLIENT_ID) {
-      try { googleLogout(); } catch (_) {}
-    }
     logout();
   };
 

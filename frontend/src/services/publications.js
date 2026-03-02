@@ -287,6 +287,20 @@ export async function createPublication(payload) {
 }
 
 /**
+ * Déclenche l'envoi d'un email de confirmation de réception à l'auteur après soumission.
+ * Nécessite l'Edge Function "send-submission-confirmation-email" (voir backend/supabase/GUIDE-EMAIL-CONFIRMATION-SOUMISSION.md).
+ * @param {string} publicationId
+ */
+export async function notifySubmissionConfirmation(publicationId) {
+  if (!isSupabaseConfigured() || !publicationId) return;
+  try {
+    await supabase.functions.invoke('send-submission-confirmation-email', {
+      body: { publicationId },
+    });
+  } catch (_) {}
+}
+
+/**
  * Abonnement Realtime aux changements sur les publications publiées (nouvelle publication ou mise à jour).
  * Utile pour actualiser la librairie et l'accueil sans recharger la page.
  * @param {(payload: { event: 'INSERT'|'UPDATE'|'DELETE', new?: object, old?: object }) => void} onPayload

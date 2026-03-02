@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, Row, Col, Table, Badge, Tab, Tabs, Spinner, Alert, Button } from 'react-bootstrap';
 import { Users, Clock, CheckCircle, User } from 'lucide-react';
-import { getAdminStats, getAllProfiles, getAllPublicationsForAdmin, updatePublicationStatus } from 'services/admin';
+import { getAdminStats, getAllProfiles, getAllPublicationsForAdmin, updatePublicationStatus, notifyPublicationValidated } from 'services/admin';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from 'context/AuthContext';
 import { isAdminRole, ROLE_LABELS } from 'lib/adminRoles';
@@ -46,11 +46,15 @@ export default function SuperAdmin() {
     setUpdatingId(pubId);
     setError('');
     const { error: err } = await updatePublicationStatus(pubId, newStatus);
-    setUpdatingId(null);
     if (err) {
+      setUpdatingId(null);
       setError(err.message || 'Erreur lors de la mise à jour.');
       return;
     }
+    if (newStatus === 'published') {
+      await notifyPublicationValidated(pubId);
+    }
+    setUpdatingId(null);
     setPublications((prev) => prev.map((p) => (p.id === pubId ? { ...p, status: newStatus } : p)));
     if (stats) {
       if (newStatus === 'published') setStats((s) => ({ ...s, publicationsCount: s.publicationsCount + 1, draftCount: Math.max(0, s.draftCount - 1) }));
