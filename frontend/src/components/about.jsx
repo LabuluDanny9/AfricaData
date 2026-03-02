@@ -1,24 +1,42 @@
+import { useState, useEffect } from 'react';
 import { ArrowRight, Award, Globe, Users, BookOpen, Zap, ShieldCheck, BarChart3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from 'components/ui/button';
 import { useTranslation } from 'react-i18next';
 import AfricadataHeader from 'components/layout/AfricadataHeader';
+import { getPublicStats } from 'services/publications';
+import { isSupabaseConfigured } from 'lib/supabase';
 
 export default function About() {
   const { t } = useTranslation();
+  const [publicStats, setPublicStats] = useState(null);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    getPublicStats().then(({ data }) => data && setPublicStats(data));
+  }, []);
+
+  const formatStat = (n) => (typeof n === 'number' && Number.isFinite(n) ? n.toLocaleString('fr-FR') : '—');
+
+  const stats = publicStats
+    ? [
+        { number: formatStat(publicStats.publicationsCount ?? 0), labelKey: 'about.stat1Label', icon: BookOpen },
+        { number: formatStat(publicStats.totalViews ?? 0), labelKey: 'about.stat2Label', icon: Globe },
+        { number: formatStat(publicStats.usersCount ?? 0), labelKey: 'about.stat3Label', icon: Users },
+        { number: formatStat(publicStats.totalDownloads ?? 0), labelKey: 'about.stat4Label', icon: Award },
+      ]
+    : [
+        { number: '—', labelKey: 'about.stat1Label', icon: BookOpen },
+        { number: '—', labelKey: 'about.stat2Label', icon: Globe },
+        { number: '—', labelKey: 'about.stat3Label', icon: Users },
+        { number: '—', labelKey: 'about.stat4Label', icon: Award },
+      ];
 
   const team = [
     { name: 'HERVE DUBOIS', roleKey: 'about.team1Role', bioKey: 'about.team1Bio', image: null },
     { name: 'CEDRIC DE SABRE', roleKey: 'about.team2Role', bioKey: 'about.team2Bio', image: null },
     { name: 'RACHEL', roleKey: 'about.team3Role', bioKey: 'about.team3Bio', image: null },
     { name: 'Danny LABULU IBAM', roleKey: 'about.team4Role', bioKey: 'about.team4Bio', image: '/danny.png' },
-  ];
-
-  const stats = [
-    { number: '12+', labelKey: 'about.stat1Label', icon: Globe },
-    { number: '5000+', labelKey: 'about.stat2Label', icon: BookOpen },
-    { number: '2000+', labelKey: 'about.stat3Label', icon: Users },
-    { number: '50+', labelKey: 'about.stat4Label', icon: Award },
   ];
 
   const values = [
