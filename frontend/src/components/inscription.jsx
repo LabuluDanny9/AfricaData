@@ -152,6 +152,12 @@ function InscriptionContent() {
       return;
     }
     setAuthLoading(true);
+    const goToConnexionWithMessage = () => {
+      try {
+        sessionStorage.setItem('africadata-signup-pending-confirm', '1');
+      } catch (_) {}
+      navigate('/connexion', { replace: true, state: { fromSignup: true, message: t('auth.signupSuccessMessage') } });
+    };
     try {
       if (hasSupabase()) {
         const { data } = await signUp({
@@ -165,10 +171,7 @@ function InscriptionContent() {
         // Après inscription réussie : redirection immédiate vers la page de connexion avec message « Confirmez votre adresse email »
         if (data?.user) {
           setAuthLoading(false);
-          try {
-            sessionStorage.setItem('africadata-signup-pending-confirm', '1');
-          } catch (_) {}
-          navigate('/connexion', { replace: true, state: { fromSignup: true, message: t('auth.signupSuccessMessage') } });
+          goToConnexionWithMessage();
           return;
         }
       } else {
@@ -176,14 +179,12 @@ function InscriptionContent() {
       }
     } catch (err) {
       const msg = err?.message || '';
-      if (/invalid login credentials|email not confirmed|confirm your email|signup/i.test(msg)) {
-        try {
-          sessionStorage.setItem('africadata-signup-pending-confirm', '1');
-        } catch (_) {}
-        navigate('/connexion', { replace: true, state: { fromSignup: true, message: t('auth.signupSuccessMessage') } });
-      } else {
-        setAuthError(msg || t('auth.signupFailed'));
+      if (/invalid login credentials|email not confirmed|confirm your email|signup|already registered|user already exist/i.test(msg)) {
+        setAuthLoading(false);
+        goToConnexionWithMessage();
+        return;
       }
+      setAuthError(msg || t('auth.signupFailed'));
     } finally {
       setAuthLoading(false);
     }

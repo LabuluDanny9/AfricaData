@@ -70,27 +70,37 @@ function ConnexionContent() {
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [signupConfirmMessage, setSignupConfirmMessage] = useState(null);
+  const [cameFromSignup, setCameFromSignup] = useState(false);
   const { user, setUser, authLoading: authLoadingContext } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const isAdminLogin = location.pathname === '/connexion-admin';
 
-  // Message "Confirmez votre adresse email" après inscription : state de la navigation ou sessionStorage (secours)
+  // Détection "arrivée depuis inscription" (state ou sessionStorage) pour afficher le message et ne pas rediriger vers dashboard
+  const fromSignupByState = location.state?.fromSignup === true;
+  let fromSignupByStorage = false;
+  try {
+    fromSignupByStorage = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('africadata-signup-pending-confirm') === '1';
+  } catch (_) {}
+  const fromSignup = fromSignupByState || fromSignupByStorage || cameFromSignup;
+
+  // Message "Confirmez votre adresse email" après inscription : state ou sessionStorage ; on garde cameFromSignup pour toute la page
   useEffect(() => {
-    const fromSignup = location.state?.fromSignup === true;
-    const messageFromState = location.state?.message;
-    if (fromSignup || messageFromState) {
-      setSignupConfirmMessage(messageFromState || t('auth.signupSuccessMessage'));
+    const msgFromState = location.state?.message;
+    if (fromSignupByState || msgFromState) {
+      setSignupConfirmMessage(msgFromState || t('auth.signupSuccessMessage'));
+      setCameFromSignup(true);
       return;
     }
-    try {
-      if (sessionStorage.getItem('africadata-signup-pending-confirm') === '1') {
+    if (fromSignupByStorage) {
+      try {
         sessionStorage.removeItem('africadata-signup-pending-confirm');
-        setSignupConfirmMessage(t('auth.signupSuccessMessage'));
-      }
-    } catch (_) {}
+      } catch (_) {}
+      setSignupConfirmMessage(t('auth.signupSuccessMessage'));
+      setCameFromSignup(true);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.state?.fromSignup, location.state?.message]);
+  }, [fromSignupByState, fromSignupByStorage, location.state?.message]);
 
   if (authLoadingContext) {
     return (
@@ -99,10 +109,8 @@ function ConnexionContent() {
       </div>
     );
   }
-  // Arrivée depuis l'inscription : afficher le message de confirmation email puis accès au tableau de bord
-  const fromSignupWithMessage = location.state?.fromSignup && location.state?.message;
-  if (user && fromSignupWithMessage && !isAdminLogin) {
-    const message = location.state.message;
+  // Arrivée depuis l'inscription : afficher le message de confirmation email (ne pas rediriger tout de suite vers le dashboard)
+  if (user && fromSignup && !isAdminLogin) {
     return (
       <div className="auth-page connexion-page min-vh-100 d-flex flex-column">
         <AfricadataHeader />
@@ -131,7 +139,7 @@ function ConnexionContent() {
                   <Card className="auth-card border-0 shadow-lg overflow-hidden">
                     <Card.Body className="p-4 p-lg-5 text-center">
                       <Alert variant="info" className="mb-4">
-                        {message}
+                        {signupConfirmMessage || location.state?.message || t('auth.signupSuccessMessage')}
                       </Alert>
                       <p className="text-body-secondary small mb-4">
                         Une fois votre email confirmé, vous pourrez vous connecter avec votre mot de passe. Vous pouvez aussi accéder à votre espace si vous êtes déjà connecté.
@@ -156,9 +164,8 @@ function ConnexionContent() {
       </div>
     );
   }
-  if (user) {
-    // Depuis la plateforme : tout le monde (y compris admin) va au tableau de bord utilisateur.
-    // Depuis /connexion-admin : l'admin va directement à l'interface superadmin.
+  // Redirection vers dashboard seulement si connecté et qu'on ne vient pas de l'inscription (message "confirmez email" à afficher)
+  if (user && !fromSignup) {
     if (isAdminLogin && isAdminRole(user.role)) return <Navigate to="/superadmin" replace />;
     return <Navigate to="/dashboard" replace />;
   }

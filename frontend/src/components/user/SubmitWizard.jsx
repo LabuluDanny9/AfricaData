@@ -76,6 +76,7 @@ export default function SubmitWizard() {
   const [paymentPending, setPaymentPending] = useState(false);
   const pdfPreviewUrlRef = useRef(null);
   const draftToastShownRef = useRef(false);
+  const errorAlertRef = useRef(null);
   const [form, setForm] = useState({
     title: '',
     summary: '',
@@ -174,7 +175,9 @@ export default function SubmitWizard() {
     return s;
   }, [step, isAcademicType]);
 
-  const goNext = () => {
+  const goNext = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (e && e.nativeEvent) e.nativeEvent.stopPropagation();
     setError('');
     if (step === 1 && !isAcademicType) {
       setStep(3);
@@ -203,15 +206,18 @@ export default function SubmitWizard() {
     setError('');
     if (!skipPayment && step === 4 && !validatePhoneRDC(form.phone)) {
       setError(getPhoneErrorMessage(form.phone));
+      setTimeout(() => errorAlertRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' }), 50);
       return;
     }
     if (!skipPayment && step === 4 && !isValidAmount(form.amount)) {
       setError(amountError || `Veuillez saisir un montant valide (min. ${AMOUNT_MIN}).`);
+      setTimeout(() => errorAlertRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' }), 50);
       return;
     }
     if (!skipPayment && step === 4 && !paymentProofFile) {
       setError('La preuve de paiement est obligatoire. Joignez une photo ou un document scanné clair (référence de transaction, montant, date).');
       setPaymentProofError('Veuillez joindre votre preuve de paiement.');
+      setTimeout(() => errorAlertRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' }), 50);
       return;
     }
     setLoading(true);
@@ -465,7 +471,7 @@ Nous vous remercions pour votre contribution et pour la confiance que vous accor
       <Card className="submit-wizard-card border-0 shadow-sm">
         <Card.Body className="p-4 p-lg-5">
           {error && (
-            <div className="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
+            <div ref={errorAlertRef} className="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
               {error}
             </div>
           )}
@@ -768,6 +774,7 @@ Nous vous remercions pour votre contribution et pour la confiance que vous accor
                     </div>
                   </Form.Group>
                   <Button
+                    type="button"
                     variant="danger"
                     size="lg"
                     className="submit-wizard-btn-submit w-100 py-3 rounded-3 fw-semibold"
@@ -801,6 +808,7 @@ Nous vous remercions pour votre contribution et pour la confiance que vous accor
                     </span>
                   </div>
                   <Button
+                    type="button"
                     variant="danger"
                     size="lg"
                     className="submit-wizard-btn-submit w-100 py-3 rounded-3 fw-semibold"
@@ -1012,11 +1020,12 @@ Nous vous remercions pour votre contribution et pour la confiance que vous accor
               </Form.Group>
 
               <Button
+                type="button"
                 variant="danger"
                 size="lg"
                 className="submit-wizard-btn-submit w-100 py-3 rounded-3 fw-semibold"
                 onClick={goNext}
-                disabled={loading || uploadingPdf || uploadingPaymentProof || !canProceedStep4}
+                disabled={loading || uploadingPdf || uploadingPaymentProof}
               >
                 {paymentPending ? (
                   <>
@@ -1034,9 +1043,14 @@ Nous vous remercions pour votre contribution et pour la confiance que vous accor
                     Traitement en cours…
                   </>
                 ) : (
-                  <>Confirmer & payer</>
+                  <>Confirmer & soumettre</>
                 )}
               </Button>
+              {!canProceedStep4 && !loading && !uploadingPdf && !uploadingPaymentProof && (
+                <p className="small text-warning mt-2 mb-0">
+                  Complétez le formulaire (téléphone, montant, preuve de paiement) pour valider la soumission.
+                </p>
+              )}
                 </>
               )}
             </div>
@@ -1045,6 +1059,7 @@ Nous vous remercions pour votre contribution et pour la confiance que vous accor
           {step !== 4 && (
             <div className="submit-wizard-actions d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
               <Button
+                type="button"
                 variant="outline-secondary"
                 onClick={goPrev}
                 disabled={step === 1}
@@ -1053,6 +1068,7 @@ Nous vous remercions pour votre contribution et pour la confiance que vous accor
                 Précédent
               </Button>
               <Button
+                type="button"
                 variant="danger"
                 onClick={goNext}
                 disabled={
@@ -1105,7 +1121,7 @@ Nous vous remercions pour votre contribution et pour la confiance que vous accor
           <Button variant="outline-secondary" onClick={() => { setShowPaymentFailureModal(false); setSubmitError(''); setError(''); }}>
             Fermer
           </Button>
-          <Button variant="danger" onClick={handleSubmitErrorRetry}>
+          <Button type="button" variant="danger" onClick={handleSubmitErrorRetry}>
             Réessayer
           </Button>
         </Modal.Footer>
@@ -1131,7 +1147,7 @@ Nous vous remercions pour votre contribution et pour la confiance que vous accor
           <Button variant="outline-secondary" onClick={closePdfPreview}>
             Modifier le fichier
           </Button>
-          <Button variant="danger" onClick={() => { closePdfPreview(); goNext(); }}>
+          <Button type="button" variant="danger" onClick={() => { closePdfPreview(); goNext(); }}>
             Continuer
           </Button>
         </Modal.Footer>
