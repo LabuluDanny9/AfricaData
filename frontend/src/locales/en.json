@@ -51,7 +51,7 @@
     "termsAccept": "I accept the terms of use and privacy policy of AfricaData, scientific publishing platform.",
     "signupSuccessTitle": "Registration complete",
     "signupSuccessMessage": "Check your inbox to confirm your email address. Once confirmed, you can log in below.",
-    "signupConfirmTitle": "Check your email inbox",
+    "signupConfirmTitle": "Please confirm your email address",
     "signupConfirmHint": "A confirmation link has been sent to you. Click it to activate your account, then log in with your email and password.",
     "signupSuccessNext": "Once your email is confirmed, click the button below to log in.",
     "connectButton": "Log in",

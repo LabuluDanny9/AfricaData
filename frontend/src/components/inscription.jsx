@@ -162,13 +162,13 @@ function InscriptionContent() {
         });
         setAuthError('');
 
-        // Après toute inscription réussie : redirection vers la page de connexion avec le message « Consultez votre boîte email »
+        // Après inscription réussie : redirection immédiate vers la page de connexion avec message « Confirmez votre adresse email »
         if (data?.user) {
           setAuthLoading(false);
           try {
             sessionStorage.setItem('africadata-signup-pending-confirm', '1');
           } catch (_) {}
-          navigate('/connexion', { replace: true, state: { message: t('auth.signupSuccessMessage'), fromSignup: true } });
+          navigate('/connexion', { replace: true, state: { fromSignup: true, message: t('auth.signupSuccessMessage') } });
           return;
         }
       } else {
@@ -180,7 +180,7 @@ function InscriptionContent() {
         try {
           sessionStorage.setItem('africadata-signup-pending-confirm', '1');
         } catch (_) {}
-        navigate('/connexion', { replace: true, state: { message: t('auth.signupSuccessMessage'), fromSignup: true } });
+        navigate('/connexion', { replace: true, state: { fromSignup: true, message: t('auth.signupSuccessMessage') } });
       } else {
         setAuthError(msg || t('auth.signupFailed'));
       }

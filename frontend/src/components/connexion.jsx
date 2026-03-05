@@ -75,11 +75,12 @@ function ConnexionContent() {
   const location = useLocation();
   const isAdminLogin = location.pathname === '/connexion-admin';
 
-  // Message de confirmation après inscription : state de la navigation ou sessionStorage (secours)
+  // Message "Confirmez votre adresse email" après inscription : state de la navigation ou sessionStorage (secours)
   useEffect(() => {
-    const fromState = location.state?.message;
-    if (fromState) {
-      setSignupConfirmMessage(fromState);
+    const fromSignup = location.state?.fromSignup === true;
+    const messageFromState = location.state?.message;
+    if (fromSignup || messageFromState) {
+      setSignupConfirmMessage(messageFromState || t('auth.signupSuccessMessage'));
       return;
     }
     try {
@@ -89,7 +90,7 @@ function ConnexionContent() {
       }
     } catch (_) {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.state?.message]);
+  }, [location.state?.fromSignup, location.state?.message]);
 
   if (authLoadingContext) {
     return (
