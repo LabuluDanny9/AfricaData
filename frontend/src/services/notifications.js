@@ -58,6 +58,21 @@ export async function markAllNotificationsAsRead(userId) {
 }
 
 /**
+ * Supprime une notification (uniquement pour l'utilisateur propriétaire).
+ * @param {string} notificationId
+ * @param {string} userId
+ */
+export async function deleteNotification(notificationId, userId) {
+  if (!isSupabaseConfigured() || !userId || !notificationId) return { error: new Error('Paramètres manquants') };
+  const { error } = await supabase
+    .from('notifications')
+    .delete()
+    .eq('id', notificationId)
+    .eq('user_id', userId);
+  return { error };
+}
+
+/**
  * Abonnement Realtime aux nouvelles notifications pour un utilisateur.
  * @param {string} userId
  * @param {(payload) => void} onNotification

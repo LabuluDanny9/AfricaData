@@ -93,3 +93,26 @@
   border-left: 3px solid var(--bs-warning);
   background: rgba(var(--bs-warning-rgb), 0.06) !important;
 }
+
+.user-notification-delete-btn {
+  opacity: 0.85;
+}
+.user-notification-delete-btn:hover {
+  opacity: 1;
+}
+
+.user-notification-modal .modal-dialog {
+  max-width: 520px;
+}
+.user-notification-modal-body {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.user-notification-modal-message {
+  line-height: 1.6;
+  word-break: break-word;
+}
+.user-notification-modal .modal-footer {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

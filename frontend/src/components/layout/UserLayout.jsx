@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, Outlet, useNavigate, Navigate, useLocation } from 'react-router-dom';
-import { Navbar, Nav, Container, Button, Dropdown, Offcanvas, Form, InputGroup, ListGroup } from 'react-bootstrap';
+import { Navbar, Nav, Container, Button, Dropdown, Offcanvas, Form, InputGroup, ListGroup, Modal } from 'react-bootstrap';
 import {
-  Sun, Moon, LogOut, User, Bell, Search, LayoutDashboard, BookOpen, PlusCircle, FileText, Star, MessageCircle, Menu, Shield, Globe, FileCheck,
+  Sun, Moon, LogOut, User, Bell, Search, LayoutDashboard, BookOpen, PlusCircle, FileText, Star, MessageCircle, Menu, Shield, Globe, FileCheck, Trash2, ExternalLink,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from 'context/ThemeContext';
 import { useAuth } from 'context/AuthContext';
 import { isAdminRole } from 'lib/adminRoles';
-import { getNotifications, markNotificationAsRead, subscribeToNotifications } from 'services/notifications';
+import { getNotifications, markNotificationAsRead, subscribeToNotifications, deleteNotification } from 'services/notifications';
 import { isSupabaseConfigured } from 'lib/supabase';
 import 'components/layout/AfricadataHeader.css';
 import './UserLayout.css';
@@ -40,6 +40,8 @@ export default function UserLayout() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSidebarMobile, setShowSidebarMobile] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [selectedNotification, setSelectedNotification] = useState(null);
+  const [deletingNotificationId, setDeletingNotificationId] = useState(null);
   const [avatarError, setAvatarError] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
@@ -101,8 +103,31 @@ export default function UserLayout() {
       await markNotificationAsRead(n.id, user.id);
       setNotifications((prev) => prev.map((x) => (x.id === n.id ? { ...x, readAt: new Date().toISOString() } : x)));
     }
-    if (n.publicationId) navigate(`/publication/${n.publicationId}`);
+    setSelectedNotification(n);
     setShowNotifications(false);
+  };
+
+  const handleCloseNotificationModal = () => setSelectedNotification(null);
+
+  const handleGoToPublication = () => {
+    if (selectedNotification?.publicationId) {
+      navigate(`/publication/${selectedNotification.publicationId}`);
+      setSelectedNotification(null);
+    }
+  };
+
+  const handleDeleteNotification = async (notificationOrEvent) => {
+    const n = typeof notificationOrEvent?.id !== 'undefined'
+      ? notificationOrEvent
+      : selectedNotification;
+    if (!n?.id || !user?.id) return;
+    setDeletingNotificationId(n.id);
+    const { error } = await deleteNotification(n.id, user.id);
+    setDeletingNotificationId(null);
+    if (!error) {
+      setNotifications((prev) => prev.filter((x) => x.id !== n.id));
+      if (selectedNotification?.id === n.id) setSelectedNotification(null);
+    }
   };
 
   const handleLogout = () => {
@@ -335,21 +360,36 @@ export default function UserLayout() {
               <ListGroup.Item
                 key={n.id}
                 action
-                className={`border-0 border-bottom py-3 px-3 ${!n.readAt ? 'bg-opacity-10 bg-primary' : ''} ${n.type === 'publication_validated' || n.type === 'publication_online' ? 'notification-validation' : ''} ${n.type === 'publication_rejected' ? 'notification-rejection' : ''}`}
+                className={`border-0 border-bottom py-3 px-3 position-relative ${!n.readAt ? 'bg-opacity-10 bg-primary' : ''} ${n.type === 'publication_validated' || n.type === 'publication_online' ? 'notification-validation' : ''} ${n.type === 'publication_rejected' ? 'notification-rejection' : ''}`}
                 onClick={() => handleNotificationClick(n)}
               >
-                <p className="small mb-1 fw-medium">{n.title}</p>
-                {n.message && (
-                  <p className={`small mb-1 text-body-secondary ${n.type === 'publication_validated' || n.type === 'publication_online' || n.type === 'publication_rejected' ? 'notification-validation-message' : ''}`}>
-                    {n.message}
-                  </p>
-                )}
-                {n.publicationId && (
-                  <span className="small text-danger">{t('user.viewPublication')} →</span>
-                )}
-                <span className="d-block text-body-secondary small mt-1">
-                  {n.createdAt ? new Date(n.createdAt).toLocaleDateString((i18n.language || 'fr').startsWith('en') ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
-                </span>
+                <div className="d-flex justify-content-between align-items-start gap-2">
+                  <div className="flex-grow-1 min-w-0">
+                    <p className="small mb-1 fw-medium">{n.title}</p>
+                    {n.message && (
+                      <p className={`small mb-1 text-body-secondary text-truncate ${n.type === 'publication_validated' || n.type === 'publication_online' || n.type === 'publication_rejected' ? 'notification-validation-message' : ''}`} style={{ maxWidth: '100%' }}>
+                        {n.message}
+                      </p>
+                    )}
+                    {n.publicationId && (
+                      <span className="small text-danger">{t('user.viewPublication')} →</span>
+                    )}
+                    <span className="d-block text-body-secondary small mt-1">
+                      {n.createdAt ? new Date(n.createdAt).toLocaleDateString((i18n.language || 'fr').startsWith('en') ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
+                    </span>
+                  </div>
+                  <Button
+                    variant="outline-danger"
+                    size="sm"
+                    className="flex-shrink-0 p-1 rounded user-notification-delete-btn"
+                    onClick={(e) => { e.stopPropagation(); handleDeleteNotification(n); }}
+                    disabled={deletingNotificationId === n.id}
+                    aria-label={t('user.deleteNotification') || 'Supprimer'}
+                    title={t('user.deleteNotification') || 'Supprimer'}
+                  >
+                    <Trash2 size={16} />
+                  </Button>
+                </div>
               </ListGroup.Item>
             ))}
             {notifications.length === 0 && (
@@ -360,6 +400,59 @@ export default function UserLayout() {
           </ListGroup>
         </Offcanvas.Body>
       </Offcanvas>
+
+      {/* Modal lecture complète d'une notification */}
+      <Modal
+        show={!!selectedNotification}
+        onHide={handleCloseNotificationModal}
+        centered
+        className="user-notification-modal"
+        data-bs-theme={theme}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title className="small fw-bold d-flex align-items-center gap-2">
+            <Bell size={20} />
+            {selectedNotification?.title}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="user-notification-modal-body">
+          {selectedNotification?.message && (
+            <p className="mb-3 text-body user-notification-modal-message" style={{ whiteSpace: 'pre-line' }}>
+              {selectedNotification.message}
+            </p>
+          )}
+          <p className="small text-body-secondary mb-0">
+            {selectedNotification?.createdAt
+              ? new Date(selectedNotification.createdAt).toLocaleDateString((i18n.language || 'fr').startsWith('en') ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+              : ''}
+          </p>
+        </Modal.Body>
+        <Modal.Footer className="d-flex flex-wrap gap-2 justify-content-between">
+          <div className="d-flex gap-2">
+            {selectedNotification?.publicationId && (
+              <Button variant="danger" size="sm" className="d-inline-flex align-items-center gap-1" onClick={handleGoToPublication}>
+                <ExternalLink size={16} />
+                {t('user.viewPublication')}
+              </Button>
+            )}
+          </div>
+          <div className="d-flex gap-2">
+            <Button
+              variant="outline-danger"
+              size="sm"
+              className="d-inline-flex align-items-center gap-1"
+              onClick={() => handleDeleteNotification(selectedNotification)}
+              disabled={deletingNotificationId === selectedNotification?.id}
+            >
+              <Trash2 size={16} />
+              {t('user.deleteNotification') || 'Supprimer'}
+            </Button>
+            <Button variant="secondary" size="sm" onClick={handleCloseNotificationModal}>
+              {t('common.close') || 'Fermer'}
+            </Button>
+          </div>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }
