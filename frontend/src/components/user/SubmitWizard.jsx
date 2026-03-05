@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Card, Form, Button, Row, Col, Nav, InputGroup, OverlayTrigger, Tooltip, Toast, ToastContainer, Spinner, Badge, Modal,
 } from 'react-bootstrap';
-import { FileText, GraduationCap, Upload, CreditCard, Info, CheckCircle2, User } from 'lucide-react';
+import { FileText, GraduationCap, Upload, CreditCard, Info, CheckCircle2, User, Globe, Award } from 'lucide-react';
 import { createPublication, uploadPublicationPdf, uploadAuthorPhoto, notifySubmissionConfirmation } from 'services/publications';
 import { checkWaiverCode, consumeWaiverCode } from 'services/waiverCodes';
 import { getPlatformSettings } from 'services/settings';
@@ -375,6 +375,23 @@ export default function SubmitWizard() {
           Veuillez compléter les informations ci-dessous pour publier votre travail scientifique.
         </p>
       </header>
+
+      <div className="submit-wizard-cemot-banner mb-4" role="alert">
+        <div className="submit-wizard-cemot-banner-inner">
+          <div className="submit-wizard-cemot-banner-icon">
+            <Globe size={28} aria-hidden />
+            <Award size={20} className="submit-wizard-cemot-banner-icon-badge" aria-hidden />
+          </div>
+          <div className="submit-wizard-cemot-banner-content">
+            <strong className="submit-wizard-cemot-banner-label">Vous soumettez votre publication à</strong>
+            <h2 className="submit-wizard-cemot-banner-title">Revue internationale interculturelle CEMOT</h2>
+            <p className="submit-wizard-cemot-banner-desc mb-0">
+              Une revue scientifique de référence, à rayonnement international et à dimension interculturelle. 
+              En soumettant ce formulaire, vous confirmez que votre travail sera examiné et diffusé au sein de cette grande revue.
+            </p>
+          </div>
+        </div>
+      </div>
 
       <Nav variant="pills" className="submit-wizard-stepper mb-4" as="ul">
         {STEPS.map((s) => {

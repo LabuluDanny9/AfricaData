@@ -109,6 +109,7 @@ export async function getPublicationById(id) {
     .from('publications')
     .select('*')
     .eq('id', id)
+    .neq('status', 'deleted')
     .single();
 
   return { data: data ? mapPublication(data) : null, error };

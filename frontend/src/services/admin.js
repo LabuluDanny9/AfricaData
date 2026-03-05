@@ -109,6 +109,7 @@ export async function getAllPublicationsForAdmin() {
   const { data, error } = await supabase
     .from('publications')
     .select('id, title, author, author_photo_url, type, domain, status, views, downloads, pdf_url, summary, admin_comment, user_id, created_at')
+    .neq('status', 'deleted')
     .order('created_at', { ascending: false });
   return { data: data || [], error };
 }
@@ -137,7 +138,10 @@ export async function rejectPublication(id) {
 /** DELETE /api/admin/publications/:id */
 export async function deletePublication(id) {
   if (!isSupabaseConfigured()) return { error: new Error('Non configuré.') };
-  const { error } = await supabase.from('publications').delete().eq('id', id);
+  const { error } = await supabase
+    .from('publications')
+    .update({ status: 'deleted', updated_at: new Date().toISOString() })
+    .eq('id', id);
   return { error };
 }
 
