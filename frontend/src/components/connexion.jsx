@@ -239,8 +239,13 @@ function ConnexionContent() {
                       <Col lg="7">
                         <Card.Body className="p-4 p-lg-5">
                           {!isAdminLogin && signupConfirmMessage && (
-                            <Alert variant="info" className="mb-3 mb-lg-4 small">
-                              {signupConfirmMessage}
+                            <Alert variant="success" className="mb-4 d-flex align-items-start gap-3 connexion-signup-message">
+                              <Mail size={24} className="flex-shrink-0 mt-1" />
+                              <div>
+                                <strong className="d-block mb-1">{t('auth.signupConfirmTitle')}</strong>
+                                <p className="mb-0">{signupConfirmMessage}</p>
+                                <p className="mb-0 mt-2 small opacity-90">{t('auth.signupConfirmHint')}</p>
+                              </div>
                             </Alert>
                           )}
                           <Form onSubmit={handleSubmit} className="auth-form connexion-form">

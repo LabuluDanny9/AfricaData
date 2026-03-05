@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS public.publications (
   downloads INTEGER DEFAULT 0,
   rating_avg NUMERIC(3,2) DEFAULT 0,
   rating_count INTEGER DEFAULT 0,
-  status TEXT DEFAULT 'published' CHECK (status IN ('draft', 'published', 'rejected')),
+  status TEXT DEFAULT 'published' CHECK (status IN ('draft', 'published', 'rejected', 'deleted')),
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );

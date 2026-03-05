@@ -239,7 +239,16 @@ export default function SubmitWizard() {
         });
         if (err) throw err;
         setPaymentPending(false);
-        setSuccessToastMessage('Votre publication a été soumise avec succès. Consultez votre adresse email pour plus de détails.');
+        setSuccessToastMessage(`✅ Confirmation de soumission de publication
+
+Votre publication a été soumise avec succès à la Revue Internationale et Interculturelle Africadata.
+
+Votre document sera examiné par le comité scientifique Africadata afin de vérifier sa conformité aux normes scientifiques et éditoriales de la plateforme.
+
+Le processus d’évaluation peut prendre jusqu’à 72 heures.
+À l’issue de cet examen, vous recevrez une notification vous informant de la validation ou du rejet de votre publication.
+
+Nous vous remercions pour votre contribution et pour la confiance que vous accordez à Africadata dans la diffusion des connaissances scientifiques.`);
         const pubId = data?.id;
         if (pubId) notifySubmissionConfirmation(pubId).catch(() => {});
         setShowToast(true);
