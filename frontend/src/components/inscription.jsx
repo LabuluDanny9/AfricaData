@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -82,6 +82,7 @@ function InscriptionContent() {
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [signupSuccessNeedsConfirm] = useState(false); // après inscription on redirige vers /connexion, ce bloc n'est plus affiché
+  const redirectingToConnexionRef = useRef(false); // évite que "if (user)" redirige vers dashboard avant la nav vers /connexion
   const navigate = useNavigate();
   const { user, setUser, authLoading: authLoadingContext } = useAuth();
 
@@ -92,8 +93,9 @@ function InscriptionContent() {
       </div>
     );
   }
-  if (user) {
-    // Sur la plateforme (inscription), tout le monde va au tableau de bord utilisateur.
+  // Ne pas rediriger vers dashboard si on vient de s'inscrire et qu'on redirige vers /connexion
+  // (Supabase peut mettre à jour la session tout de suite, ce qui rendrait user truthy avant la nav)
+  if (user && !redirectingToConnexionRef.current) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -153,6 +155,7 @@ function InscriptionContent() {
     }
     setAuthLoading(true);
     const goToConnexionWithMessage = () => {
+      redirectingToConnexionRef.current = true; // empêche "if (user)" de rediriger vers /dashboard
       try {
         sessionStorage.setItem('africadata-signup-pending-confirm', '1');
       } catch (_) {}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useLayoutEffect } from 'react';
 import { Link, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -69,35 +69,34 @@ function ConnexionContent() {
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
-  const [signupConfirmMessage, setSignupConfirmMessage] = useState(null);
-  const [cameFromSignup, setCameFromSignup] = useState(false);
-  const { user, setUser, authLoading: authLoadingContext } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
   const isAdminLogin = location.pathname === '/connexion-admin';
 
-  // Détection "arrivée depuis inscription" (state ou sessionStorage) pour afficher le message et ne pas rediriger vers dashboard
+  // Détection "arrivée depuis inscription" dès le premier rendu (state ou sessionStorage)
   const fromSignupByState = location.state?.fromSignup === true;
   let fromSignupByStorage = false;
   try {
     fromSignupByStorage = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('africadata-signup-pending-confirm') === '1';
   } catch (_) {}
+  const fromSignupInitial = fromSignupByState || fromSignupByStorage;
+
+  const [signupConfirmMessage, setSignupConfirmMessage] = useState(null);
+  const [cameFromSignup, setCameFromSignup] = useState(fromSignupInitial);
+  const { user, setUser, authLoading: authLoadingContext } = useAuth();
+  const navigate = useNavigate();
+
   const fromSignup = fromSignupByState || fromSignupByStorage || cameFromSignup;
 
-  // Message "Confirmez votre adresse email" après inscription : state ou sessionStorage ; on garde cameFromSignup pour toute la page
-  useEffect(() => {
-    const msgFromState = location.state?.message;
-    if (fromSignupByState || msgFromState) {
-      setSignupConfirmMessage(msgFromState || t('auth.signupSuccessMessage'));
+  // Dès le premier rendu (avant paint), fixer le message "confirmez votre email" pour affichage fiable
+  useLayoutEffect(() => {
+    if (fromSignupByState || fromSignupByStorage) {
       setCameFromSignup(true);
-      return;
-    }
-    if (fromSignupByStorage) {
-      try {
-        sessionStorage.removeItem('africadata-signup-pending-confirm');
-      } catch (_) {}
-      setSignupConfirmMessage(t('auth.signupSuccessMessage'));
-      setCameFromSignup(true);
+      setSignupConfirmMessage(location.state?.message || t('auth.signupSuccessMessage'));
+      if (fromSignupByStorage) {
+        try {
+          sessionStorage.removeItem('africadata-signup-pending-confirm');
+        } catch (_) {}
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromSignupByState, fromSignupByStorage, location.state?.message]);

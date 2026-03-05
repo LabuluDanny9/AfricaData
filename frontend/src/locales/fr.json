@@ -290,7 +290,9 @@
     "commentPlaceholder": "Partagez votre avis ou posez une question...",
     "publish": "Publier",
     "downloadButton": "Télécharger",
-    "noPdf": "Aucun fichier PDF associé à cette publication."
+    "noPdf": "Aucun fichier PDF associé à cette publication.",
+    "otherPublications": "Autres publications",
+    "noOtherPublications": "Aucune autre publication."
   },
   "user": {
     "dashboard": "Tableau de bord",

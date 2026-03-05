@@ -291,7 +291,9 @@
     "commentPlaceholder": "Share your review or ask a question...",
     "publish": "Publish",
     "downloadButton": "Download",
-    "noPdf": "No PDF file attached to this publication."
+    "noPdf": "No PDF file attached to this publication.",
+    "otherPublications": "Other publications",
+    "noOtherPublications": "No other publications."
   },
   "user": {
     "dashboard": "Dashboard",

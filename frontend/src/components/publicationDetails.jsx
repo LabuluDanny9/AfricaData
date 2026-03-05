@@ -5,7 +5,7 @@ import { ArrowLeft, Download, Star, MessageCircle, FileText, User, Calendar, Eye
 import AfricadataHeader from 'components/layout/AfricadataHeader';
 import AfricadataFooter from 'components/layout/AfricadataFooter';
 import RatingStars from 'components/ui/RatingStars';
-import { getPublicationById, getComments, addComment as apiAddComment, addRating as apiAddRating, getRecommendations as apiGetRecommendations, incrementView, incrementDownload, toggleFavorite as apiToggleFavorite, getFavorites } from 'services/publications';
+import { getPublicationById, getPublications, getComments, addComment as apiAddComment, addRating as apiAddRating, getRecommendations as apiGetRecommendations, incrementView, incrementDownload, toggleFavorite as apiToggleFavorite, getFavorites } from 'services/publications';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from 'context/AuthContext';
 import { isSupabaseConfigured } from 'lib/supabase';
@@ -53,7 +53,16 @@ export default function PublicationDetails() {
   const [userRating, setUserRating] = useState(null);
   const [pdfZoom, setPdfZoom] = useState(100);
   const [pdfFullscreen, setPdfFullscreen] = useState(false);
+  const [sidebarPublications, setSidebarPublications] = useState([]);
   const { user } = useAuth();
+
+  useEffect(() => {
+    if (isSupabaseConfigured()) {
+      getPublications().then(({ data }) => setSidebarPublications((data || []).slice(0, 50)));
+    } else {
+      setSidebarPublications(allPublicationsList);
+    }
+  }, []);
 
   useEffect(() => {
     if (!id) {
@@ -144,14 +153,51 @@ export default function PublicationDetails() {
     }
   };
 
+  const sidebarList = sidebarPublications.slice(0, 40);
+  const currentId = publication?.id || id;
+
   return (
     <div className="publication-details-page min-vh-100 d-flex flex-column">
       <AfricadataHeader />
 
-      <Container className="publication-details-container flex-grow-1 py-4">
-        <Link to="/librairie" className="publication-details-back d-inline-flex align-items-center gap-2 mb-4">
-          <ArrowLeft size={18} /> {t('publication.backToLibrary')}
-        </Link>
+      <Container fluid className="publication-details-wrapper flex-grow-1 py-4 px-3">
+        <Row className="g-4">
+          {/* Barre latérale gauche : liste des publications pour en choisir une */}
+          <Col md={4} lg={3} className="publication-details-sidebar-col order-2 order-md-1">
+            <div className="publication-details-sidebar sticky-top">
+              <div className="d-flex align-items-center justify-content-between mb-2">
+                <h2 className="h6 fw-bold mb-0 text-body">{t('publication.otherPublications') || 'Autres publications'}</h2>
+                <Link to="/librairie" className="small text-danger text-decoration-none d-inline-flex align-items-center gap-1">
+                  <ArrowLeft size={14} /> {t('publication.backToLibrary')}
+                </Link>
+              </div>
+              <div className="publication-details-sidebar-list">
+                {sidebarList.map((p) => {
+                  const isCurrent = String(p.id) === String(currentId);
+                  return (
+                    <Link
+                      key={p.id}
+                      to={`/publication/${p.id}`}
+                      className={`publication-details-sidebar-item ${isCurrent ? 'active' : ''}`}
+                    >
+                      <span className="publication-details-sidebar-item-title">{p.title?.length > 60 ? p.title.slice(0, 60) + '…' : p.title}</span>
+                      <span className="publication-details-sidebar-item-meta small text-body-secondary">{p.author} · {p.type}</span>
+                    </Link>
+                  );
+                })}
+                {sidebarList.length === 0 && !loading && (
+                  <p className="small text-body-secondary mb-0">{t('publication.noOtherPublications') || 'Aucune autre publication.'}</p>
+                )}
+              </div>
+            </div>
+          </Col>
+
+          {/* Contenu principal : publication en cours de lecture */}
+          <Col md={8} lg={9} className="publication-details-main-col order-1 order-md-2">
+            <div className="publication-details-container">
+              <Link to="/librairie" className="publication-details-back d-inline-flex align-items-center gap-2 mb-4 d-md-none">
+                <ArrowLeft size={18} /> {t('publication.backToLibrary')}
+              </Link>
 
         {/* Titre + Métadonnées */}
         <Card className="publication-details-card border-0 shadow-sm mb-4">
@@ -336,6 +382,9 @@ export default function PublicationDetails() {
             </Card.Body>
           </Card>
         )}
+            </div>
+          </Col>
+        </Row>
       </Container>
 
       <AfricadataFooter />
