@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Card, Table, Badge, Spinner, Alert, Button, Form, Modal, Toast, ToastContainer } from 'react-bootstrap';
-import { Search, Eye, CheckCircle, XCircle, Trash2, Download, User, FileCheck } from 'lucide-react';
+import { Card, Table, Badge, Spinner, Alert, Button, Form, Modal, Toast, ToastContainer, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { Search, Eye, CheckCircle, XCircle, Trash2, Download, User, FileCheck, CreditCard, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getAllPublicationsForAdmin, updatePublicationStatus, deletePublication, notifyPublicationRejected, notifyPublicationValidated } from 'services/admin';
+import { getAllPublicationsForAdmin, updatePublicationStatus, deletePublication, notifyPublicationRejected, notifyPublicationValidated, confirmPaymentProof } from 'services/admin';
 import { getDomainNorm } from 'services/domainNorms';
 import { useAuth } from 'context/AuthContext';
 import { canValidatePublications, canDeleteAnyContent } from 'lib/adminRoles';
@@ -17,10 +17,11 @@ export default function AdminPublications() {
   const [error, setError] = useState('');
   const [updatingId, setUpdatingId] = useState(null);
   const [search, setSearch] = useState('');
-  const [rejectModal, setRejectModal] = useState({ show: false, pub: null, comment: '' });
+  const [rejectModal, setRejectModal] = useState({ show: false, pub: null, comment: '', recommendations: '' });
   const [deleteModal, setDeleteModal] = useState({ show: false, pub: null });
   const [examineModal, setExamineModal] = useState({ show: false, pub: null, norm: null, loadingNorm: false });
   const [toast, setToast] = useState({ show: false, message: '' });
+  const [confirmingProofId, setConfirmingProofId] = useState(null);
 
   const canValidate = canValidatePublications(user?.role);
   const canDelete = canDeleteAnyContent(user?.role);
@@ -38,10 +39,10 @@ export default function AdminPublications() {
     });
   }, []);
 
-  const handleStatusChange = async (pubId, newStatus, rejectComment = null) => {
+  const handleStatusChange = async (pubId, newStatus, rejectComment = null, rejectRecommendations = null) => {
     setUpdatingId(pubId);
     setError('');
-    const { error: err } = await updatePublicationStatus(pubId, newStatus, newStatus === 'rejected' ? rejectComment : null);
+    const { error: err } = await updatePublicationStatus(pubId, newStatus, newStatus === 'rejected' ? rejectComment : null, newStatus === 'rejected' ? rejectRecommendations : null);
     if (err) {
       setUpdatingId(null);
       setRejectModal({ show: false, pub: null, comment: '' });
@@ -65,8 +66,8 @@ export default function AdminPublications() {
       }
     }
     setUpdatingId(null);
-    setRejectModal({ show: false, pub: null, comment: '' });
-    setPublications((prev) => prev.map((p) => (p.id === pubId ? { ...p, status: newStatus, admin_comment: newStatus === 'rejected' ? rejectComment : p.admin_comment } : p)));
+    setRejectModal({ show: false, pub: null, comment: '', recommendations: '' });
+    setPublications((prev) => prev.map((p) => (p.id === pubId ? { ...p, status: newStatus, admin_comment: newStatus === 'rejected' ? rejectComment : p.admin_comment, admin_recommendations: newStatus === 'rejected' ? rejectRecommendations : p.admin_recommendations } : p)));
   };
 
   const openDeleteModal = (pub) => setDeleteModal({ show: true, pub });
@@ -85,8 +86,8 @@ export default function AdminPublications() {
     setPublications((prev) => prev.filter((p) => p.id !== deleteModal.pub.id));
   };
 
-  const openRejectModal = (pub) => setRejectModal({ show: true, pub, comment: '' });
-  const closeRejectModal = () => setRejectModal({ show: false, pub: null, comment: '' });
+  const openRejectModal = (pub) => setRejectModal({ show: true, pub, comment: '', recommendations: '' });
+  const closeRejectModal = () => setRejectModal({ show: false, pub: null, comment: '', recommendations: '' });
   const openExamineModal = (pub) => {
     setExamineModal({ show: true, pub, norm: null, loadingNorm: true });
     getDomainNorm(pub?.domain || '').then(({ data }) => {
@@ -94,9 +95,23 @@ export default function AdminPublications() {
     }).catch(() => setExamineModal((prev) => ({ ...prev, norm: null, loadingNorm: false })));
   };
   const closeExamineModal = () => setExamineModal({ show: false, pub: null, norm: null, loadingNorm: false });
+
+  const handleConfirmPaymentProof = async (pubId) => {
+    setConfirmingProofId(pubId);
+    setError('');
+    const { error: err } = await confirmPaymentProof(pubId);
+    setConfirmingProofId(null);
+    if (err) {
+      setError(err.message || 'Erreur lors de la confirmation.');
+      return;
+    }
+    setToast({ show: true, message: 'Preuve de paiement confirmée. Vous pouvez procéder à l\'étude de la publication.' });
+    setPublications((prev) => prev.map((p) => (p.id === pubId ? { ...p, payment_proof_confirmed: true, payment_proof_confirmed_at: new Date().toISOString() } : p)));
+  };
+
   const confirmReject = () => {
     if (!rejectModal.pub || !rejectModal.comment.trim()) return;
-    handleStatusChange(rejectModal.pub.id, 'rejected', rejectModal.comment);
+    handleStatusChange(rejectModal.pub.id, 'rejected', rejectModal.comment, rejectModal.recommendations?.trim() || null);
   };
 
   const filtered = publications.filter(
@@ -157,6 +172,7 @@ export default function AdminPublications() {
                 <th>Domaine</th>
                 <th>Type</th>
                 <th>Statut</th>
+                <th>Preuve paiement</th>
                 <th>Date</th>
                 <th>Actions</th>
               </tr>
@@ -164,7 +180,7 @@ export default function AdminPublications() {
             <tbody>
               {pageItems.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center text-body-secondary py-4">
+                  <td colSpan={8} className="text-center text-body-secondary py-4">
                     Aucune publication
                   </td>
                 </tr>
@@ -195,6 +211,32 @@ export default function AdminPublications() {
                       {p.status === 'published' && <Badge bg="success">Validée</Badge>}
                       {p.status === 'draft' && <Badge bg="warning">En attente</Badge>}
                       {p.status === 'rejected' && <Badge bg="danger">Rejetée</Badge>}
+                    </td>
+                    <td>
+                      {p.payment_proof_url ? (
+                        <>
+                          <a href={p.payment_proof_url} target="_blank" rel="noopener noreferrer" className="d-inline-flex align-items-center gap-1 small me-1" title="Voir la preuve">
+                            <ExternalLink size={14} /> Voir
+                          </a>
+                          {p.payment_proof_confirmed ? (
+                            <Badge bg="success" className="small">Confirmée</Badge>
+                          ) : (
+                            <Button
+                              variant="outline-success"
+                              size="sm"
+                              className="ms-1"
+                              onClick={() => handleConfirmPaymentProof(p.id)}
+                              disabled={confirmingProofId === p.id}
+                              title="Confirmer la preuve de paiement (paramètre de base avant étude)"
+                            >
+                              {confirmingProofId === p.id ? <Spinner animation="border" size="sm" /> : <CreditCard size={14} />}
+                              <span className="ms-1">Confirmer</span>
+                            </Button>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-muted small">—</span>
+                      )}
                     </td>
                     <td>{p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR') : '—'}</td>
                     <td>
@@ -245,15 +287,25 @@ export default function AdminPublications() {
                               <Spinner animation="border" size="sm" />
                             ) : (
                               <>
-                                <Button
-                                  variant="success"
-                                  size="sm"
-                                  onClick={() => handleStatusChange(p.id, 'published')}
-                                  title="Valider"
-                                  className="me-1"
-                                >
-                                  <CheckCircle size={14} />
-                                </Button>
+                                {p.payment_proof_url && !p.payment_proof_confirmed ? (
+                                  <OverlayTrigger placement="top" overlay={<Tooltip>Confirmez d&apos;abord la preuve de paiement (colonne Preuve paiement) avant de valider.</Tooltip>}>
+                                    <span className="d-inline-block">
+                                      <Button variant="success" size="sm" className="me-1" disabled title="Valider (confirmer la preuve d'abord)">
+                                        <CheckCircle size={14} />
+                                      </Button>
+                                    </span>
+                                  </OverlayTrigger>
+                                ) : (
+                                  <Button
+                                    variant="success"
+                                    size="sm"
+                                    onClick={() => handleStatusChange(p.id, 'published')}
+                                    title="Valider"
+                                    className="me-1"
+                                  >
+                                    <CheckCircle size={14} />
+                                  </Button>
+                                )}
                                 <Button
                                   variant="danger"
                                   size="sm"
@@ -382,16 +434,32 @@ export default function AdminPublications() {
           <Modal.Title>Rejeter la publication</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p className="small text-muted mb-2">
-            Le commentaire sera envoyé à l'auteur. Champ obligatoire.
+          <p className="small text-muted mb-3">
+            Les motifs et recommandations seront communiqués à l&apos;auteur (notification et email). L&apos;auteur pourra resoumettre sans payer en utilisant le numéro de référence de sa publication rejetée.
           </p>
-          <Form.Control
-            as="textarea"
-            rows={3}
-            placeholder="Motif du rejet…"
-            value={rejectModal.comment}
-            onChange={(e) => setRejectModal((prev) => ({ ...prev, comment: e.target.value }))}
-          />
+          <Form.Group className="mb-3">
+            <Form.Label className="fw-semibold">Motifs du rejet <span className="text-danger">*</span></Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={3}
+              placeholder="Ex. non-conformité aux normes académiques, insuffisance méthodologique, absence de références, document incomplet…"
+              value={rejectModal.comment}
+              onChange={(e) => setRejectModal((prev) => ({ ...prev, comment: e.target.value }))}
+            />
+          </Form.Group>
+          <Form.Group>
+            <Form.Label className="fw-semibold">Recommandations pour une nouvelle soumission</Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={2}
+              placeholder="Indiquez les corrections à apporter pour que l'auteur puisse resoumettre (optionnel)."
+              value={rejectModal.recommendations}
+              onChange={(e) => setRejectModal((prev) => ({ ...prev, recommendations: e.target.value }))}
+            />
+            <Form.Text className="small text-muted">
+              L&apos;auteur pourra utiliser le numéro de référence de cette publication pour soumettre à nouveau sans payer.
+            </Form.Text>
+          </Form.Group>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={closeRejectModal}>

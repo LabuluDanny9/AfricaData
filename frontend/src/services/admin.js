@@ -108,10 +108,30 @@ export async function getAllPublicationsForAdmin() {
   if (!isSupabaseConfigured()) return { data: [], error: null };
   const { data, error } = await supabase
     .from('publications')
-    .select('id, title, author, author_photo_url, type, domain, status, views, downloads, pdf_url, summary, admin_comment, user_id, created_at')
+    .select('id, title, author, author_photo_url, type, domain, status, views, downloads, pdf_url, summary, admin_comment, admin_recommendations, reference_code, user_id, created_at, payment_proof_url, payment_proof_confirmed, payment_proof_confirmed_at')
     .neq('status', 'deleted')
     .order('created_at', { ascending: false });
   return { data: data || [], error };
+}
+
+/**
+ * Confirme la preuve de paiement d'une publication (paramètre de base avant étude complète).
+ * À appeler par l'admin après vérification du justificatif.
+ * @param {string} publicationId
+ */
+export async function confirmPaymentProof(publicationId) {
+  if (!isSupabaseConfigured()) return { error: new Error('Non configuré.') };
+  const { data: { user } } = await supabase.auth.getUser();
+  const { error } = await supabase
+    .from('publications')
+    .update({
+      payment_proof_confirmed: true,
+      payment_proof_confirmed_at: new Date().toISOString(),
+      payment_proof_confirmed_by: user?.id ?? null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', publicationId);
+  return { error };
 }
 
 /** GET /api/admin/publications/:id */
@@ -146,19 +166,21 @@ export async function deletePublication(id) {
 }
 
 /**
- * Met à jour le statut d'une publication. En cas de rejet, optionnellement enregistre le commentaire admin.
+ * Met à jour le statut d'une publication. En cas de rejet, enregistre motifs et recommandations.
  * @param {string} publicationId
  * @param {string} status - 'draft' | 'published' | 'rejected'
- * @param {string} [adminComment] - commentaire affiché à l'auteur en cas de rejet
+ * @param {string} [adminComment] - motifs du rejet (obligatoire si rejet)
+ * @param {string} [adminRecommendations] - recommandations pour resoumission (optionnel)
  */
-export async function updatePublicationStatus(publicationId, status, adminComment = null) {
+export async function updatePublicationStatus(publicationId, status, adminComment = null, adminRecommendations = null) {
   if (!isSupabaseConfigured()) return { error: new Error('Non configuré.') };
   const updates = { status, updated_at: new Date().toISOString() };
-  if (status === 'rejected' && adminComment != null) {
-    updates.admin_comment = adminComment;
-  }
-  if (status !== 'rejected') {
+  if (status === 'rejected') {
+    if (adminComment != null) updates.admin_comment = adminComment;
+    if (adminRecommendations != null) updates.admin_recommendations = adminRecommendations;
+  } else {
     updates.admin_comment = null;
+    updates.admin_recommendations = null;
   }
   const { error } = await supabase
     .from('publications')

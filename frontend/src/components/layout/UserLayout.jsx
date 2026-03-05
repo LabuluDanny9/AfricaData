@@ -61,9 +61,38 @@ export default function UserLayout() {
     if (!user?.id || !isSupabaseConfigured()) return;
     const unsubscribe = subscribeToNotifications(user.id, (newNotif) => {
       setNotifications((prev) => [newNotif, ...prev]);
+      // Alerte : son + notification navigateur si l'utilisateur est en ligne (onglet actif ou non)
+      try {
+        if (typeof window !== 'undefined' && 'AudioContext' in window) {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.frequency.value = 880;
+          osc.type = 'sine';
+          gain.gain.setValueAtTime(0.15, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+          osc.start(ctx.currentTime);
+          osc.stop(ctx.currentTime + 0.15);
+        }
+        if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+          new Notification(newNotif.title || 'Africadata', {
+            body: (newNotif.message || '').slice(0, 200) + (newNotif.message && newNotif.message.length > 200 ? '…' : ''),
+            icon: '/favicon.ico',
+          });
+        }
+      } catch (_) {}
     });
     return unsubscribe;
   }, [user?.id]);
+
+  // Demander la permission des notifications navigateur au premier chargement (pour alerte même si onglet en arrière-plan)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().catch(() => {});
+    }
+  }, []);
 
   const unreadCount = notifications.filter((n) => !n.readAt).length;
 
@@ -306,11 +335,15 @@ export default function UserLayout() {
               <ListGroup.Item
                 key={n.id}
                 action
-                className={`border-0 border-bottom py-3 px-3 ${!n.readAt ? 'bg-opacity-10 bg-primary' : ''}`}
+                className={`border-0 border-bottom py-3 px-3 ${!n.readAt ? 'bg-opacity-10 bg-primary' : ''} ${n.type === 'publication_validated' || n.type === 'publication_online' ? 'notification-validation' : ''} ${n.type === 'publication_rejected' ? 'notification-rejection' : ''}`}
                 onClick={() => handleNotificationClick(n)}
               >
                 <p className="small mb-1 fw-medium">{n.title}</p>
-                {n.message && <p className="small mb-1 text-body-secondary">{n.message}</p>}
+                {n.message && (
+                  <p className={`small mb-1 text-body-secondary ${n.type === 'publication_validated' || n.type === 'publication_online' || n.type === 'publication_rejected' ? 'notification-validation-message' : ''}`}>
+                    {n.message}
+                  </p>
+                )}
                 {n.publicationId && (
                   <span className="small text-danger">{t('user.viewPublication')} →</span>
                 )}

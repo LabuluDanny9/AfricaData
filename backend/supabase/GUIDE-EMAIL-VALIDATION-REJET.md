@@ -4,12 +4,13 @@ Lorsqu’un administrateur **valide** ou **rejette** une publication, l’auteur
 
 ---
 
-## 1. Validation (statut « published »)
+## 1. Mise en ligne (statut « published »)
 
 - **Edge Function :** `send-validation-email`
 - **Déclenchement :** après `updatePublicationStatus(id, 'published')` (AdminPublications et SuperAdmin).
-- **Objet :** Validation de votre publication – Africadata
-- **Contenu :** avis favorable, critères respectés, mise en ligne à venir, remerciements, signature Le Comité Éditorial – Africadata.
+- **Objet :** Votre publication est désormais en ligne – Africadata
+- **Contenu :** Madame, Monsieur, [nom du profil], titre de la publication, message « désormais officiellement publiée et accessible en ligne », **lien d’accès** (URL de la publication), remerciements, signature L’équipe Africadata.
+- **Secret optionnel :** `FRONTEND_URL` ou `SITE_URL` (ex. `https://votresite.com`) pour inclure le lien direct vers la publication dans l’email. Sans ce secret, le lien n’apparaît pas dans l’email (l’auteur voit la notification in-app avec le bouton « Voir la publication »).
 
 **Déploiement :**
 
@@ -49,9 +50,9 @@ Les deux fonctions utilisent **Resend** (comme l’email de confirmation de soum
 
 ## 4. Résumé
 
-| Événement   | Fonction                        | Objet email                                      |
-|------------|----------------------------------|--------------------------------------------------|
-| Validation | `send-validation-email`         | Validation de votre publication – Africadata     |
-| Rejet      | `send-rejection-email`          | Décision concernant votre publication – Africadata |
+| Événement      | Fonction                        | Objet email                                          |
+|----------------|----------------------------------|------------------------------------------------------|
+| Mise en ligne  | `send-validation-email`         | Votre publication est désormais en ligne – Africadata |
+| Rejet          | `send-rejection-email`          | Décision concernant votre publication – Africadata   |
 
 Les templates exacts sont dans les fichiers `backend/supabase/functions/send-validation-email/index.ts` et `backend/supabase/functions/send-rejection-email/index.ts`.

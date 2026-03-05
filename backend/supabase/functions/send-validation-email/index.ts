@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('email')
+      .select('email, full_name')
       .eq('id', pub.user_id)
       .maybeSingle();
 
@@ -56,20 +56,22 @@ Deno.serve(async (req) => {
       );
     }
 
+    const recipientName = ((profile?.full_name || '').trim() || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const titleEscaped = (pub.title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    const subject = 'Validation de votre publication – Africadata';
+    const baseUrl = (Deno.env.get('FRONTEND_URL') || Deno.env.get('SITE_URL') || '').replace(/\/$/, '');
+    const publicationUrl = baseUrl ? `${baseUrl}/publication/${pub.id}` : '';
+
+    const subject = 'Votre publication est désormais en ligne – Africadata';
     const html = `
-<p>Madame, Monsieur,</p>
-<p>Nous avons le plaisir de vous informer que votre publication intitulée :</p>
+<p>Madame, Monsieur${recipientName ? ', ' + recipientName : ''},</p>
+<p>Nous avons le plaisir de vous informer que votre publication :</p>
 <p><strong>« ${titleEscaped} »</strong></p>
-<p>a été examinée par notre comité éditorial et a reçu un <strong>avis favorable</strong>.</p>
-<p>Votre document répond aux critères scientifiques et éditoriaux établis par Africadata.<br>
-Il est désormais en attente de mise en ligne officielle dans notre bibliothèque numérique.</p>
-<p>Vous serez informé(e) dès que la publication sera accessible au public.</p>
-<p>Nous vous félicitons pour la qualité de votre contribution et vous remercions de participer activement au développement scientifique.</p>
+<p>est désormais officiellement publiée et accessible en ligne sur la plateforme Africadata.</p>
+<p>Votre travail est maintenant consultable par la communauté académique via notre bibliothèque numérique.</p>
+${publicationUrl ? `<p><strong>Lien d'accès :</strong><br><a href="${publicationUrl}">${publicationUrl}</a></p>` : ''}
+<p>Nous vous remercions pour votre contribution au rayonnement scientifique et vous encourageons à continuer à partager vos travaux avec la communauté.</p>
 <p>Cordialement,</p>
-<p><strong>Le Comité Éditorial</strong><br>
-Africadata</p>
+<p><strong>L'équipe Africadata</strong></p>
 `;
 
     const res = await fetch('https://api.resend.com/emails', {

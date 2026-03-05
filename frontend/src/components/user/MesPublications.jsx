@@ -29,8 +29,9 @@ export default function MesPublications() {
     setLoading(true);
     supabase
       .from('publications')
-      .select('id, title, author, author_photo_url, type, status, created_at, admin_comment')
+      .select('id, title, author, author_photo_url, type, status, created_at, admin_comment, admin_recommendations, reference_code')
       .eq('user_id', user.id)
+      .neq('status', 'deleted')
       .order('created_at', { ascending: false })
       .then(({ data, error }) => {
         if (!error && data) {
@@ -43,6 +44,8 @@ export default function MesPublications() {
             status: p.status || 'draft',
             date: p.created_at?.slice(0, 10) || '',
             admin_comment: p.admin_comment ?? null,
+            admin_recommendations: p.admin_recommendations ?? null,
+            reference_code: p.reference_code ?? null,
           })));
         } else {
           setPublications([]);
@@ -107,15 +110,22 @@ export default function MesPublications() {
                       <td>
                         <Badge bg={statusInfo.variant} className="rounded-pill">{t(statusInfo.labelKey)}</Badge>
                         {pub.status === 'rejected' && (
-                          <Button
-                            variant="link"
-                            size="sm"
-                            className="p-0 ms-1 text-danger"
-                            onClick={() => setSelectedRejet({ title: pub.title, comment: pub.admin_comment })}
-                            title={t('admin.viewAdminComment')}
-                          >
-                            <AlertCircle size={16} />
-                          </Button>
+                          <>
+                            {pub.reference_code && (
+                              <span className="small text-muted ms-1 font-monospace" title={t('user.resubmissionRefTooltip') || 'Référence pour resoumission sans paiement'}>
+                                ({pub.reference_code})
+                              </span>
+                            )}
+                            <Button
+                              variant="link"
+                              size="sm"
+                              className="p-0 ms-1 text-danger"
+                              onClick={() => setSelectedRejet({ title: pub.title, comment: pub.admin_comment, recommendations: pub.admin_recommendations, referenceCode: pub.reference_code })}
+                              title={t('admin.viewAdminComment')}
+                            >
+                              <AlertCircle size={16} />
+                            </Button>
+                          </>
                         )}
                       </td>
                       <td className="small text-body-secondary">{pub.date}</td>
@@ -142,13 +152,25 @@ export default function MesPublications() {
 
       <Modal show={!!selectedRejet} onHide={() => setSelectedRejet(null)} centered>
         <Modal.Header closeButton>
-          <Modal.Title className="small">{t('admin.adminComment')}</Modal.Title>
+          <Modal.Title className="small">Décision concernant votre publication</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {selectedRejet && (
             <>
               <p className="small fw-semibold mb-2">{selectedRejet.title}</p>
-              <p className="small text-body-secondary mb-0">{selectedRejet.comment || t('admin.noComment')}</p>
+              <p className="small mb-1 fw-semibold">Motifs de la décision :</p>
+              <p className="small text-body-secondary mb-3">{selectedRejet.comment || t('admin.noComment')}</p>
+              {selectedRejet.recommendations && (
+                <>
+                  <p className="small mb-1 fw-semibold">Recommandations pour une nouvelle soumission :</p>
+                  <p className="small text-body-secondary mb-3">{selectedRejet.recommendations}</p>
+                </>
+              )}
+              {selectedRejet.referenceCode && (
+                <p className="small text-muted mb-0">
+                  <strong>Référence pour resoumission sans paiement :</strong> <span className="font-monospace">{selectedRejet.referenceCode}</span>
+                </p>
+              )}
             </>
           )}
         </Modal.Body>

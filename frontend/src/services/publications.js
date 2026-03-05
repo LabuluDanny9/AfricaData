@@ -256,6 +256,34 @@ export async function uploadAuthorPhoto(file, userId = 'anonymous') {
   return { data: urlData?.publicUrl ?? null, error: null };
 }
 
+/** Types MIME acceptés pour la preuve de paiement (image ou PDF) */
+const PAYMENT_PROOF_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg', 'application/pdf'];
+const PAYMENT_PROOF_MAX_BYTES = 10 * 1024 * 1024; // 10 Mo
+
+/**
+ * Upload la preuve de paiement (photo ou document scanné). Stocke dans le bucket publications.
+ * @param {File} file - Image (JPG, PNG, WebP) ou PDF
+ * @param {string} [userId] - ID utilisateur
+ * @returns {{ data: string | null, error: Error | null }}
+ */
+export async function uploadPaymentProof(file, userId = 'anonymous') {
+  if (!isSupabaseConfigured()) return { data: null, error: new Error('Supabase non configuré.') };
+  if (!file || !PAYMENT_PROOF_MIMES.includes(file.type)) {
+    return { data: null, error: new Error('Format accepté : JPG, PNG, WebP ou PDF.') };
+  }
+  if (file.size > PAYMENT_PROOF_MAX_BYTES) {
+    return { data: null, error: new Error('Fichier trop volumineux (max. 10 Mo).') };
+  }
+  const ext = file.name.split('.').pop()?.toLowerCase() || (file.type === 'application/pdf' ? 'pdf' : 'jpg');
+  const path = `${userId}/payment-proofs/${Date.now()}-preuve.${ext}`;
+  const { data: uploadData, error: uploadError } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .upload(path, file, { contentType: file.type, upsert: false });
+  if (uploadError) return { data: null, error: uploadError };
+  const { data: urlData } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(uploadData.path);
+  return { data: urlData?.publicUrl ?? null, error: null };
+}
+
 export async function createPublication(payload) {
   if (!isSupabaseConfigured()) return { data: null, error: new Error('Supabase non configuré.') };
   const { data: { user } } = await supabase.auth.getUser();
@@ -280,11 +308,42 @@ export async function createPublication(payload) {
       summary: payload.summary || payload.description || '',
       abstract: payload.abstract || payload.summary || payload.description || '',
       pdf_url: payload.pdf_url || null,
+      payment_proof_url: payload.payment_proof_url || null,
       status,
     })
     .select()
     .single();
   return { data: data ? mapPublication(data) : null, error };
+}
+
+/**
+ * Vérifie si une référence de resoumission (publication rejetée) est valide pour l'utilisateur connecté.
+ * Permet de soumettre à nouveau sans payer.
+ * @param {string} referenceCode - Code de référence (ex. A1B2C3D4E5F6)
+ * @param {string} [userId] - ID utilisateur (optionnel, récupéré depuis la session si absent)
+ * @returns {{ valid: boolean, publicationId?: string, error?: Error }}
+ */
+export async function validateResubmissionReference(referenceCode, userId) {
+  if (!isSupabaseConfigured()) return { valid: false, error: new Error('Supabase non configuré.') };
+  const ref = (referenceCode || '').toString().trim().toUpperCase().replace(/\s/g, '');
+  if (!ref) return { valid: false };
+  let uid = userId;
+  if (!uid) {
+    const { data: { user } } = await supabase.auth.getUser();
+    uid = user?.id;
+  }
+  if (!uid) return { valid: false };
+  const refNorm = ref.slice(0, 12);
+  const { data, error } = await supabase
+    .from('publications')
+    .select('id, reference_code')
+    .eq('user_id', uid)
+    .eq('status', 'rejected')
+    .eq('reference_code', refNorm)
+    .maybeSingle();
+  if (error) return { valid: false, error };
+  if (data?.id) return { valid: true, publicationId: data.id };
+  return { valid: false };
 }
 
 /**

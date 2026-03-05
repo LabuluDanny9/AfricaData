@@ -3,8 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Card, Form, Button, Row, Col, Nav, InputGroup, OverlayTrigger, Tooltip, Toast, ToastContainer, Spinner, Badge, Modal,
 } from 'react-bootstrap';
-import { FileText, GraduationCap, Upload, CreditCard, Info, CheckCircle2, User, Globe, Award } from 'lucide-react';
-import { createPublication, uploadPublicationPdf, uploadAuthorPhoto, notifySubmissionConfirmation } from 'services/publications';
+import { FileText, GraduationCap, Upload, CreditCard, Info, CheckCircle2, User, Globe, Award, ImagePlus } from 'lucide-react';
+import { createPublication, uploadPublicationPdf, uploadAuthorPhoto, uploadPaymentProof, notifySubmissionConfirmation, validateResubmissionReference } from 'services/publications';
 import { checkWaiverCode, consumeWaiverCode } from 'services/waiverCodes';
 import { getPlatformSettings } from 'services/settings';
 import { useAuth } from 'context/AuthContext';
@@ -103,6 +103,13 @@ export default function SubmitWizard() {
   const [submitAsPublished, setSubmitAsPublished] = useState(false);
   const [paymentEnabled, setPaymentEnabled] = useState(true);
   const [successToastMessage, setSuccessToastMessage] = useState('');
+  const [paymentProofFile, setPaymentProofFile] = useState(null);
+  const [paymentProofError, setPaymentProofError] = useState('');
+  const [uploadingPaymentProof, setUploadingPaymentProof] = useState(false);
+  const [resubmissionRefInput, setResubmissionRefInput] = useState('');
+  const [resubmissionRefValid, setResubmissionRefValid] = useState(false);
+  const [resubmissionRefChecking, setResubmissionRefChecking] = useState(false);
+  const [resubmissionRefError, setResubmissionRefError] = useState('');
 
   // Validation instantanée
   const titleInvalid = form.title.trim().length > 0 && form.title.trim().length < MIN_TITLE_LENGTH;
@@ -190,7 +197,7 @@ export default function SubmitWizard() {
   };
 
   const isAdmin = isAdminRole(user?.role);
-  const skipPayment = isAdmin || waiverCodeValid === true || paymentEnabled === false;
+  const skipPayment = isAdmin || waiverCodeValid === true || paymentEnabled === false || resubmissionRefValid;
 
   const handleSubmit = async () => {
     setError('');
@@ -200,6 +207,11 @@ export default function SubmitWizard() {
     }
     if (!skipPayment && step === 4 && !isValidAmount(form.amount)) {
       setError(amountError || `Veuillez saisir un montant valide (min. ${AMOUNT_MIN}).`);
+      return;
+    }
+    if (!skipPayment && step === 4 && !paymentProofFile) {
+      setError('La preuve de paiement est obligatoire. Joignez une photo ou un document scanné clair (référence de transaction, montant, date).');
+      setPaymentProofError('Veuillez joindre votre preuve de paiement.');
       return;
     }
     setLoading(true);
@@ -218,6 +230,14 @@ export default function SubmitWizard() {
           const { success, error: useErr } = await consumeWaiverCode(waiverCodeInput.trim());
           if (!success || useErr) throw new Error(useErr?.message || 'Code déjà utilisé ou invalide.');
         }
+        let paymentProofUrl = null;
+        if (!skipPayment && paymentProofFile) {
+          setUploadingPaymentProof(true);
+          const { data: proofUrl, error: proofErr } = await uploadPaymentProof(paymentProofFile, user?.id);
+          setUploadingPaymentProof(false);
+          if (proofErr) throw proofErr;
+          paymentProofUrl = proofUrl || null;
+        }
         let authorPhotoUrl = null;
         if (authorPhotoFile) {
           const { data: photoUrl, error: photoErr } = await uploadAuthorPhoto(authorPhotoFile, user?.id);
@@ -235,6 +255,7 @@ export default function SubmitWizard() {
           summary: form.summary.trim(),
           abstract: form.summary.trim(),
           pdf_url: pdfUrl,
+          payment_proof_url: paymentProofUrl,
           status,
         });
         if (err) throw err;
@@ -331,7 +352,21 @@ Nous vous remercions pour votre contribution et pour la confiance que vous accor
 
   const canProceedStep1 = form.title.trim().length >= MIN_TITLE_LENGTH && form.summary.trim().length >= MIN_SUMMARY_LENGTH;
   const canProceedStep3 = pdfFile || (form.pdf_url?.trim?.()?.length > 0);
-  const canProceedStep4 = skipPayment || (validatePhoneRDC(form.phone) && isValidAmount(form.amount));
+  const canProceedStep4 = skipPayment
+    ? true
+    : (validatePhoneRDC(form.phone) && isValidAmount(form.amount) && !!paymentProofFile);
+
+  const handleVerifyResubmissionRef = async () => {
+    const ref = resubmissionRefInput.trim();
+    if (!ref) return;
+    setResubmissionRefChecking(true);
+    setResubmissionRefError('');
+    const { valid, error: err } = await validateResubmissionReference(ref, user?.id);
+    setResubmissionRefChecking(false);
+    if (err) setResubmissionRefError(err.message || 'Vérification impossible.');
+    else if (valid) setResubmissionRefValid(true);
+    else setResubmissionRefError('Référence invalide ou déjà utilisée. Vérifiez le numéro de référence de votre publication rejetée.');
+  };
 
   const openPdfPreview = () => {
     if (!pdfFile) return;
@@ -751,12 +786,14 @@ Nous vous remercions pour votre contribution et pour la confiance que vous accor
                 </>
               )}
 
-              {!isAdmin && (waiverCodeValid === true || paymentEnabled === false) && (
+              {!isAdmin && (waiverCodeValid === true || paymentEnabled === false || resubmissionRefValid) && (
                 <>
                   <div className="alert alert-success mb-4 d-flex align-items-center gap-2">
                     <CheckCircle2 size={20} className="flex-shrink-0" />
                     <span>
-                      {waiverCodeValid === true ? (
+                      {resubmissionRefValid ? (
+                        <><strong>Référence de resoumission acceptée.</strong> Vous pouvez soumettre sans payer (publication rejetée précédemment).</>
+                      ) : waiverCodeValid === true ? (
                         <><strong>Code valide.</strong> Publication gratuite — le formulaire de paiement n'est pas nécessaire.</>
                       ) : (
                         <><strong>Soumission gratuite.</strong> Vous pouvez soumettre sans payer. Vous recevrez un email avec les détails de paiement (banque / mobile money) pour plus d'informations.</>
@@ -782,8 +819,31 @@ Nous vous remercions pour votre contribution et pour la confiance que vous accor
                 </>
               )}
 
-              {!isAdmin && waiverCodeValid !== true && paymentEnabled !== false && (
+              {!isAdmin && waiverCodeValid !== true && paymentEnabled !== false && !resubmissionRefValid && (
                 <>
+                  <Form.Group className="mb-4">
+                    <Form.Label className="d-flex align-items-center gap-1 fw-semibold">
+                      Référence de resoumission (publication rejetée)
+                      <OverlayTrigger placement="top" overlay={<Tooltip>Indiquez le numéro de référence reçu lors du rejet pour soumettre à nouveau sans payer</Tooltip>}>
+                        <span className="text-body-secondary" style={{ cursor: 'help' }}><Info size={14} /></span>
+                      </OverlayTrigger>
+                    </Form.Label>
+                    <InputGroup className="mb-2">
+                      <Form.Control
+                        type="text"
+                        placeholder="Ex. : A1B2C3D4E5F6"
+                        value={resubmissionRefInput}
+                        onChange={(e) => { setResubmissionRefInput(e.target.value.toUpperCase().replace(/\s/g, '')); setResubmissionRefError(''); }}
+                        className="font-monospace"
+                        maxLength={12}
+                      />
+                      <Button variant="outline-secondary" onClick={handleVerifyResubmissionRef} disabled={resubmissionRefChecking || !resubmissionRefInput.trim()}>
+                        {resubmissionRefChecking ? <Spinner animation="border" size="sm" /> : 'Vérifier la référence'}
+                      </Button>
+                    </InputGroup>
+                    {resubmissionRefError && <Form.Text className="text-danger small d-block">{resubmissionRefError}</Form.Text>}
+                  </Form.Group>
+
                   <Form.Group className="mb-4">
                     <Form.Label className="d-flex align-items-center gap-1">
                       Code de publication gratuite (optionnel)
@@ -899,17 +959,74 @@ Nous vous remercions pour votre contribution et pour la confiance que vous accor
                 {phoneError && <Form.Text className="text-danger d-block small">{phoneError}</Form.Text>}
               </Form.Group>
 
+              <Form.Group className="mb-4">
+                <Form.Label className="d-flex align-items-center gap-2 fw-semibold text-danger">
+                  <ImagePlus size={20} />
+                  Preuve de paiement <span className="badge bg-danger ms-1">Obligatoire</span>
+                </Form.Label>
+                <p className="small text-body-secondary mb-2">
+                  Joignez une <strong>photo ou un document scanné</strong> de votre preuve de paiement (reçu mobile money, capture d&apos;écran, etc.). Le document doit être <strong>clair et lisible</strong> et faire apparaître notamment : nom du payeur, montant, référence de la transaction et date.
+                </p>
+                <Form.Control
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (!f) {
+                      setPaymentProofFile(null);
+                      setPaymentProofError('');
+                      setError('');
+                      return;
+                    }
+                    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
+                    if (!allowed.includes(f.type)) {
+                      setPaymentProofFile(null);
+                      setPaymentProofError('Format accepté : JPG, PNG, WebP ou PDF.');
+                      setError('Preuve de paiement : format non accepté.');
+                      e.target.value = '';
+                      return;
+                    }
+                    if (f.size > 10 * 1024 * 1024) {
+                      setPaymentProofFile(null);
+                      setPaymentProofError('Fichier trop volumineux (max. 10 Mo).');
+                      setError('Preuve de paiement : fichier trop volumineux.');
+                      e.target.value = '';
+                      return;
+                    }
+                    setPaymentProofFile(f);
+                    setPaymentProofError('');
+                    setError('');
+                  }}
+                  className={paymentProofError ? 'is-invalid' : ''}
+                  isInvalid={!!paymentProofError}
+                />
+                {paymentProofFile && (
+                  <Form.Text className="text-success d-block small mt-1">
+                    Fichier sélectionné : {paymentProofFile.name} ({(paymentProofFile.size / 1024).toFixed(1)} Ko)
+                  </Form.Text>
+                )}
+                {paymentProofError && <Form.Text className="text-danger d-block small mt-1">{paymentProofError}</Form.Text>}
+                <Form.Text className="d-block small text-body-secondary mt-1">
+                  Formats acceptés : JPG, PNG, WebP ou PDF. Taille max. 10 Mo.
+                </Form.Text>
+              </Form.Group>
+
               <Button
                 variant="danger"
                 size="lg"
                 className="submit-wizard-btn-submit w-100 py-3 rounded-3 fw-semibold"
                 onClick={goNext}
-                disabled={loading || uploadingPdf || !canProceedStep4}
+                disabled={loading || uploadingPdf || uploadingPaymentProof || !canProceedStep4}
               >
                 {paymentPending ? (
                   <>
                     <Spinner animation="border" size="sm" className="me-2" />
                     Veuillez confirmer sur votre téléphone…
+                  </>
+                ) : uploadingPaymentProof ? (
+                  <>
+                    <Spinner animation="border" size="sm" className="me-2" />
+                    Envoi de la preuve de paiement…
                   </>
                 ) : loading ? (
                   <>

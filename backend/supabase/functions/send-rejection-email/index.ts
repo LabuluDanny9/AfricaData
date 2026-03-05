@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
 
     const { data: pub, error: pubErr } = await supabase
       .from('publications')
-      .select('id, title, author, admin_comment, user_id')
+      .select('id, title, author, admin_comment, admin_recommendations, reference_code, user_id')
       .eq('id', publicationId)
       .single();
 
@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('email')
+      .select('email, full_name')
       .eq('id', pub.user_id)
       .maybeSingle();
 
@@ -56,22 +56,27 @@ Deno.serve(async (req) => {
       );
     }
 
+    const recipientName = ((profile?.full_name || '').trim() || pub.author || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const titleEscaped = (pub.title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const refDisplay = (pub.reference_code || '').toString().toUpperCase() || '—';
     const motifEscaped = (pub.admin_comment || 'Non précisé').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+    const recEscaped = (pub.admin_recommendations || '').trim()
+      ? (pub.admin_recommendations || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')
+      : '';
 
     const subject = 'Décision concernant votre publication – Africadata';
     const html = `
-<p>Madame, Monsieur,</p>
+<p>Madame, Monsieur${recipientName ? ', ' + recipientName : ''},</p>
 <p>Suite à l'examen de votre publication intitulée :</p>
-<p><strong>« ${titleEscaped} »</strong></p>
+<p><strong>« ${titleEscaped} »</strong> (Ref. ${refDisplay})</p>
 <p>Nous vous informons que celle-ci n'a pas pu être validée à l'issue de l'évaluation éditoriale.</p>
 <p><strong>Motifs de la décision :</strong></p>
 <p>${motifEscaped}</p>
-<p>Nous vous invitons, si vous le souhaitez, à apporter les corrections nécessaires et à soumettre une version révisée.</p>
+${recEscaped ? `<p><strong>Recommandations pour une nouvelle soumission :</strong></p><p>${recEscaped}</p>` : ''}
+<p>Nous vous invitons, si vous le souhaitez, à apporter les corrections nécessaires et à soumettre une version révisée. Vous pourrez utiliser le numéro de référence ci-dessus pour soumettre à nouveau sans frais.</p>
 <p>Nous vous remercions pour votre compréhension et restons disponibles pour toute information complémentaire.</p>
 <p>Cordialement,</p>
-<p><strong>Le Comité Éditorial</strong><br>
-Africadata</p>
+<p><strong>Le Comité Éditorial</strong><br>Africadata</p>
 `;
 
     const res = await fetch('https://api.resend.com/emails', {
