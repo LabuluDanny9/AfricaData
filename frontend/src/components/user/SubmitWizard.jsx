@@ -664,6 +664,13 @@ export default function SubmitWizard() {
                 {skipPayment ? 'Soumission' : 'Paiement & soumission'}
               </h2>
 
+              <div className="submit-wizard-cemot-reminder mb-4 p-3 rounded-3 border border-primary bg-primary bg-opacity-10">
+                <p className="mb-0 small fw-semibold text-primary d-flex align-items-center gap-2">
+                  <Globe size={18} aria-hidden />
+                  Soumission à la <strong>Revue internationale interculturelle CEMOT</strong> — grande revue à rayonnement international et interculturel.
+                </p>
+              </div>
+
               <Card className="submit-wizard-summary-card mb-4 bg-body-secondary bg-opacity-50">
                 <Card.Body className="py-3">
                   <div className="d-flex justify-content-between align-items-start mb-2">
