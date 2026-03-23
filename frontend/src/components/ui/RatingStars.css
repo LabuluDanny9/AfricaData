@@ -1,0 +1,29 @@
+.rating-stars {
+  display: inline-flex;
+  align-items: center;
+}
+
+.rating-star {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bs-secondary);
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.rating-star--filled {
+  color: #f0ad4e;
+}
+
+.rating-star--interactive {
+  cursor: pointer;
+}
+
+.rating-star--interactive:hover {
+  color: #f0ad4e;
+  transform: scale(1.1);
+}
+
+.rating-stars-count {
+  font-size: 0.8em;
+}
