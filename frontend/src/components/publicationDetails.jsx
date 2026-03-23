@@ -1,10 +1,14 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Container, Card, Button, Form, Badge, ListGroup, Row, Col } from 'react-bootstrap';
 import { ArrowLeft, Download, Star, MessageCircle, FileText, User, Calendar, Eye, ZoomIn, ZoomOut, Maximize2, Minimize2 } from 'lucide-react';
 import AfricadataHeader from 'components/layout/AfricadataHeader';
 import AfricadataFooter from 'components/layout/AfricadataFooter';
 import RatingStars from 'components/ui/RatingStars';
+import { getPublicationById, getPublications, getComments, addComment as apiAddComment, addRating as apiAddRating, getRecommendations as apiGetRecommendations, incrementView, incrementDownload, toggleFavorite as apiToggleFavorite, getFavorites } from 'services/publications';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from 'context/AuthContext';
+import { isSupabaseConfigured } from 'lib/supabase';
 import 'components/layout/AfricadataHeader.css';
 import 'components/ui/RatingStars.css';
 import './publicationDetails.css';
@@ -38,20 +42,70 @@ function getRecommendations(currentId, domain, typeDoc, max = 4) {
 }
 
 export default function PublicationDetails() {
+  const { t } = useTranslation();
   const { id } = useParams();
-  const pubId = id ? Number(id) : null;
-  const publication = pubId ? SAMPLE_PUBLICATIONS[pubId] : null;
+  const [publication, setPublication] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [favorite, setFavorite] = useState(false);
   const [comment, setComment] = useState('');
-  const [comments, setComments] = useState(MOCK_COMMENTS);
+  const [comments, setComments] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
   const [userRating, setUserRating] = useState(null);
   const [pdfZoom, setPdfZoom] = useState(100);
   const [pdfFullscreen, setPdfFullscreen] = useState(false);
+  const [sidebarPublications, setSidebarPublications] = useState([]);
+  const { user } = useAuth();
 
-  const recommendations = useMemo(() => {
-    if (!publication) return [];
-    return getRecommendations(pubId, publication.domain, publication.type, 4);
-  }, [pubId, publication]);
+  useEffect(() => {
+    if (isSupabaseConfigured()) {
+      getPublications().then(({ data }) => setSidebarPublications((data || []).slice(0, 50)));
+    } else {
+      setSidebarPublications(allPublicationsList);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!id) {
+      setPublication(null);
+      setLoading(false);
+      return;
+    }
+    if (isSupabaseConfigured()) {
+      setLoading(true);
+      getPublicationById(id).then(({ data }) => {
+        setPublication(data || null);
+        setLoading(false);
+        if (data) {
+          incrementView(id);
+          apiGetRecommendations(id, data.domain, data.type, 4).then(({ data: recs }) => setRecommendations(recs || []));
+        }
+      });
+      getComments(id).then(({ data }) => setComments(data || []));
+      if (user?.id) {
+        getFavorites(user.id).then(({ data }) => setFavorite(data?.includes(id) ?? false));
+      }
+    } else {
+      const num = Number(id);
+      const pub = SAMPLE_PUBLICATIONS[num] || null;
+      setPublication(pub);
+      setComments(MOCK_COMMENTS);
+      setRecommendations(pub ? getRecommendations(num, pub.domain, pub.type, 4) : []);
+      setLoading(false);
+    }
+  }, [id, user?.id]);
+
+  if (loading) {
+    return (
+      <div className="publication-details-page min-vh-100 d-flex flex-column">
+        <AfricadataHeader />
+        <Container className="flex-grow-1 py-5 text-center">
+          <div className="spinner-border text-danger" role="status" />
+          <p className="mt-2 text-body-secondary">{t('publication.loading')}</p>
+        </Container>
+        <AfricadataFooter />
+      </div>
+    );
+  }
 
   if (!publication) {
     return (
@@ -59,11 +113,11 @@ export default function PublicationDetails() {
         <AfricadataHeader />
         <Container className="flex-grow-1 py-5">
           <Link to="/librairie" className="publication-details-back d-inline-flex align-items-center gap-2 mb-4">
-            <ArrowLeft size={18} /> Retour à la librairie
+            <ArrowLeft size={18} /> {t('publication.backToLibrary')}
           </Link>
           <Card className="border-0 shadow-sm">
             <Card.Body className="text-center py-5">
-              <p className="text-body-secondary mb-0">Publication introuvable.</p>
+              <p className="text-body-secondary mb-0">{t('publication.notFound')}</p>
             </Card.Body>
           </Card>
         </Container>
@@ -72,24 +126,78 @@ export default function PublicationDetails() {
     );
   }
 
-  const handlePublishComment = (e) => {
+  const handlePublishComment = async (e) => {
     e.preventDefault();
-    if (!comment.trim()) return;
-    setComments((prev) => [
-      ...prev,
-      { id: Date.now(), author: 'Vous', date: new Date().toLocaleDateString('fr-FR'), content: comment.trim() },
-    ]);
-    setComment('');
+    if (!comment.trim() || !publication?.id) return;
+    if (isSupabaseConfigured() && user?.id) {
+      const { data } = await apiAddComment(publication.id, user.id, user.name || 'Utilisateur', comment.trim());
+      if (data) setComments((prev) => [...prev, { id: data.id, author: data.author, date: data.date, content: data.content }]);
+      setComment('');
+    } else {
+      setComments((prev) => [...prev, { id: Date.now(), author: 'Vous', date: new Date().toLocaleDateString('fr-FR'), content: comment.trim() }]);
+      setComment('');
+    }
   };
+
+  const handleRating = (value) => {
+    setUserRating(value);
+    if (isSupabaseConfigured() && user?.id && publication?.id) apiAddRating(publication.id, user.id, value);
+  };
+
+  const handleToggleFavorite = async () => {
+    if (isSupabaseConfigured() && user?.id && publication?.id) {
+      const { isFavorite } = await apiToggleFavorite(user.id, publication.id);
+      setFavorite(isFavorite);
+    } else {
+      setFavorite((f) => !f);
+    }
+  };
+
+  const sidebarList = sidebarPublications.slice(0, 40);
+  const currentId = publication?.id || id;
 
   return (
     <div className="publication-details-page min-vh-100 d-flex flex-column">
       <AfricadataHeader />
 
-      <Container className="publication-details-container flex-grow-1 py-4">
-        <Link to="/librairie" className="publication-details-back d-inline-flex align-items-center gap-2 mb-4">
-          <ArrowLeft size={18} /> Retour à la librairie
-        </Link>
+      <Container fluid className="publication-details-wrapper flex-grow-1 py-4 px-3">
+        <Row className="g-4">
+          {/* Barre latérale gauche : liste des publications pour en choisir une */}
+          <Col md={4} lg={3} className="publication-details-sidebar-col order-2 order-md-1">
+            <div className="publication-details-sidebar sticky-top">
+              <div className="d-flex align-items-center justify-content-between mb-2">
+                <h2 className="h6 fw-bold mb-0 text-body">{t('publication.otherPublications') || 'Autres publications'}</h2>
+                <Link to="/librairie" className="small text-danger text-decoration-none d-inline-flex align-items-center gap-1">
+                  <ArrowLeft size={14} /> {t('publication.backToLibrary')}
+                </Link>
+              </div>
+              <div className="publication-details-sidebar-list">
+                {sidebarList.map((p) => {
+                  const isCurrent = String(p.id) === String(currentId);
+                  return (
+                    <Link
+                      key={p.id}
+                      to={`/publication/${p.id}`}
+                      className={`publication-details-sidebar-item ${isCurrent ? 'active' : ''}`}
+                    >
+                      <span className="publication-details-sidebar-item-title">{p.title?.length > 60 ? p.title.slice(0, 60) + '…' : p.title}</span>
+                      <span className="publication-details-sidebar-item-meta small text-body-secondary">{p.author} · {p.type}</span>
+                    </Link>
+                  );
+                })}
+                {sidebarList.length === 0 && !loading && (
+                  <p className="small text-body-secondary mb-0">{t('publication.noOtherPublications') || 'Aucune autre publication.'}</p>
+                )}
+              </div>
+            </div>
+          </Col>
+
+          {/* Contenu principal : publication en cours de lecture */}
+          <Col md={8} lg={9} className="publication-details-main-col order-1 order-md-2">
+            <div className="publication-details-container">
+              <Link to="/librairie" className="publication-details-back d-inline-flex align-items-center gap-2 mb-4 d-md-none">
+                <ArrowLeft size={18} /> {t('publication.backToLibrary')}
+              </Link>
 
         {/* Titre + Métadonnées */}
         <Card className="publication-details-card border-0 shadow-sm mb-4">
@@ -101,11 +209,20 @@ export default function PublicationDetails() {
               {publication.language && <Badge bg="info" className="publication-details-badge">{publication.language}</Badge>}
               {publication.region && <Badge bg="light" text="dark" className="publication-details-badge">{publication.region}</Badge>}
             </div>
-            <div className="publication-details-meta text-body-secondary small d-flex flex-wrap gap-3">
-              <span className="d-flex align-items-center gap-1"><User size={14} /> {publication.author}</span>
+            <div className="publication-details-meta text-body-secondary small d-flex flex-wrap gap-3 align-items-center">
+              <span className="d-flex align-items-center gap-2">
+                {publication.author_photo_url ? (
+                  <img src={publication.author_photo_url} alt="" className="rounded-circle object-fit-cover" style={{ width: 32, height: 32 }} />
+                ) : (
+                  <span className="rounded-circle bg-secondary bg-opacity-25 d-inline-flex align-items-center justify-content-center" style={{ width: 32, height: 32 }}>
+                    <User size={16} className="text-secondary" />
+                  </span>
+                )}
+                {publication.author}
+              </span>
               <span className="d-flex align-items-center gap-1"><Calendar size={14} /> {publication.year}</span>
-              <span className="d-flex align-items-center gap-1"><Eye size={14} /> {publication.views ?? 0} vues</span>
-              <span className="d-flex align-items-center gap-1"><Download size={14} /> {publication.downloads ?? 0} téléchargements</span>
+              <span className="d-flex align-items-center gap-1"><Eye size={14} /> {publication.views ?? 0} {t('publication.viewsLabel')}</span>
+              <span className="d-flex align-items-center gap-1"><Download size={14} /> {publication.downloads ?? 0} {t('publication.downloadsLabel')}</span>
             </div>
             <div className="mt-2">
               <RatingStars value={publication.rating ?? 0} count={publication.ratingCount ?? 0} size={18} />
@@ -116,21 +233,21 @@ export default function PublicationDetails() {
         {/* Notation par l'utilisateur */}
         <Card className="publication-details-card border-0 shadow-sm mb-4">
           <Card.Body className="py-3">
-            <p className="small fw-semibold mb-2">Donnez votre note</p>
+            <p className="small fw-semibold mb-2">{t('publication.giveRating')}</p>
             <RatingStars
               value={userRating ?? publication.rating ?? 0}
               interactive
-              onChange={(rating) => setUserRating(rating)}
+              onChange={handleRating}
               size={22}
             />
-            {userRating != null && <p className="small text-body-secondary mt-2 mb-0">Merci pour votre avis.</p>}
+            {userRating != null && <p className="small text-body-secondary mt-2 mb-0">{t('publication.thanksForReview')}</p>}
           </Card.Body>
         </Card>
 
         {/* Résumé complet */}
         <Card className="publication-details-card border-0 shadow-sm mb-4">
           <Card.Header className="bg-transparent border-0 d-flex align-items-center gap-2 fw-bold">
-            <FileText size={18} /> Résumé
+            <FileText size={18} /> {t('publication.abstract')}
           </Card.Header>
           <Card.Body className="pt-0">
             <p className="publication-details-abstract mb-0">{publication.abstract}</p>
@@ -140,17 +257,17 @@ export default function PublicationDetails() {
         {/* Actions */}
         <div className="d-flex flex-wrap gap-2 mb-4">
           <Button variant="danger" className="d-inline-flex align-items-center gap-2">
-            <Download size={18} /> Télécharger le PDF
+            <Download size={18} /> {t('publication.download')}
           </Button>
-          <Button variant={favorite ? 'warning' : 'outline-secondary'} onClick={() => setFavorite(!favorite)} className="d-inline-flex align-items-center gap-2">
-            <Star size={18} fill={favorite ? 'currentColor' : 'none'} /> {favorite ? 'Dans les favoris' : 'Ajouter aux favoris'}
+          <Button variant={favorite ? 'warning' : 'outline-secondary'} onClick={handleToggleFavorite} className="d-inline-flex align-items-center gap-2">
+            <Star size={18} fill={favorite ? 'currentColor' : 'none'} /> {favorite ? t('publication.inFavorites') : t('publication.addToFavorites')}
           </Button>
         </div>
 
         {/* Lecture PDF inline avec barre d'outils */}
         <Card className={`publication-details-card border-0 shadow-sm mb-4 ${pdfFullscreen ? 'publication-details-pdf-fullscreen' : ''}`}>
           <Card.Header className="bg-transparent border-0 d-flex align-items-center justify-content-between flex-wrap gap-2 py-2">
-            <span className="fw-bold">Document PDF</span>
+            <span className="fw-bold">{t('publication.pdfDocument')}</span>
             <div className="d-flex align-items-center gap-2 publication-details-pdf-toolbar">
               <Button variant="outline-secondary" size="sm" onClick={() => setPdfZoom((z) => Math.max(50, z - 25))} title="Réduire" aria-label="Réduire zoom">
                 <ZoomOut size={16} />
@@ -162,37 +279,50 @@ export default function PublicationDetails() {
               <Button variant="outline-secondary" size="sm" onClick={() => setPdfFullscreen((f) => !f)} title={pdfFullscreen ? 'Réduire' : 'Plein écran'} aria-label={pdfFullscreen ? 'Quitter plein écran' : 'Plein écran'}>
                 {pdfFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
               </Button>
-              <Button variant="outline-danger" size="sm" as="a" href={PDF_SAMPLE_URL} download target="_blank" rel="noopener noreferrer" title="Télécharger le PDF">
-                <Download size={16} /> Télécharger
-              </Button>
+              {publication.pdf_url ? (
+                <Button variant="outline-danger" size="sm" as="a" href={publication.pdf_url} download target="_blank" rel="noopener noreferrer" title={t('publication.download')} onClick={() => isSupabaseConfigured() && publication?.id && incrementDownload(publication.id)}>
+                  <Download size={16} /> {t('publication.downloadButton')}
+                </Button>
+              ) : (
+                <span className="small text-body-secondary">{t('publication.pdfNotAvailable')}</span>
+              )}
             </div>
           </Card.Header>
           <Card.Body className="publication-details-pdf-area p-0">
-            <div
-              className="publication-details-pdf-wrapper"
-              style={{
-                height: pdfFullscreen ? '85vh' : 420,
-                width: '100%',
-              }}
-            >
-              <iframe
-                title="Aperçu PDF"
-                src={PDF_SAMPLE_URL}
-                className="publication-details-pdf-iframe"
+            {publication.pdf_url ? (
+              <div
+                className="publication-details-pdf-wrapper"
                 style={{
-                  width: `${pdfZoom}%`,
-                  height: `${pdfZoom}%`,
-                  minHeight: '100%',
+                  height: pdfFullscreen ? '85vh' : 420,
+                  width: '100%',
                 }}
-              />
-            </div>
+              >
+                <iframe
+                  title="Aperçu PDF"
+                  src={publication.pdf_url}
+                  className="publication-details-pdf-iframe"
+                  style={{
+                    width: `${pdfZoom}%`,
+                    height: `${pdfZoom}%`,
+                    minHeight: '100%',
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="d-flex align-items-center justify-content-center text-body-secondary py-5" style={{ minHeight: 280 }}>
+                <div className="text-center">
+                  <FileText size={48} className="mb-2 opacity-50" />
+                  <p className="mb-0 small">{t('publication.noPdf')}</p>
+                </div>
+              </div>
+            )}
           </Card.Body>
         </Card>
 
         {/* Section Avis / Commentaires */}
         <Card className="publication-details-card border-0 shadow-sm mb-4">
           <Card.Header className="bg-transparent border-0 d-flex align-items-center gap-2 fw-bold">
-            <MessageCircle size={18} /> Avis et commentaires ({comments.length})
+            <MessageCircle size={18} /> {t('publication.commentsSection')} ({comments.length})
           </Card.Header>
           <Card.Body>
             <Form onSubmit={handlePublishComment} className="mb-4">
@@ -200,13 +330,13 @@ export default function PublicationDetails() {
                 <Form.Control
                   as="textarea"
                   rows={3}
-                  placeholder="Partagez votre avis ou posez une question..."
+                  placeholder={t('publication.commentPlaceholder')}
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   className="publication-details-comment-input"
                 />
               </Form.Group>
-              <Button type="submit" variant="danger" size="sm">Publier</Button>
+              <Button type="submit" variant="danger" size="sm">{t('publication.publish')}</Button>
             </Form>
             <ListGroup variant="flush" className="publication-details-comments">
               {comments.map((c) => (
@@ -217,7 +347,7 @@ export default function PublicationDetails() {
                   <div className="flex-grow-1">
                     <div className="d-flex align-items-center gap-2 small text-body-secondary mb-1">
                       <span className="fw-semibold text-body">{c.author}</span>
-                      <span>{c.date}</span>
+                      <span>{c.date ? (typeof c.date === 'string' ? new Date(c.date).toLocaleDateString('fr-FR') : c.date) : ''}</span>
                     </div>
                     <p className="mb-0 small">{c.content}</p>
                   </div>
@@ -230,7 +360,7 @@ export default function PublicationDetails() {
         {/* Publications similaires (recommandations automatiques) */}
         {recommendations.length > 0 && (
           <Card className="publication-details-card border-0 shadow-sm mb-4">
-            <Card.Header className="bg-transparent border-0 fw-bold">Publications similaires</Card.Header>
+            <Card.Header className="bg-transparent border-0 fw-bold">{t('publication.similar')}</Card.Header>
             <Card.Body className="pt-0">
               <Row className="row-cols-1 row-cols-md-2 g-3">
                 {recommendations.map((rec) => (
@@ -252,6 +382,9 @@ export default function PublicationDetails() {
             </Card.Body>
           </Card>
         )}
+            </div>
+          </Col>
+        </Row>
       </Container>
 
       <AfricadataFooter />

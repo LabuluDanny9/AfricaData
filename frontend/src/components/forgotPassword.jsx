@@ -14,6 +14,8 @@ import {
 import { Mail, KeyRound, ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
 import AfricadataHeader from 'components/layout/AfricadataHeader';
 import AfricadataFooter from 'components/layout/AfricadataFooter';
+import { resetPassword } from 'services/auth';
+import { isSupabaseConfigured } from 'lib/supabase';
 import 'components/layout/AfricadataHeader.css';
 import 'components/auth.css';
 import './forgotPassword.css';
@@ -38,8 +40,9 @@ export default function ForgotPassword() {
     setError('');
     setLoading(true);
     try {
-      // TODO: appel API récupération mot de passe (ex. POST /api/auth/forgot-password)
-      await new Promise((r) => setTimeout(r, 800));
+      if (isSupabaseConfigured()) {
+        await resetPassword(email.trim());
+      }
       setSubmitted(true);
     } catch (err) {
       setError(err.message || 'Une erreur est survenue. Réessayez plus tard.');

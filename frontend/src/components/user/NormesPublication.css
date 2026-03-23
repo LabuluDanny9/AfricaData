@@ -1,0 +1,12 @@
+.normes-publication-page {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.normes-header h1 {
+  color: var(--bs-body-color, #212529);
+}
+
+.normes-domain-card .card-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}

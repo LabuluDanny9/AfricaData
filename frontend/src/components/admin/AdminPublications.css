@@ -1,0 +1,4 @@
+/* AdminPublications — overrides AdminPages si besoin */
+.admin-publications .admin-search-wrap .form-control {
+  padding-left: 2.5rem;
+}

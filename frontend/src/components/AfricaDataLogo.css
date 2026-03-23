@@ -1,0 +1,94 @@
+/* AfricaData logo — animated SVG + text */
+
+.africadata-logo {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 12px;
+}
+
+.africata-logo-svg {
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  aspect-ratio: 200 / 240;
+}
+
+@media (min-width: 576px) {
+  .africata-logo-svg {
+    max-width: 240px;
+  }
+}
+
+/* Nodes — soft glow + pulse */
+.logo-node {
+  filter: url(#logo-glow);
+  transform-origin: center;
+  animation: logo-node-pulse 1.6s ease-in-out infinite;
+}
+
+.logo-nodes circle:nth-child(odd) {
+  animation-delay: 0.1s;
+}
+
+.logo-nodes circle:nth-child(4n) {
+  animation-delay: 0.2s;
+}
+
+.logo-nodes circle:nth-child(3n) {
+  animation-delay: 0.05s;
+}
+
+@keyframes logo-node-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.92;
+    transform: scale(1.08);
+  }
+}
+
+/* Glow: SVG filter + drop-shadow for extra softness */
+.africadata-logo .logo-node {
+  filter: url(#logo-glow);
+}
+
+/* Lines — stroke draw */
+.logo-lines {
+  pointer-events: none;
+}
+
+.logo-stroke {
+  /* stroke-dashoffset driven by requestAnimationFrame */
+}
+
+/* Text — fade in + slight upward motion */
+.logo-text {
+  display: block;
+  margin-top: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #0f172a;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.6s ease-out, transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.logo-text-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+[data-theme="dark"] .africadata-logo {
+  background: var(--bs-secondary-bg);
+}
+
+[data-theme="dark"] .logo-text {
+  color: var(--bs-body-color);
+}

@@ -1,0 +1,31 @@
+# Configuration Supabase pour Africadata (déploiement Edge Functions)
+# Voir https://supabase.com/docs/guides/cli/config
+project_id = "africadata"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 17
+
+[studio]
+enabled = true
+port = 54323
+
+[edge_runtime]
+enabled = true
+policy = "per_worker"
+deno_version = 2
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:3000"
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Container,
@@ -13,10 +13,14 @@ import {
   Badge,
   Pagination,
 } from 'react-bootstrap';
-import { Search, Filter, Star, BookOpen, Download, X, Eye, TrendingUp } from 'lucide-react';
+import { Search, Filter, Star, BookOpen, Download, X, Eye, TrendingUp, User } from 'lucide-react';
 import AfricadataHeader from 'components/layout/AfricadataHeader';
 import AfricadataFooter from 'components/layout/AfricadataFooter';
 import RatingStars from 'components/ui/RatingStars';
+import { getPublications, getFavorites, toggleFavorite as apiToggleFavorite, subscribeToPublications } from 'services/publications';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from 'context/AuthContext';
+import { isSupabaseConfigured } from 'lib/supabase';
 import 'components/layout/AfricadataHeader.css';
 import 'components/ui/RatingStars.css';
 import './librairie.css';
@@ -27,19 +31,6 @@ const TYPES = ['Article', 'Mémoire', 'Thèse', 'Rapport', 'Prépublication', '�
 const LANGUES = ['Français', 'English', 'Español', 'العربية', 'Português'];
 const REGIONS = ['Afrique', 'Europe', 'Amériques', 'Asie-Océanie', 'International'];
 const ANNEES = ['2025', '2024', '2023', '2022', '2021'];
-
-const SAMPLE_PUBLICATIONS = [
-  { id: 1, title: 'Impact des changements climatiques sur l\'agriculture durable', author: 'Prof. Jean-Marie Kabongo', type: 'Article', domain: 'Sciences agronomiques', language: 'Français', region: 'Afrique', year: '2024', summary: 'Cette étude analyse les effets des changements climatiques sur les pratiques agricoles durables en Afrique centrale. Elle propose des recommandations pour l\'adaptation des systèmes de production.', rating: 4.5, ratingCount: 12, views: 342, downloads: 89 },
-  { id: 2, title: 'Analyse SIG pour la gestion des ressources naturelles', author: 'Dr. Patrick Mbuya', type: 'Thèse', domain: 'Ingénierie', language: 'Français', region: 'Afrique', year: '2024', summary: 'Travail de recherche sur l\'utilisation des systèmes d\'information géographique pour une gestion durable des ressources naturelles.', rating: 4.8, ratingCount: 8, views: 156, downloads: 45 },
-  { id: 3, title: 'Étude épidémiologique des maladies tropicales négligées', author: 'Prof. Christine Mulamba', type: 'Rapport', domain: 'Médecine & Santé', language: 'Français', region: 'Afrique', year: '2024', summary: 'Rapport d\'enquête épidémiologique sur les maladies tropicales négligées dans plusieurs régions. Données de terrain et propositions d\'interventions.', rating: 4.2, ratingCount: 15, views: 521, downloads: 120 },
-  { id: 4, title: 'L\'entrepreneuriat féminin comme levier de développement local', author: 'Prof. Jeanne Mutombo', type: 'Article', domain: 'Sciences économiques', language: 'Français', region: 'Afrique', year: '2024', summary: 'Analyse du rôle de l\'entrepreneuriat féminin dans le développement économique local en Afrique subsaharienne.', rating: 4.6, ratingCount: 22, views: 678, downloads: 98 },
-  { id: 5, title: 'Intelligence artificielle et diagnostic médical', author: 'Dr. Amara Okonkwo', type: 'Article', domain: 'IA & Data Science', language: 'English', region: 'International', year: '2025', summary: 'Application des modèles de deep learning pour l\'aide au diagnostic des pathologies tropicales. Résultats prometteurs sur des jeux de données internationaux.', rating: 4.9, ratingCount: 18, views: 890, downloads: 234 },
-  { id: 6, title: 'Réseaux 5G et couverture rurale', author: 'Dr. Hassan Al-Rashid', type: 'Mémoire', domain: 'Réseaux & Télécoms', language: 'English', region: 'Asie-Océanie', year: '2024', summary: 'Évaluation des stratégies de déploiement 5G pour les zones rurales. Comparaison Afrique, Asie et Amériques.', rating: 4.0, ratingCount: 6, views: 203, downloads: 56 },
-  { id: 7, title: 'Sécurité des systèmes d\'information de santé', author: 'Zainab Mohamed', type: 'Étude de cas', domain: 'Informatique', language: 'Français', region: 'Europe', year: '2023', summary: 'Audit de sécurité et recommandations pour les systèmes d\'information des établissements de santé.', rating: 4.3, ratingCount: 9, views: 412, downloads: 67 },
-  { id: 8, title: 'Partenariats académiques Nord-Sud', author: 'Jean-Pierre Dubois', type: 'Rapport', domain: 'Sciences économiques', language: 'Français', region: 'International', year: '2025', summary: 'Analyse des partenariats universitaires entre institutions africaines et européennes.', rating: 4.1, ratingCount: 11, views: 287, downloads: 43 },
-  { id: 9, title: 'Deep learning pour la reconnaissance des cultures', author: 'Dr. Marie Ntumba', type: 'Article', domain: 'IA & Data Science', language: 'English', region: 'Afrique', year: '2025', summary: 'Modèles de vision par ordinateur pour l\'identification des cultures à partir d\'images satellite.', rating: 4.7, ratingCount: 14, views: 445, downloads: 112 },
-  { id: 10, title: 'Épidémiologie des maladies vectorielles', author: 'Dr. David Tshimanga', type: 'Article', domain: 'Médecine & Santé', language: 'Français', region: 'Afrique', year: '2024', summary: 'Synthèse des données épidémiologiques sur le paludisme et la dengue en zone urbaine.', rating: 4.4, ratingCount: 19, views: 567, downloads: 145 },
-];
 
 const RESULTS_PER_PAGE = 10;
 
@@ -59,7 +50,8 @@ function truncate(str, maxLines = 2) {
   return lines.length > 15 ? truncated + '…' : truncated;
 }
 
-export default function Librairie() {
+export default function Librairie({ embedded = false }) {
+  const { t } = useTranslation();
   const [searchInput, setSearchInput] = useState('');
   const [domain, setDomain] = useState('');
   const [typeDoc, setTypeDoc] = useState('');
@@ -68,12 +60,52 @@ export default function Librairie() {
   const [year, setYear] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  const [publicationsList, setPublicationsList] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [favorites, setFavorites] = useState(new Set());
+  const { user } = useAuth();
 
   const debouncedSearch = useDebounce(searchInput, 300);
 
+  const refetchPublications = useCallback(() => {
+    if (!isSupabaseConfigured()) return;
+    setLoading(true);
+    getPublications({
+      search: debouncedSearch.trim() || undefined,
+      domain: domain || undefined,
+      type: typeDoc || undefined,
+      language: language || undefined,
+      region: region || undefined,
+      year: year || undefined,
+    })
+      .then(({ data }) => {
+        if (data && data.length >= 0) setPublicationsList(data);
+      })
+      .finally(() => setLoading(false));
+  }, [debouncedSearch, domain, typeDoc, language, region, year]);
+
+  useEffect(() => {
+    refetchPublications();
+  }, [refetchPublications]);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    const unsubscribe = subscribeToPublications(() => {
+      refetchPublications();
+    });
+    return unsubscribe;
+  }, [refetchPublications]);
+
+  useEffect(() => {
+    if (isSupabaseConfigured() && user?.id) {
+      getFavorites(user.id).then(({ data }) => {
+        if (data) setFavorites(new Set(data));
+      });
+    }
+  }, [user?.id]);
+
   const filtered = useMemo(() => {
-    return SAMPLE_PUBLICATIONS.filter((p) => {
+    return publicationsList.filter((p) => {
       const matchSearch = !debouncedSearch.trim() ||
         p.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         p.author.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
@@ -85,7 +117,7 @@ export default function Librairie() {
       const matchYear = !year || p.year === year;
       return matchSearch && matchDomain && matchType && matchLanguage && matchRegion && matchYear;
     });
-  }, [debouncedSearch, domain, typeDoc, language, region, year]);
+  }, [publicationsList, debouncedSearch, domain, typeDoc, language, region, year]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / RESULTS_PER_PAGE));
   const paginated = useMemo(() => {
@@ -108,13 +140,21 @@ export default function Librairie() {
     setShowFilters(false);
   };
 
-  const toggleFavorite = (id) => {
-    setFavorites((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  const toggleFavorite = async (id) => {
+    if (isSupabaseConfigured() && user?.id) {
+      const { isFavorite } = await apiToggleFavorite(user.id, id);
+      setFavorites((prev) => {
+        const next = new Set(prev);
+        if (isFavorite) next.add(id); else next.delete(id);
+        return next;
+      });
+    } else {
+      setFavorites((prev) => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id); else next.add(id);
+        return next;
+      });
+    }
   };
 
   const hasActiveFilters = domain || typeDoc || language || region || year || searchInput.trim();
@@ -123,60 +163,60 @@ export default function Librairie() {
     <>
       <Accordion defaultActiveKey={['0', '1', '2', '3', '4', '5']} alwaysOpen className="librairie-accordion" flush>
         <Accordion.Item eventKey="0">
-          <Accordion.Header>📂 Domaine</Accordion.Header>
+          <Accordion.Header>📂 {t('library.filterDomain')}</Accordion.Header>
           <Accordion.Body className="librairie-filter-list">
             {DOMAINS.map((d) => (
               <Form.Check key={d} type="radio" id={`domain-${d}`} name="domain" label={d} checked={domain === d} onChange={() => setDomain(d)} />
             ))}
-            <Button variant="link" size="sm" className="p-0 mt-1" onClick={() => setDomain('')}>Tous</Button>
+            <Button variant="link" size="sm" className="p-0 mt-1" onClick={() => setDomain('')}>{t('common.all')}</Button>
           </Accordion.Body>
         </Accordion.Item>
         <Accordion.Item eventKey="1">
-          <Accordion.Header>📄 Type de document</Accordion.Header>
+          <Accordion.Header>📄 {t('library.filterType')}</Accordion.Header>
           <Accordion.Body className="librairie-filter-list">
-            {TYPES.map((t) => (
-              <Form.Check key={t} type="radio" id={`type-${t}`} name="typeDoc" label={t} checked={typeDoc === t} onChange={() => setTypeDoc(t)} />
+            {TYPES.map((typ) => (
+              <Form.Check key={typ} type="radio" id={`type-${typ}`} name="typeDoc" label={typ} checked={typeDoc === typ} onChange={() => setTypeDoc(typ)} />
             ))}
-            <Button variant="link" size="sm" className="p-0 mt-1" onClick={() => setTypeDoc('')}>Tous</Button>
+            <Button variant="link" size="sm" className="p-0 mt-1" onClick={() => setTypeDoc('')}>{t('common.all')}</Button>
           </Accordion.Body>
         </Accordion.Item>
         <Accordion.Item eventKey="2">
-          <Accordion.Header>🌐 Langue</Accordion.Header>
+          <Accordion.Header>🌐 {t('library.filterLanguage')}</Accordion.Header>
           <Accordion.Body className="librairie-filter-list">
             {LANGUES.map((lang) => (
               <Form.Check key={lang} type="radio" id={`lang-${lang}`} name="language" label={lang} checked={language === lang} onChange={() => setLanguage(lang)} />
             ))}
-            <Button variant="link" size="sm" className="p-0 mt-1" onClick={() => setLanguage('')}>Toutes</Button>
+            <Button variant="link" size="sm" className="p-0 mt-1" onClick={() => setLanguage('')}>{t('common.all_female')}</Button>
           </Accordion.Body>
         </Accordion.Item>
         <Accordion.Item eventKey="3">
-          <Accordion.Header>🗺️ Région</Accordion.Header>
+          <Accordion.Header>🗺️ {t('library.filterRegion')}</Accordion.Header>
           <Accordion.Body className="librairie-filter-list">
             {REGIONS.map((r) => (
               <Form.Check key={r} type="radio" id={`region-${r}`} name="region" label={r} checked={region === r} onChange={() => setRegion(r)} />
             ))}
-            <Button variant="link" size="sm" className="p-0 mt-1" onClick={() => setRegion('')}>Toutes</Button>
+            <Button variant="link" size="sm" className="p-0 mt-1" onClick={() => setRegion('')}>{t('common.all_female')}</Button>
           </Accordion.Body>
         </Accordion.Item>
         <Accordion.Item eventKey="4">
-          <Accordion.Header>📅 Année</Accordion.Header>
+          <Accordion.Header>📅 {t('library.filterYear')}</Accordion.Header>
           <Accordion.Body className="librairie-filter-list">
             {ANNEES.map((y) => (
               <Form.Check key={y} type="radio" id={`year-${y}`} name="year" label={y} checked={year === y} onChange={() => setYear(y)} />
             ))}
-            <Button variant="link" size="sm" className="p-0 mt-1" onClick={() => setYear('')}>Toutes</Button>
+            <Button variant="link" size="sm" className="p-0 mt-1" onClick={() => setYear('')}>{t('common.all_female')}</Button>
           </Accordion.Body>
         </Accordion.Item>
       </Accordion>
       <Button variant="outline-secondary" size="sm" className="w-100 mt-3" onClick={resetFilters}>
-        <X size={16} className="me-1" /> Réinitialiser les filtres
+        <X size={16} className="me-1" /> {t('library.resetFilters')}
       </Button>
     </>
   );
 
   return (
     <div className="librairie-page min-vh-100 d-flex flex-column">
-      <AfricadataHeader />
+      {!embedded && <AfricadataHeader />}
 
       <Container fluid className="librairie-container flex-grow-1 py-4">
         {/* Barre de recherche globale */}
@@ -187,8 +227,8 @@ export default function Librairie() {
             </InputGroup.Text>
             <Form.Control
               type="search"
-              placeholder="Rechercher par titre, auteur, domaine, mots-clés..."
-              aria-label="Recherche"
+              placeholder={t('library.searchPlaceholder')}
+              aria-label={t('library.searchAria')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="librairie-search-input"
@@ -201,7 +241,7 @@ export default function Librairie() {
           <aside className="col-lg-3 d-none d-lg-block">
             <div className="librairie-filters-card card border-0 shadow-sm sticky-top">
               <Card.Body>
-                <h3 className="h6 fw-bold mb-3">Filtres</h3>
+                <h3 className="h6 fw-bold mb-3">{t('library.filters')}</h3>
                 <FiltersContent />
               </Card.Body>
             </div>
@@ -212,13 +252,13 @@ export default function Librairie() {
             {/* Mobile: bouton Filtrer → Offcanvas */}
             <div className="d-lg-none mb-3">
               <Button variant="outline-primary" className="w-100 w-sm-auto" onClick={() => setShowFilters(true)}>
-                <Filter size={18} className="me-2" /> Filtrer {hasActiveFilters && `(${[domain, typeDoc, language, region, year].filter(Boolean).length})`}
+                <Filter size={18} className="me-2" /> {t('library.filterButton')} {hasActiveFilters && `(${[domain, typeDoc, language, region, year].filter(Boolean).length})`}
               </Button>
             </div>
 
             <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
               <p className="text-body-secondary mb-0 small">
-                <strong>{filtered.length}</strong> publication{filtered.length !== 1 ? 's' : ''} trouvée{filtered.length !== 1 ? 's' : ''}
+                {t('library.publicationsFound', { count: filtered.length })}
               </p>
             </div>
 
@@ -227,7 +267,7 @@ export default function Librairie() {
               <Card className="border-0 shadow-sm mb-4 librairie-recommendations">
                 <Card.Body className="py-3">
                   <h3 className="h6 fw-bold mb-3 d-flex align-items-center gap-2">
-                    <TrendingUp size={20} className="text-danger" /> Recommandées pour vous
+                    <TrendingUp size={20} className="text-danger" /> {t('library.recommended')}
                   </h3>
                   <Row className="row-cols-1 row-cols-md-3 g-3">
                     {filtered.slice(0, 3).map((pub) => (
@@ -250,11 +290,18 @@ export default function Librairie() {
               </Card>
             )}
 
-            {paginated.length === 0 ? (
+            {loading ? (
               <Card className="border-0 shadow-sm">
                 <Card.Body className="text-center py-5">
-                  <p className="text-body-secondary mb-0">Aucune publication ne correspond à vos critères.</p>
-                  <Button variant="outline-danger" size="sm" className="mt-3" onClick={resetFilters}>Réinitialiser les filtres</Button>
+                  <div className="spinner-border text-danger mb-2" role="status" aria-hidden="true" />
+                  <p className="text-body-secondary mb-0">{t('library.loading')}</p>
+                </Card.Body>
+              </Card>
+            ) : paginated.length === 0 ? (
+              <Card className="border-0 shadow-sm">
+                <Card.Body className="text-center py-5">
+                  <p className="text-body-secondary mb-0">{t('library.noResults')}</p>
+                  <Button variant="outline-danger" size="sm" className="mt-3" onClick={resetFilters}>{t('library.resetFilters')}</Button>
                 </Card.Body>
               </Card>
             ) : (
@@ -273,20 +320,29 @@ export default function Librairie() {
                           <div className="d-flex align-items-center gap-2 mb-2">
                             <RatingStars value={pub.rating ?? 0} count={pub.ratingCount ?? 0} size={14} />
                           </div>
-                          <p className="small text-body-secondary mb-1">{pub.author}</p>
+                          <div className="d-flex align-items-center gap-2 small text-body-secondary mb-1">
+                            {pub.author_photo_url ? (
+                              <img src={pub.author_photo_url} alt="" className="rounded-circle object-fit-cover" style={{ width: 28, height: 28 }} />
+                            ) : (
+                              <span className="rounded-circle bg-secondary bg-opacity-25 d-inline-flex align-items-center justify-content-center" style={{ width: 28, height: 28 }}>
+                                <User size={14} className="text-secondary" />
+                              </span>
+                            )}
+                            <span>{pub.author}</span>
+                          </div>
                           <p className="small text-body-secondary mb-1">{pub.domain}{pub.region ? ` · ${pub.region}` : ''} · {pub.year}</p>
                           <p className="small text-body-secondary librairie-card-summary">{truncate(pub.summary)}</p>
                           <div className="d-flex align-items-center gap-3 mt-2 small text-body-secondary">
-                            <span className="d-flex align-items-center gap-1"><Eye size={12} /> {pub.views ?? 0} vues</span>
-                            <span className="d-flex align-items-center gap-1"><Download size={12} /> {pub.downloads ?? 0} téléch.</span>
+                            <span className="d-flex align-items-center gap-1"><Eye size={12} /> {pub.views ?? 0} {t('library.views')}</span>
+                            <span className="d-flex align-items-center gap-1"><Download size={12} /> {pub.downloads ?? 0} {t('library.downloads')}</span>
                           </div>
                         </Card.Body>
                         <Card.Footer className="bg-transparent border-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
                           <Link to={`/publication/${pub.id}`} className="btn btn-sm btn-danger">
-                            <BookOpen size={14} className="me-1" /> Lire
+                            <BookOpen size={14} className="me-1" /> {t('library.read')}
                           </Link>
                           <div className="d-flex gap-1">
-                            <Button variant="outline-secondary" size="sm" className="btn-sm" as={Link} to={`/publication/${pub.id}`} title="Télécharger">
+                            <Button variant="outline-secondary" size="sm" className="btn-sm" as={Link} to={`/publication/${pub.id}`} title={t('library.download')}>
                               <Download size={14} />
                             </Button>
                             <Button variant={favorites.has(pub.id) ? 'warning' : 'outline-secondary'} size="sm" onClick={() => toggleFavorite(pub.id)} title="Favori">
@@ -324,14 +380,14 @@ export default function Librairie() {
       {/* Offcanvas filtres — Mobile */}
       <Offcanvas show={showFilters} onHide={() => setShowFilters(false)} placement="start" className="librairie-offcanvas" >
         <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Filtres</Offcanvas.Title>
+          <Offcanvas.Title>{t('library.filters')}</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body>
           <FiltersContent />
         </Offcanvas.Body>
       </Offcanvas>
 
-      <AfricadataFooter />
+      {!embedded && <AfricadataFooter />}
     </div>
   );
 }

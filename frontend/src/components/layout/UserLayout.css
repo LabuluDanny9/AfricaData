@@ -1,0 +1,118 @@
+/* Interface utilisateur — Layout Navbar + Sidebar */
+
+.user-layout {
+  background: var(--bs-body-bg);
+}
+
+.user-navbar {
+  background: var(--bs-body-bg) !important;
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.user-layout-logo {
+  width: 2.25rem;
+  height: auto;
+}
+
+.user-navbar-search .form-control {
+  border-radius: 0.5rem 0 0 0.5rem;
+}
+
+.user-layout-body {
+  padding-top: 56px;
+  min-height: 100vh;
+}
+
+@media (max-width: 991.98px) {
+  .user-navbar .container-fluid {
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+  }
+}
+
+.user-sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: var(--bs-secondary-bg);
+  border-right: 1px solid var(--bs-border-color);
+  padding: 1rem 0;
+}
+
+.user-sidebar-nav .list-group-item {
+  background: transparent;
+  border: none;
+  color: var(--bs-body-color);
+  font-size: 0.9375rem;
+}
+
+.user-sidebar-item:hover {
+  background: rgba(196, 30, 58, 0.08) !important;
+  color: var(--bs-body-color);
+}
+
+/* Section active (page en cours) : toujours en rouge */
+.user-sidebar-item.active {
+  background: rgba(196, 30, 58, 0.15) !important;
+  color: var(--bs-danger) !important;
+  font-weight: 600 !important;
+  border-left: 3px solid var(--bs-danger);
+  padding-left: calc(1rem - 3px) !important;
+}
+
+.user-main {
+  background: var(--bs-body-bg);
+}
+
+.user-main-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.user-offcanvas-sidebar .offcanvas-title,
+.user-offcanvas-notifications .offcanvas-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+[data-bs-theme="dark"] .user-sidebar {
+  background: var(--bs-secondary-bg);
+}
+
+/* Notification "Validation de votre publication" : mise en avant */
+.user-offcanvas-notifications .notification-validation {
+  border-left: 3px solid var(--bs-success);
+  background: rgba(var(--bs-success-rgb), 0.06) !important;
+}
+.user-offcanvas-notifications .notification-validation-message {
+  white-space: pre-line;
+  max-height: 12em;
+  overflow-y: auto;
+}
+
+.user-offcanvas-notifications .notification-rejection {
+  border-left: 3px solid var(--bs-warning);
+  background: rgba(var(--bs-warning-rgb), 0.06) !important;
+}
+
+.user-notification-delete-btn {
+  opacity: 0.85;
+}
+.user-notification-delete-btn:hover {
+  opacity: 1;
+}
+
+.user-notification-modal .modal-dialog {
+  max-width: 520px;
+}
+.user-notification-modal-body {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.user-notification-modal-message {
+  line-height: 1.6;
+  word-break: break-word;
+}
+.user-notification-modal .modal-footer {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

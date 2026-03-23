@@ -1,0 +1,73 @@
+.profil-page .card {
+  border-radius: 12px;
+}
+
+.profil-page .list-group-item:last-child {
+  border-bottom: none !important;
+}
+
+/* Bloc hero : photo + nom */
+.profil-hero {
+  padding-bottom: 0.5rem;
+}
+
+.profil-avatar-wrap {
+  cursor: pointer;
+  position: relative;
+}
+
+.profil-avatar {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+}
+
+.profil-avatar-placeholder {
+  width: 120px;
+  height: 120px;
+}
+
+.profil-avatar-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.profil-avatar-wrap:hover .profil-avatar-overlay {
+  opacity: 1;
+}
+
+.profil-avatar-wrap:focus-within .profil-avatar-overlay {
+  opacity: 1;
+}
+
+/* Tabs profil */
+.profil-tabs .nav-link {
+  border: none;
+  color: var(--bs-body-secondary);
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+  margin-right: 0.25rem;
+}
+
+.profil-tabs .nav-link:hover {
+  color: var(--bs-danger);
+}
+
+.profil-tabs .nav-link.active {
+  color: var(--bs-danger);
+  background: transparent;
+  border-bottom: 2px solid var(--bs-danger);
+  border-radius: 0;
+}
+
+.profil-card .tab-content {
+  min-height: 140px;
+}

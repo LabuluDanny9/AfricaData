@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -38,46 +38,43 @@ import {
   Facebook,
   Sparkles,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import AfricadataHeader from 'components/layout/AfricadataHeader';
 import AfricadataFooter from 'components/layout/AfricadataFooter';
+import { getPublications, subscribeToPublications, getPublicStats } from 'services/publications';
+import { isSupabaseConfigured } from 'lib/supabase';
 import 'components/layout/AfricadataHeader.css';
 import './accueil.css';
 
-const heroHighlights = [
-  { value: '2 847+', label: 'Publications indexées' },
-  { value: '456', label: 'Chercheurs actifs' },
-  { value: '12', label: 'Facultés connectées' },
+const HERO_KEYS = [
+  { key: 'publicationsCount', labelKey: 'home.indexedPublications' },
+  { key: 'usersCount', labelKey: 'home.activeResearchers' },
+  { key: 'totalViews', labelKey: 'home.views' },
 ];
 
-const featureList = [
-  { icon: Globe, title: 'Portée africaine', description: 'Hub commun pour connecter les laboratoires du continent.' },
-  { icon: Shield, title: 'Qualité certifiée', description: 'Validation éditoriale rigoureuse et traçabilité complète.' },
-  { icon: Zap, title: 'Indexation rapide', description: 'Recherche plein texte, filtres et suggestions intelligentes.' },
-  { icon: BarChart3, title: 'Analytique temps réel', description: 'Mesurez l\'impact de vos travaux en un coup d\'œil.' },
-  { icon: Users, title: 'Rôles et workflows', description: 'Gestion fine : lecteur, auteur, éditeur, admin.' },
-  { icon: BookOpen, title: 'Open science', description: 'Conformité Open Access, DOI et intégration ORCID.' },
+const FEATURE_KEYS = [
+  { icon: Globe, titleKey: 'home.africanReach', descKey: 'home.africanReachDesc' },
+  { icon: Shield, titleKey: 'home.certifiedQuality', descKey: 'home.certifiedQualityDesc' },
+  { icon: Zap, titleKey: 'home.fastIndexing', descKey: 'home.fastIndexingDesc' },
+  { icon: BarChart3, titleKey: 'home.realtimeAnalytics', descKey: 'home.realtimeAnalyticsDesc' },
+  { icon: Users, titleKey: 'home.rolesWorkflows', descKey: 'home.rolesWorkflowsDesc' },
+  { icon: BookOpen, titleKey: 'home.openScience', descKey: 'home.openScienceDesc' },
 ];
 
-const statHighlights = [
-  { icon: FileText, value: '45K+', label: 'Consultations annuelles', description: 'Lectures et téléchargements' },
-  { icon: TrendingUp, value: '+127%', label: 'Croissance', description: 'Soumissions sur 12 mois' },
-  { icon: Users, value: '89', label: 'Pays', description: 'Lecteurs à travers le monde' },
-  { icon: Globe, value: '24', label: 'Réseaux partenaires', description: 'Institutions connectées' },
+const STAT_KEYS = [
+  { key: 'totalViews', icon: FileText, labelKey: 'home.statsViews', descKey: 'home.statsViewsDesc' },
+  { key: 'totalDownloads', icon: TrendingUp, labelKey: 'home.statsDownloads', descKey: 'home.statsDownloadsDesc' },
+  { key: 'publicationsCount', icon: FileText, labelKey: 'home.statsPublications', descKey: 'home.statsPublicationsDesc' },
+  { key: 'usersCount', icon: Users, labelKey: 'home.statsUsers', descKey: 'home.statsUsersDesc' },
 ];
 
-const publicationCategories = [
-  { icon: FileText, title: 'Articles scientifiques', description: 'Résultats évalués par les pairs' },
-  { icon: GraduationCap, title: 'Thèses & mémoires', description: 'Travaux de fin d\'études et doctorats' },
-  { icon: ClipboardList, title: 'Rapports & études', description: 'Rapports techniques et livrables' },
-  { icon: Mic, title: 'Actes de conférences', description: 'Présentations et communications' },
-  { icon: BookOpen, title: 'Livres & chapitres', description: 'Ouvrages de référence' },
-  { icon: Database, title: 'Données ouvertes', description: 'Jeux de données FAIR et protocoles' },
-];
-
-const contactInfoCards = [
-  { icon: MapPin, title: 'Adresse', lines: ['Centre Numérique Africain', 'Boulevard de l\'Université', 'Lubumbashi, RDC'], highlight: null },
-  { icon: Phone, title: 'Contact', lines: ['+243 99 123 45 67', 'supportafricadata@gmail.com'], highlight: 'Support 7j/7' },
-  { icon: Mail, title: 'Partenariats', lines: ['partners@africadata.org', 'media@africadata.org'], highlight: 'Réponse sous 4h' },
+const PUB_CATEGORY_KEYS = [
+  { icon: FileText, titleKey: 'home.catScientificArticles', descKey: 'home.catScientificArticlesDesc' },
+  { icon: GraduationCap, titleKey: 'home.catTheses', descKey: 'home.catThesesDesc' },
+  { icon: ClipboardList, titleKey: 'home.catReports', descKey: 'home.catReportsDesc' },
+  { icon: Mic, titleKey: 'home.catProceedings', descKey: 'home.catProceedingsDesc' },
+  { icon: BookOpen, titleKey: 'home.catBooks', descKey: 'home.catBooksDesc' },
+  { icon: Database, titleKey: 'home.catOpenData', descKey: 'home.catOpenDataDesc' },
 ];
 
 const socialLinks = [
@@ -86,16 +83,51 @@ const socialLinks = [
   { icon: Facebook, label: 'Facebook', href: 'https://www.facebook.com/africadata' },
 ];
 
-const recentPublications = [
-  { id: 1, title: 'Impact des changements climatiques sur l\'agriculture durable en Afrique centrale', authors: ['Prof. J.-M. Kabongo', 'Dr. M. Ntumba'], type: 'Article', faculty: 'Sciences agronomiques', date: '2024-01-10', views: 342, downloads: 89, isOpenAccess: true },
-  { id: 2, title: 'Analyse SIG pour la gestion des ressources naturelles', authors: ['Dr. P. Mbuya'], type: 'Thèse', faculty: 'Polytechnique', date: '2024-01-08', views: 256, downloads: 67, isOpenAccess: true },
-  { id: 3, title: 'Étude épidémiologique des maladies tropicales négligées au Kasaï', authors: ['Prof. C. Mulamba', 'Dr. D. Tshimanga'], type: 'Rapport', faculty: 'Médecine', date: '2024-01-05', views: 198, downloads: 45, isOpenAccess: false },
-  { id: 4, title: 'L\'entrepreneuriat féminin comme levier de développement local', authors: ['Prof. J. Mutombo'], type: 'Article', faculty: 'Sciences économiques', date: '2024-01-03', views: 421, downloads: 112, isOpenAccess: true },
-];
+const RECENT_PUBLICATIONS_LIMIT = 6;
 
 function Accueil() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
+  const [recentPublications, setRecentPublications] = useState([]);
+  const [loadingRecent, setLoadingRecent] = useState(false);
+  const [publicStats, setPublicStats] = useState(null);
   const navigate = useNavigate();
+
+  const contactInfoCards = [
+    { icon: MapPin, titleKey: 'home.address', lines: [t('home.addressLine1'), t('home.addressLine2')], highlightKey: null },
+    { icon: Phone, titleKey: 'home.contact', lines: ['+243 99 123 45 67', 'supportafricadata@gmail.com'], highlightKey: 'home.support247' },
+    { icon: Mail, titleKey: 'home.partnerships', lines: ['partners@africadata.org', 'media@africadata.org'], highlightKey: 'home.response4h' },
+  ];
+
+  const fetchRecent = useCallback(async () => {
+    if (!isSupabaseConfigured()) return;
+    setLoadingRecent(true);
+    const { data } = await getPublications({});
+    if (data && Array.isArray(data)) {
+      setRecentPublications(data.slice(0, RECENT_PUBLICATIONS_LIMIT));
+    }
+    setLoadingRecent(false);
+  }, []);
+
+  useEffect(() => {
+    fetchRecent();
+  }, [fetchRecent]);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    getPublicStats().then(({ data }) => {
+      if (data) setPublicStats(data);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    const unsubscribe = subscribeToPublications(() => {
+      fetchRecent();
+      getPublicStats().then(({ data }) => data && setPublicStats(data));
+    });
+    return unsubscribe;
+  }, [fetchRecent]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -114,14 +146,13 @@ function Accueil() {
               <img src="/logo.png" alt="AfricaData" className="accueil-hero-logo mx-auto mb-4" />
               <Badge bg="danger" className="mb-3 px-3 py-2 rounded-pill d-inline-flex align-items-center gap-2">
                 <Database size={18} />
-                Centre de collecte de données scientifiques
+                {t('home.heroBadge')}
               </Badge>
               <h1 className="display-5 fw-bold mb-3 accueil-hero-title">
-                Valorisez la recherche africaine avec AfricaData
+                {t('home.heroTitle')}
               </h1>
               <p className="lead text-body-secondary mb-4">
-                Collectez, validez et diffusez vos publications dans un environnement stable,
-                conforme aux standards Open Science et prêt pour la visibilité internationale.
+                {t('home.heroLead')}
               </p>
               <Form onSubmit={handleSearch} className="accueil-search-form">
                 <InputGroup size="lg" className="shadow-sm rounded-3 overflow-hidden">
@@ -130,38 +161,42 @@ function Accueil() {
                   </InputGroup.Text>
                   <Form.Control
                     type="search"
-                    placeholder="Auteur, laboratoire, mot-clé..."
+                    placeholder={t('home.searchPlaceholder')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="border-start-0"
-                    aria-label="Rechercher une publication"
+                    aria-label={t('home.searchButton')}
                   />
                   <Button type="submit" variant="danger" className="px-4">
-                    Rechercher
+                    {t('home.searchButton')}
                   </Button>
                 </InputGroup>
                 <p className="small text-body-secondary mt-2 mb-0">
-                  Indexation Google Scholar, DOI et OAI-PMH native.
+                  {t('home.indexingNote')}
                 </p>
               </Form>
               <Row className="g-3 mt-4 justify-content-center">
-                {heroHighlights.map((h) => (
-                  <Col xs="6" md="4" key={h.label}>
-                    <Card className="accueil-stat-card h-100 border-0 shadow-sm">
-                      <Card.Body className="py-3">
-                        <span className="d-block fs-4 fw-bold text-danger">{h.value}</span>
-                        <span className="small text-body-secondary">{h.label}</span>
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                ))}
+                {HERO_KEYS.map((h) => {
+                  const raw = publicStats?.[h.key] ?? 0;
+                  const value = typeof raw === 'number' && raw >= 1000 ? `${(raw / 1000).toFixed(1).replace('.', ',')}K+` : String(raw);
+                  return (
+                    <Col xs="6" md="4" key={h.labelKey}>
+                      <Card className="accueil-stat-card h-100 border-0 shadow-sm">
+                        <Card.Body className="py-3">
+                          <span className="d-block fs-4 fw-bold text-danger">{publicStats ? value : '—'}</span>
+                          <span className="small text-body-secondary">{t(h.labelKey)}</span>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  );
+                })}
               </Row>
               <div className="d-flex flex-wrap justify-content-center gap-3 mt-4 small text-body-secondary">
-                <span>Accès auteur sécurisé</span>
+                <span>{t('home.secureAccess')}</span>
                 <span className="d-none d-md-inline">•</span>
-                <span>Archivage long terme</span>
+                <span>{t('home.longTermArchive')}</span>
                 <span className="d-none d-md-inline">•</span>
-                <span>Support multilingue</span>
+                <span>{t('home.multilingualSupport')}</span>
               </div>
             </Col>
           </Row>
@@ -173,13 +208,15 @@ function Accueil() {
         <Container>
           <div className="text-center mb-4">
             <BarChart3 size={24} className="text-danger me-2" />
-            <span className="text-uppercase small fw-semibold text-body-secondary">Indicateurs en temps réel</span>
+            <span className="text-uppercase small fw-semibold text-body-secondary">{t('home.realtimeIndicators')}</span>
           </div>
           <Row className="g-4">
-            {statHighlights.map((stat) => {
+            {STAT_KEYS.map((stat) => {
               const Icon = stat.icon;
+              const raw = publicStats?.[stat.key] ?? 0;
+              const value = typeof raw === 'number' && raw >= 1000 ? `${(raw / 1000).toFixed(1).replace('.', ',')}K+` : String(raw);
               return (
-                <Col xs="12" sm="6" lg="3" key={stat.label}>
+                <Col xs="12" sm="6" lg="3" key={stat.labelKey}>
                   <Card className="accueil-feature-card h-100 border-0 shadow-sm">
                     <Card.Body>
                       <div className="d-flex align-items-start gap-3">
@@ -187,9 +224,9 @@ function Accueil() {
                           <Icon size={22} className="text-danger" />
                         </div>
                         <div>
-                          <span className="d-block fs-4 fw-bold">{stat.value}</span>
-                          <span className="small fw-medium text-body-secondary">{stat.label}</span>
-                          <p className="small text-body-secondary mb-0 mt-1">{stat.description}</p>
+                          <span className="d-block fs-4 fw-bold">{publicStats ? value : '—'}</span>
+                          <span className="small fw-medium text-body-secondary">{t(stat.labelKey)}</span>
+                          <p className="small text-body-secondary mb-0 mt-1">{t(stat.descKey)}</p>
                         </div>
                       </div>
                     </Card.Body>
@@ -206,25 +243,25 @@ function Accueil() {
         <Container>
           <Row className="justify-content-center text-center mb-5">
             <Col lg="8">
-              <Badge bg="outline-danger" className="mb-2 px-3 py-2 rounded-pill">Pourquoi AfricaData ?</Badge>
-              <h2 className="h3 fw-bold mb-3">Un socle unique pour la chaîne de valeur de la recherche</h2>
+              <Badge bg="outline-danger" className="mb-2 px-3 py-2 rounded-pill">{t('home.featuresTitle')}</Badge>
+              <h2 className="h3 fw-bold mb-3">{t('home.uniquePlatform')}</h2>
               <p className="text-body-secondary">
-                Outils éditoriaux, workflows sécurisés et tableaux de bord pour auteurs, éditeurs et administrateurs.
+                {t('home.uniquePlatformDesc')}
               </p>
             </Col>
           </Row>
           <Row className="g-4">
-            {featureList.map((f) => {
+            {FEATURE_KEYS.map((f) => {
               const Icon = f.icon;
               return (
-                <Col xs="12" md="6" lg="4" key={f.title}>
+                <Col xs="12" md="6" lg="4" key={f.titleKey}>
                   <Card className="accueil-feature-card h-100 border-0 shadow-sm">
                     <Card.Body>
                       <div className="accueil-icon-wrap rounded-3 d-inline-flex align-items-center justify-content-center mb-3">
                         <Icon size={24} className="text-danger" />
                       </div>
-                      <Card.Title className="h6 fw-bold">{f.title}</Card.Title>
-                      <Card.Text className="small text-body-secondary mb-0">{f.description}</Card.Text>
+                      <Card.Title className="h6 fw-bold">{t(f.titleKey)}</Card.Title>
+                      <Card.Text className="small text-body-secondary mb-0">{t(f.descKey)}</Card.Text>
                     </Card.Body>
                   </Card>
                 </Col>
@@ -240,31 +277,31 @@ function Accueil() {
           <Row className="align-items-end justify-content-between mb-4">
             <Col lg="8">
               <div className="d-flex align-items-center gap-2 text-body-secondary small text-uppercase fw-semibold mb-2">
-                <BookOpen size={18} /> Collections
+                <BookOpen size={18} /> {t('home.collections')}
               </div>
-              <h2 className="h4 fw-bold mb-2">Types de publications acceptées</h2>
+              <h2 className="h4 fw-bold mb-2">{t('home.publicationTypesTitle')}</h2>
               <p className="text-body-secondary small mb-0">
-                Un répertoire sécurisé, interopérable et prêt pour la diffusion internationale.
+                {t('home.publicationTypesDesc')}
               </p>
             </Col>
             <Col lg="4" className="text-lg-end mt-3 mt-lg-0">
               <Button as={Link} to="/librairie" variant="outline-danger" className="rounded-pill">
-                Voir la bibliothèque <ArrowRight size={18} className="ms-1" />
+                {t('home.viewLibrary')} <ArrowRight size={18} className="ms-1" />
               </Button>
             </Col>
           </Row>
           <Row className="g-4">
-            {publicationCategories.map((cat) => {
+            {PUB_CATEGORY_KEYS.map((cat) => {
               const Icon = cat.icon;
               return (
-                <Col xs="12" md="6" lg="4" key={cat.title}>
+                <Col xs="12" md="6" lg="4" key={cat.titleKey}>
                   <Card className="accueil-feature-card h-100 border-0 shadow-sm">
                     <Card.Body>
                       <div className="accueil-icon-wrap rounded-3 d-inline-flex align-items-center justify-content-center mb-3">
                         <Icon size={22} className="text-danger" />
                       </div>
-                      <Card.Title className="h6 fw-bold">{cat.title}</Card.Title>
-                      <Card.Text className="small text-body-secondary mb-0">{cat.description}</Card.Text>
+                      <Card.Title className="h6 fw-bold">{t(cat.titleKey)}</Card.Title>
+                      <Card.Text className="small text-body-secondary mb-0">{t(cat.descKey)}</Card.Text>
                     </Card.Body>
                   </Card>
                 </Col>
@@ -280,43 +317,63 @@ function Accueil() {
           <Row className="align-items-end justify-content-between mb-4">
             <Col lg="8">
               <div className="d-flex align-items-center gap-2 text-danger small text-uppercase fw-semibold mb-2">
-                <FileText size={18} /> Nouveautés
+                <FileText size={18} /> {t('home.recentBadge')}
               </div>
-              <h2 className="h4 fw-bold mb-2">Publications récentes</h2>
+              <h2 className="h4 fw-bold mb-2">{t('home.recentPublications')}</h2>
               <p className="text-body-secondary small mb-0">
-                Derniers travaux validés par les comités scientifiques.
+                {t('home.recentDesc')}
               </p>
             </Col>
             <Col lg="4" className="text-lg-end mt-3 mt-lg-0">
               <Button as={Link} to="/librairie" variant="danger" className="rounded-pill">
-                Toutes les publications <ArrowRight size={18} className="ms-1" />
+                {t('home.viewAllPublications')} <ArrowRight size={18} className="ms-1" />
               </Button>
             </Col>
           </Row>
-          <ListGroup variant="flush" className="accueil-publications-list">
-            {recentPublications.map((pub) => (
-              <ListGroup.Item key={pub.id} className="accueil-pub-item border-0 border-bottom py-4 px-0">
-                <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
-                  <Badge bg="secondary" className="rounded-pill">{pub.type}</Badge>
-                  <Badge bg="light" text="dark" className="rounded-pill">{pub.domain}</Badge>
-                  {pub.region && <Badge bg="outline-secondary" className="rounded-pill">{pub.region}</Badge>}
-                  {pub.isOpenAccess && <Badge bg="success" className="rounded-pill">Open Access</Badge>}
-                </div>
-                <Link to={`/publication/${pub.id}`} className="h6 fw-semibold text-decoration-none accueil-pub-link d-block mb-2">
-                  {pub.title}
-                </Link>
-                <div className="d-flex flex-wrap align-items-center gap-3 small text-body-secondary">
-                  <span className="d-flex align-items-center gap-1"><User size={14} /> {pub.authors.slice(0, 2).join(', ')}{pub.authors.length > 2 && ` +${pub.authors.length - 2}`}</span>
-                  <span className="d-flex align-items-center gap-1"><Calendar size={14} /> {new Date(pub.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                  <span className="d-flex align-items-center gap-1"><Eye size={14} /> {pub.views}</span>
-                  <span className="d-flex align-items-center gap-1"><Download size={14} /> {pub.downloads}</span>
-                </div>
-                <Button as={Link} to={`/publication/${pub.id}`} variant="link" size="sm" className="p-0 mt-2 text-danger fw-medium">
-                  Lire →
-                </Button>
-              </ListGroup.Item>
-            ))}
-          </ListGroup>
+          {loadingRecent ? (
+            <p className="text-body-secondary small text-center py-4">{t('home.loadingRecent')}</p>
+          ) : (
+            <ListGroup variant="flush" className="accueil-publications-list">
+              {recentPublications.map((pub) => (
+                <ListGroup.Item key={pub.id} className="accueil-pub-item border-0 border-bottom py-4 px-0">
+                  <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
+                    <Badge bg="secondary" className="rounded-pill">{pub.type}</Badge>
+                    <Badge bg="light" text="dark" className="rounded-pill">{pub.domain}</Badge>
+                    {pub.region && <Badge bg="outline-secondary" className="rounded-pill">{pub.region}</Badge>}
+                    <Badge bg="success" className="rounded-pill">Open Access</Badge>
+                  </div>
+                  <Link to={`/publication/${pub.id}`} className="h6 fw-semibold text-decoration-none accueil-pub-link d-block mb-2">
+                    {pub.title}
+                  </Link>
+                  <div className="d-flex flex-wrap align-items-center gap-3 small text-body-secondary">
+                    {pub.author && (
+                      <span className="d-flex align-items-center gap-2">
+                        {pub.author_photo_url ? (
+                          <img src={pub.author_photo_url} alt="" className="rounded-circle object-fit-cover" style={{ width: 24, height: 24 }} />
+                        ) : (
+                          <span className="rounded-circle bg-secondary bg-opacity-25 d-inline-flex align-items-center justify-content-center" style={{ width: 24, height: 24 }}>
+                            <User size={12} className="text-secondary" />
+                          </span>
+                        )}
+                        {pub.author}
+                      </span>
+                    )}
+                    <span className="d-flex align-items-center gap-1"><Calendar size={14} /> {pub.created_at ? new Date(pub.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : pub.year}</span>
+                    <span className="d-flex align-items-center gap-1"><Eye size={14} /> {pub.views ?? 0}</span>
+                    <span className="d-flex align-items-center gap-1"><Download size={14} /> {pub.downloads ?? 0}</span>
+                  </div>
+                  <Button as={Link} to={`/publication/${pub.id}`} variant="link" size="sm" className="p-0 mt-2 text-danger fw-medium">
+                    {t('home.readMore')}
+                  </Button>
+                </ListGroup.Item>
+              ))}
+              {!loadingRecent && recentPublications.length === 0 && (
+                <ListGroup.Item className="accueil-pub-item border-0 py-4 px-0 text-body-secondary text-center">
+                  {t('home.noPublicationsYet')}
+                </ListGroup.Item>
+              )}
+            </ListGroup>
+          )}
         </Container>
       </section>
 
@@ -324,27 +381,27 @@ function Accueil() {
       <section className="py-5 bg-body-secondary">
         <Container>
           <div className="text-center mb-4">
-            <span className="small text-uppercase fw-semibold text-body-secondary">Coordonnées officielles</span>
-            <h2 className="h5 fw-bold mt-2 mb-2">Informations pratiques</h2>
-            <p className="text-body-secondary small">Adresse, contacts et réseaux pour rester connectés.</p>
+            <span className="small text-uppercase fw-semibold text-body-secondary">{t('home.contactOfficial')}</span>
+            <h2 className="h5 fw-bold mt-2 mb-2">{t('home.contactPractical')}</h2>
+            <p className="text-body-secondary small">{t('home.contactPracticalDesc')}</p>
           </div>
           <Row className="g-4">
             {contactInfoCards.map((c) => {
               const Icon = c.icon;
               return (
-                <Col xs="12" md="6" lg="4" key={c.title}>
+                <Col xs="12" md="6" lg="4" key={c.titleKey}>
                   <Card className="accueil-feature-card h-100 border-0 shadow-sm">
                     <Card.Body>
                       <div className="accueil-icon-wrap rounded-3 d-inline-flex align-items-center justify-content-center mb-3">
                         <Icon size={22} className="text-danger" />
                       </div>
-                      <Card.Title className="h6 fw-bold">{c.title}</Card.Title>
+                      <Card.Title className="h6 fw-bold">{t(c.titleKey)}</Card.Title>
                       <ListGroup variant="flush" className="small text-body-secondary">
                         {c.lines.map((line, i) => (
                           <ListGroup.Item key={i} className="border-0 px-0 py-1 bg-transparent">{line}</ListGroup.Item>
                         ))}
                       </ListGroup>
-                      {c.highlight && <p className="small fw-semibold text-danger mb-0 mt-2">{c.highlight}</p>}
+                      {c.highlightKey && <p className="small fw-semibold text-danger mb-0 mt-2">{t(c.highlightKey)}</p>}
                     </Card.Body>
                   </Card>
                 </Col>
@@ -356,9 +413,9 @@ function Accueil() {
                   <div className="accueil-icon-wrap rounded-3 d-inline-flex align-items-center justify-content-center mb-3">
                     <Users size={22} className="text-danger" />
                   </div>
-                  <Card.Title className="h6 fw-bold">Réseaux sociaux</Card.Title>
+                  <Card.Title className="h6 fw-bold">{t('home.socialNetworks')}</Card.Title>
                   <Card.Text className="small text-body-secondary mb-3">
-                    Annonces officielles, appels à projets et statistiques en direct.
+                    {t('home.socialNetworksDesc')}
                   </Card.Text>
                   <div className="d-flex gap-2">
                     {socialLinks.map((s) => {
@@ -385,22 +442,22 @@ function Accueil() {
               <Row className="align-items-center">
                 <Col lg="8">
                   <div className="d-flex align-items-center gap-2 text-white-50 small text-uppercase mb-2">
-                    <Sparkles size={20} /> Action
+                    <Sparkles size={20} /> {t('home.ctaAction')}
                   </div>
                   <h2 className="h4 fw-bold text-white mb-2">
-                    Prêt(e) à rejoindre la communauté AfricaData ?
+                    {t('home.ctaTitleAlt')}
                   </h2>
                   <p className="text-white mb-0 opacity-90">
-                    Publiez vos travaux, suivez vos évaluations et collaborez avec un réseau d'experts africains.
+                    {t('home.ctaSubtitleAlt')}
                   </p>
                 </Col>
                 <Col lg="4" className="mt-4 mt-lg-0 text-lg-end">
                   <div className="d-flex flex-column flex-sm-row gap-2 justify-content-center justify-content-lg-end">
                     <Button as={Link} to="/inscription" variant="light" size="lg" className="rounded-pill px-4">
-                      Créer un compte auteur <ArrowRight size={18} className="ms-1" />
+                      {t('home.ctaButtonAuthor')} <ArrowRight size={18} className="ms-1" />
                     </Button>
                     <Button as={Link} to="/about" variant="outline-light" size="lg" className="rounded-pill px-4">
-                      Découvrir la mission
+                      {t('home.discoverMission')}
                     </Button>
                   </div>
                 </Col>

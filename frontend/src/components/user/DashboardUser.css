@@ -1,0 +1,27 @@
+.dashboard-user-kpi {
+  border-radius: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-user-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
+}
+
+.dashboard-user-kpi-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-user-timeline-dot {
+  width: 10px;
+  height: 10px;
+  margin-top: 6px;
+}
+
+[data-bs-theme="dark"] .dashboard-user-kpi:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+}
