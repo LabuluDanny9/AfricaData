@@ -93,6 +93,24 @@
   color: var(--bs-danger);
 }
 
+.accueil-contact-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--bs-danger) 45%, transparent);
+  text-underline-offset: 0.15em;
+}
+
+.accueil-contact-link:hover {
+  color: var(--bs-danger);
+  text-decoration-color: var(--bs-danger);
+}
+
+.accueil-contact-hint {
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* ========== Publications récentes ========== */
 .accueil-publications-list {
   background: transparent;

@@ -85,6 +85,17 @@ const socialLinks = [
 
 const RECENT_PUBLICATIONS_LIMIT = 6;
 
+function lineLooksLikeEmail(line) {
+  const s = String(line).trim();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+}
+
+function compactPhoneHref(line) {
+  const compact = String(line).replace(/[\s.-]/g, '');
+  if (/^\+\d{10,20}$/.test(compact)) return compact;
+  return null;
+}
+
 function Accueil() {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -383,7 +394,8 @@ function Accueil() {
           <div className="text-center mb-4">
             <span className="small text-uppercase fw-semibold text-body-secondary">{t('home.contactOfficial')}</span>
             <h2 className="h5 fw-bold mt-2 mb-2">{t('home.contactPractical')}</h2>
-            <p className="text-body-secondary small">{t('home.contactPracticalDesc')}</p>
+            <p className="text-body-secondary small mb-2">{t('home.contactPracticalDesc')}</p>
+            <p className="text-body-secondary small mb-0 accueil-contact-hint">{t('home.contactInteractiveHint')}</p>
           </div>
           <Row className="g-4">
             {contactInfoCards.map((c) => {
@@ -397,9 +409,33 @@ function Accueil() {
                       </div>
                       <Card.Title className="h6 fw-bold">{t(c.titleKey)}</Card.Title>
                       <ListGroup variant="flush" className="small text-body-secondary">
-                        {c.lines.map((line, i) => (
-                          <ListGroup.Item key={i} className="border-0 px-0 py-1 bg-transparent">{line}</ListGroup.Item>
-                        ))}
+                        {c.lines.map((line, i) => {
+                          const tel = compactPhoneHref(line);
+                          const email = lineLooksLikeEmail(line);
+                          return (
+                            <ListGroup.Item key={i} className="border-0 px-0 py-1 bg-transparent">
+                              {email ? (
+                                <a
+                                  href={`mailto:${String(line).trim()}`}
+                                  className="accueil-contact-link"
+                                  title={t('home.contactEmailTitle')}
+                                >
+                                  {line}
+                                </a>
+                              ) : tel ? (
+                                <a
+                                  href={`tel:${tel}`}
+                                  className="accueil-contact-link"
+                                  title={t('home.contactPhoneTitle')}
+                                >
+                                  {line}
+                                </a>
+                              ) : (
+                                line
+                              )}
+                            </ListGroup.Item>
+                          );
+                        })}
                       </ListGroup>
                       {c.highlightKey && <p className="small fw-semibold text-danger mb-0 mt-2">{t(c.highlightKey)}</p>}
                     </Card.Body>
