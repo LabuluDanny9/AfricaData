@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from 'lib/supabase';
+import { isRootSuperadminEmail } from 'lib/adminRoles';
 
 // ========== Dashboard (GET /api/admin/dashboard) ==========
 export async function getAdminStats() {
@@ -272,6 +273,11 @@ export async function updateUserRole(id, role) {
   if (!roleValue || !ALLOWED_ROLES.includes(roleValue)) {
     return { error: new Error(`Rôle invalide. Valeurs autorisées : ${ALLOWED_ROLES.join(', ')}`) };
   }
+  const { data: target, error: fetchErr } = await supabase.from('profiles').select('email').eq('id', id).maybeSingle();
+  if (fetchErr) return { error: fetchErr };
+  if (target && isRootSuperadminEmail(target.email) && roleValue !== 'admin') {
+    return { error: new Error('Le super administrateur principal ne peut pas être rétrogradé.') };
+  }
   const { error } = await supabase
     .from('profiles')
     .update({ role: roleValue, updated_at: new Date().toISOString() })
@@ -282,6 +288,11 @@ export async function updateUserRole(id, role) {
 /** DELETE /api/admin/users/:id — suppression du profil (auth.users géré côté Supabase Dashboard) */
 export async function deleteUser(id) {
   if (!isSupabaseConfigured()) return { error: new Error('Non configuré.') };
+  const { data: target, error: fetchErr } = await supabase.from('profiles').select('email').eq('id', id).maybeSingle();
+  if (fetchErr) return { error: fetchErr };
+  if (target && isRootSuperadminEmail(target.email)) {
+    return { error: new Error('Le super administrateur principal ne peut pas être supprimé.') };
+  }
   const { error } = await supabase.from('profiles').delete().eq('id', id);
   return { error };
 }

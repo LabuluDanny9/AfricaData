@@ -4,7 +4,7 @@ import { Search, Trash2, UserCog } from 'lucide-react';
 import { getAllProfiles, deleteUser, updateUserRole } from 'services/admin';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from 'context/AuthContext';
-import { canManageUsers, ROLE_LABELS } from 'lib/adminRoles';
+import { canManageUsers, ROLE_LABELS, isRootSuperadminEmail } from 'lib/adminRoles';
 import { isSupabaseConfigured } from 'lib/supabase';
 import './AdminPages.css';
 import './AdminUsers.css';
@@ -152,14 +152,24 @@ export default function AdminUsers() {
                   </td>
                 </tr>
               ) : (
-                pageItems.map((pr) => (
+                pageItems.map((pr) => {
+                  const rootPrincipal = isRootSuperadminEmail(pr.email);
+                  const lockManageRoot = rootPrincipal && !isCurrentUser(pr.id);
+                  return (
                   <tr key={pr.id}>
                     <td className="fw-semibold">{pr.full_name || '—'}</td>
                     <td>{pr.email || '—'}</td>
                     <td>
-                      <Badge bg={pr.role === 'admin' ? 'danger' : 'secondary'}>
-                        {ROLE_LABELS[pr.role] || pr.role}
-                      </Badge>
+                      <div className="d-flex flex-wrap align-items-center gap-1">
+                        <Badge bg={pr.role === 'admin' ? 'danger' : 'secondary'}>
+                          {ROLE_LABELS[pr.role] || pr.role}
+                        </Badge>
+                        {rootPrincipal && (
+                          <Badge bg="dark" className="text-wrap text-start" style={{ maxWidth: '12rem' }}>
+                            Super admin principal
+                          </Badge>
+                        )}
+                      </div>
                     </td>
                     <td>{pr.created_at ? new Date(pr.created_at).toLocaleDateString('fr-FR') : '—'}</td>
                     {canManage && (
@@ -170,6 +180,7 @@ export default function AdminUsers() {
                             size="sm"
                             onClick={() => openRoleModal(pr)}
                             title="Modifier le rôle"
+                            disabled={lockManageRoot}
                           >
                             <UserCog size={14} />
                           </Button>
@@ -178,18 +189,22 @@ export default function AdminUsers() {
                             size="sm"
                             onClick={() => openDeleteModal(pr)}
                             title="Supprimer l'utilisateur"
-                            disabled={isCurrentUser(pr.id)}
+                            disabled={isCurrentUser(pr.id) || rootPrincipal}
                           >
                             <Trash2 size={14} />
                           </Button>
                           {isCurrentUser(pr.id) && (
                             <span className="small text-muted">(vous)</span>
                           )}
+                          {lockManageRoot && (
+                            <span className="small text-muted">Protégé</span>
+                          )}
                         </div>
                       </td>
                     )}
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </Table>

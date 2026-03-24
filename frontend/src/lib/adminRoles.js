@@ -3,6 +3,13 @@
  * Spécification officielle Admin
  */
 
+/** E-mail du super administrateur principal (protégé en BDD — voir migration protect_root_superadmin). */
+export const ROOT_SUPERADMIN_EMAIL = 'dtech00111@gmail.com';
+
+export function isRootSuperadminEmail(email) {
+  return typeof email === 'string' && email.trim().toLowerCase() === ROOT_SUPERADMIN_EMAIL;
+}
+
 export const ADMIN_ROLES = {
   SUPER_ADMIN: 'admin',
   ADMIN_EDITORIAL: 'admin_editorial',
