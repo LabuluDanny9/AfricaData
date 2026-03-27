@@ -6,6 +6,7 @@ import About from './components/about';
 import Connexion from './components/connexion';
 import Inscription from './components/inscription';
 import ForgotPassword from './components/forgotPassword';
+import ResetPassword from './components/ResetPassword';
 import Librairie from './components/librairie';
 import PublicationDetails from './components/publicationDetails';
 import Pay from './components/pay';
@@ -42,13 +43,14 @@ function App() {
           <Route path="/connexion-admin" element={<Connexion />} />
           <Route path="/inscription" element={<Inscription />} />
           <Route path="/mot-de-passe-oublie" element={<ForgotPassword />} />
+          <Route path="/reinitialiser-mot-de-passe" element={<ResetPassword />} />
           <Route path="/publication/:id" element={<PublicationDetails />} />
+          <Route path="/librairie" element={<Librairie />} />
           <Route path="/pay" element={<Pay />} />
 
           {/* Interface utilisateur (navbar + sidebar) — réservée aux utilisateurs connectés */}
           <Route element={<UserLayout />}>
             <Route path="dashboard" element={<DashboardUser />} />
-            <Route path="librairie" element={<Librairie embedded />} />
             <Route path="submit" element={<SubmitWizard />} />
             <Route path="normes-de-publication" element={<NormesPublication />} />
             <Route path="mes-publications" element={<MesPublications />} />

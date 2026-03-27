@@ -1,3 +1,17 @@
-# https://www.robotstxt.org/robotstxt.html
+# Généré par scripts/generate-sitemap.js (prebuild)
 User-agent: *
-Disallow:
+Allow: /
+Allow: /librairie
+Allow: /publication/
+
+Disallow: /superadmin
+Disallow: /dashboard
+Disallow: /connexion-admin
+Disallow: /mes-publications
+Disallow: /favoris
+Disallow: /avis
+Disallow: /profil
+Disallow: /submit
+Disallow: /normes-de-publication
+
+Sitemap: http://localhost:3000/sitemap.xml

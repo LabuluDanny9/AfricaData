@@ -1,5 +1,15 @@
 import { supabase, isSupabaseConfigured } from 'lib/supabase';
 
+/** Base URL pour les liens dans les e-mails Supabase (mot de passe oublié). Sans slash final. */
+export function getAuthRedirectBaseUrl() {
+  if (typeof window === 'undefined') return '';
+  const fromEnv = process.env.REACT_APP_SITE_URL;
+  if (fromEnv && typeof fromEnv === 'string' && fromEnv.trim()) {
+    return fromEnv.trim().replace(/\/$/, '');
+  }
+  return window.location.origin;
+}
+
 export async function signUp({ email, password, fullName, role = 'chercheur' }) {
   if (!isSupabaseConfigured()) {
     throw new Error('Supabase non configuré. Ajoutez REACT_APP_SUPABASE_URL et REACT_APP_SUPABASE_ANON_KEY.');
@@ -33,9 +43,20 @@ export async function resetPassword(email) {
   if (!isSupabaseConfigured()) {
     throw new Error('Supabase non configuré.');
   }
+  const redirectTo = `${getAuthRedirectBaseUrl()}/reinitialiser-mot-de-passe`;
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/connexion`,
+    redirectTo,
   });
+  if (error) throw error;
+  return data;
+}
+
+/** Après clic sur le lien reçu par e-mail (recovery). */
+export async function updateUserPassword(newPassword) {
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase non configuré.');
+  }
+  const { data, error } = await supabase.auth.updateUser({ password: newPassword });
   if (error) throw error;
   return data;
 }

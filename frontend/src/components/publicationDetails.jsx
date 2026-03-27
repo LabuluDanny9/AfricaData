@@ -9,6 +9,7 @@ import { getPublicationById, getPublications, getComments, addComment as apiAddC
 import { useTranslation } from 'react-i18next';
 import { useAuth } from 'context/AuthContext';
 import { isSupabaseConfigured } from 'lib/supabase';
+import { usePublicationSEO } from 'hooks/usePublicationSEO';
 import 'components/layout/AfricadataHeader.css';
 import 'components/ui/RatingStars.css';
 import './publicationDetails.css';
@@ -55,6 +56,10 @@ export default function PublicationDetails() {
   const [pdfFullscreen, setPdfFullscreen] = useState(false);
   const [sidebarPublications, setSidebarPublications] = useState([]);
   const { user } = useAuth();
+
+  const seoPublication =
+    !loading && publication && id != null && String(publication.id) === String(id) ? publication : null;
+  usePublicationSEO(seoPublication, id);
 
   useEffect(() => {
     if (isSupabaseConfigured()) {

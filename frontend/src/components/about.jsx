@@ -6,10 +6,18 @@ import { useTranslation } from 'react-i18next';
 import AfricadataHeader from 'components/layout/AfricadataHeader';
 import { getPublicStats } from 'services/publications';
 import { isSupabaseConfigured } from 'lib/supabase';
+import { useSimplePageSEO } from 'hooks/useSimplePageSEO';
 
 export default function About() {
   const { t } = useTranslation();
   const [publicStats, setPublicStats] = useState(null);
+
+  useSimplePageSEO({
+    enabled: true,
+    title: `${t('about.title')} | AfricaData`,
+    description: t('about.seoDescription'),
+    path: '/about',
+  });
 
   useEffect(() => {
     if (!isSupabaseConfigured()) return;

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
   Container,
@@ -30,6 +31,7 @@ const itemVariants = {
 };
 
 export default function ForgotPassword() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -141,9 +143,10 @@ export default function ForgotPassword() {
                           <CheckCircle size={56} className="text-success" />
                         </div>
                         <h2 className="h5 fw-bold mb-2">Email envoyé</h2>
-                        <p className="text-body-secondary small mb-4">
-                          Si un compte existe avec l’adresse <strong className="text-body">{email}</strong>, vous recevrez un email contenant un lien pour réinitialiser votre mot de passe. Pensez à vérifier vos spams.
+                        <p className="text-body-secondary small mb-2">
+                          Si un compte existe avec l’adresse <strong className="text-body">{email}</strong>, vous recevrez un e-mail avec un lien pour choisir un nouveau mot de passe sur la plateforme.
                         </p>
+                        <p className="text-body-secondary small mb-4">{t('auth.recoveryEmailSenderHint')}</p>
                         <Button
                           as={Link}
                           to="/connexion"

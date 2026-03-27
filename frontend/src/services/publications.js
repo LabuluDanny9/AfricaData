@@ -21,6 +21,7 @@ function mapPublication(row) {
     rating: Number(row.rating_avg) || 0,
     ratingCount: row.rating_count ?? 0,
     created_at: row.created_at,
+    reference_code: row.reference_code || null,
   };
 }
 
