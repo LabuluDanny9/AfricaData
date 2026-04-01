@@ -59,7 +59,7 @@ export default function PublicationDetails() {
 
   const seoPublication =
     !loading && publication && id != null && String(publication.id) === String(id) ? publication : null;
-  usePublicationSEO(seoPublication, id, loading);
+  usePublicationSEO(seoPublication, id);
 
   useEffect(() => {
     if (isSupabaseConfigured()) {
@@ -117,7 +117,7 @@ export default function PublicationDetails() {
       <div className="publication-details-page min-vh-100 d-flex flex-column">
         <AfricadataHeader />
         <Container className="flex-grow-1 py-5">
-          <Link to="/librairie" className="publication-details-back d-inline-flex align-items-center gap-2 mb-4">
+          <Link to={PUBLIC_LIBRARY_PATH} className="publication-details-back d-inline-flex align-items-center gap-2 mb-4">
             <ArrowLeft size={18} /> {t('publication.backToLibrary')}
           </Link>
           <Card className="border-0 shadow-sm">
@@ -172,7 +172,7 @@ export default function PublicationDetails() {
             <div className="publication-details-sidebar sticky-top">
               <div className="d-flex align-items-center justify-content-between mb-2">
                 <h2 className="h6 fw-bold mb-0 text-body">{t('publication.otherPublications') || 'Autres publications'}</h2>
-                <Link to="/librairie" className="small text-danger text-decoration-none d-inline-flex align-items-center gap-1">
+                <Link to={PUBLIC_LIBRARY_PATH} className="small text-danger text-decoration-none d-inline-flex align-items-center gap-1">
                   <ArrowLeft size={14} /> {t('publication.backToLibrary')}
                 </Link>
               </div>
@@ -200,7 +200,7 @@ export default function PublicationDetails() {
           {/* Contenu principal : publication en cours de lecture */}
           <Col md={8} lg={9} className="publication-details-main-col order-1 order-md-2">
             <div className="publication-details-container">
-              <Link to="/librairie" className="publication-details-back d-inline-flex align-items-center gap-2 mb-4 d-md-none">
+              <Link to={PUBLIC_LIBRARY_PATH} className="publication-details-back d-inline-flex align-items-center gap-2 mb-4 d-md-none">
                 <ArrowLeft size={18} /> {t('publication.backToLibrary')}
               </Link>
 

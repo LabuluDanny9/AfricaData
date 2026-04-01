@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import RatingStars from 'components/ui/RatingStars';
 import { getFavorites, getPublications, toggleFavorite } from 'services/publications';
 import { useAuth } from 'context/AuthContext';
+import { PUBLIC_LIBRARY_PATH } from 'lib/publicRoutes';
 import { isSupabaseConfigured } from 'lib/supabase';
 import 'components/ui/RatingStars.css';
 import './Favoris.css';
@@ -78,7 +79,7 @@ export default function Favoris() {
           <Card.Body className="text-center py-5">
             <Star size={48} className="text-warning mb-2 opacity-50" />
             <p className="text-body-secondary mb-0">{t('user.favoritesEmpty')}</p>
-            <Link to="/librairie" className="btn btn-danger btn-sm mt-3 rounded-pill">{t('user.exploreLibrary')}</Link>
+            <Link to={PUBLIC_LIBRARY_PATH} className="btn btn-danger btn-sm mt-3 rounded-pill">{t('user.exploreLibrary')}</Link>
           </Card.Body>
         </Card>
       ) : (

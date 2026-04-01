@@ -7,6 +7,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useTheme } from 'context/ThemeContext';
 import { useAuth } from 'context/AuthContext';
+import { PUBLIC_LIBRARY_PATH } from 'lib/publicRoutes';
 import { isAdminRole } from 'lib/adminRoles';
 import { getNotifications, markNotificationAsRead, subscribeToNotifications, deleteNotification } from 'services/notifications';
 import { isSupabaseConfigured } from 'lib/supabase';
@@ -15,7 +16,7 @@ import './UserLayout.css';
 
 const SIDEBAR_LINKS = [
   { to: '/dashboard', icon: LayoutDashboard, labelKey: 'user.dashboard' },
-  { to: '/librairie', icon: BookOpen, labelKey: 'user.explorePublications' },
+  { to: PUBLIC_LIBRARY_PATH, icon: BookOpen, labelKey: 'user.explorePublications' },
   { to: '/submit', icon: PlusCircle, labelKey: 'user.submitPublication' },
   { to: '/normes-de-publication', icon: FileCheck, labelKey: 'user.publicationNorms' },
   { to: '/mes-publications', icon: FileText, labelKey: 'user.myPublications' },
@@ -136,7 +137,7 @@ export default function UserLayout() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) navigate(`/librairie?search=${encodeURIComponent(searchQuery.trim())}`);
+    if (searchQuery.trim()) navigate(`${PUBLIC_LIBRARY_PATH}?search=${encodeURIComponent(searchQuery.trim())}`);
   };
 
   if (authLoading) {

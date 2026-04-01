@@ -43,6 +43,7 @@ import AfricadataHeader from 'components/layout/AfricadataHeader';
 import AfricadataFooter from 'components/layout/AfricadataFooter';
 import { getPublications, subscribeToPublications, getPublicStats } from 'services/publications';
 import { isSupabaseConfigured } from 'lib/supabase';
+import { PUBLIC_LIBRARY_PATH } from 'lib/publicRoutes';
 import 'components/layout/AfricadataHeader.css';
 import './accueil.css';
 
@@ -142,7 +143,7 @@ function Accueil() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) navigate(`/librairie?search=${encodeURIComponent(searchQuery)}`);
+    if (searchQuery.trim()) navigate(`${PUBLIC_LIBRARY_PATH}?search=${encodeURIComponent(searchQuery)}`);
   };
 
   return (
@@ -296,7 +297,7 @@ function Accueil() {
               </p>
             </Col>
             <Col lg="4" className="text-lg-end mt-3 mt-lg-0">
-              <Button as={Link} to="/librairie" variant="outline-danger" className="rounded-pill">
+              <Button as={Link} to={PUBLIC_LIBRARY_PATH} variant="outline-danger" className="rounded-pill">
                 {t('home.viewLibrary')} <ArrowRight size={18} className="ms-1" />
               </Button>
             </Col>
@@ -336,7 +337,7 @@ function Accueil() {
               </p>
             </Col>
             <Col lg="4" className="text-lg-end mt-3 mt-lg-0">
-              <Button as={Link} to="/librairie" variant="danger" className="rounded-pill">
+              <Button as={Link} to={PUBLIC_LIBRARY_PATH} variant="danger" className="rounded-pill">
                 {t('home.viewAllPublications')} <ArrowRight size={18} className="ms-1" />
               </Button>
             </Col>

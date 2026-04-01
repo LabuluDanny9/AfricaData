@@ -5,6 +5,7 @@ import { Sun, Moon, LogOut, User, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from 'context/ThemeContext';
 import { useAuth } from 'context/AuthContext';
+import { PUBLIC_LIBRARY_PATH } from 'lib/publicRoutes';
 
 const LANG_STORAGE_KEY = 'africadata-lang';
 
@@ -43,7 +44,7 @@ export default function AfricadataHeader() {
         <Navbar.Collapse id="main-nav">
           <Nav className="ms-auto align-items-lg-center gap-2">
             <Nav.Link as={Link} to="/" className={isActive('/', true) ? 'active' : ''}>{t('nav.home')}</Nav.Link>
-            <Nav.Link as={Link} to="/librairie" className={isActive('/librairie') ? 'active' : ''}>{t('nav.library')}</Nav.Link>
+            <Nav.Link as={Link} to={PUBLIC_LIBRARY_PATH} className={isActive(PUBLIC_LIBRARY_PATH) ? 'active' : ''}>{t('nav.library')}</Nav.Link>
             <Nav.Link as={Link} to="/about" className={isActive('/about') ? 'active' : ''}>{t('nav.about')}</Nav.Link>
             {user ? (
               <>

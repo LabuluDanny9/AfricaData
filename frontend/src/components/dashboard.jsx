@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { PUBLIC_LIBRARY_PATH } from 'lib/publicRoutes';
 import { useTranslation } from 'react-i18next';
 import './dashboard.css';
 
@@ -45,7 +46,7 @@ function Dashboard() {
         </ul>
         <div className="dashboard__actions">
           <Link to="/submit" className="dashboard__btn">{t('user.submitPublication')}</Link>
-          <Link to="/librairie" className="dashboard__btn dashboard__btn--outline">{t('user.exploreLibrary')}</Link>
+          <Link to={PUBLIC_LIBRARY_PATH} className="dashboard__btn dashboard__btn--outline">{t('user.exploreLibrary')}</Link>
         </div>
       </section>
     </div>

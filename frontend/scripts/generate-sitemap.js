@@ -18,7 +18,7 @@ function buildRobotsTxt(siteUrl, opts = {}) {
     '# Généré par scripts/generate-sitemap.js (prebuild)',
     'User-agent: *',
     'Allow: /',
-    'Allow: /librairie',
+    'Allow: /bibliotheque',
     'Allow: /publication/',
     '',
     'Disallow: /superadmin',

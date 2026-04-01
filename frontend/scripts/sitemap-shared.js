@@ -5,7 +5,7 @@ const { createClient } = require('@supabase/supabase-js');
 
 const STATIC_PAGES = [
   { path: '/', changefreq: 'weekly', priority: '1.0' },
-  { path: '/librairie', changefreq: 'daily', priority: '0.95' },
+  { path: '/bibliotheque', changefreq: 'daily', priority: '0.95' },
   { path: '/about', changefreq: 'monthly', priority: '0.7' },
   { path: '/connexion', changefreq: 'monthly', priority: '0.4' },
   { path: '/inscription', changefreq: 'monthly', priority: '0.5' },

@@ -21,7 +21,6 @@ function mapPublication(row) {
     rating: Number(row.rating_avg) || 0,
     ratingCount: row.rating_count ?? 0,
     created_at: row.created_at,
-    status: row.status || null,
     reference_code: row.reference_code || null,
   };
 }
@@ -364,7 +363,7 @@ export async function notifySubmissionConfirmation(publicationId) {
 
 /**
  * Abonnement Realtime aux changements sur les publications publiées (nouvelle publication ou mise à jour).
- * Utile pour actualiser la librairie et l'accueil sans recharger la page.
+ * Utile pour actualiser la bibliothèque publique et l'accueil sans recharger la page.
  * @param {(payload: { event: 'INSERT'|'UPDATE'|'DELETE', new?: object, old?: object }) => void} onPayload
  * @returns {() => void} fonction pour se désabonner
  */

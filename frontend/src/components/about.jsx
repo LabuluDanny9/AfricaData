@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ArrowRight, Award, Globe, Users, BookOpen, Zap, ShieldCheck, BarChart3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { PUBLIC_LIBRARY_PATH } from 'lib/publicRoutes';
 import { Button } from 'components/ui/button';
 import { useTranslation } from 'react-i18next';
 import AfricadataHeader from 'components/layout/AfricadataHeader';
@@ -103,7 +104,7 @@ export default function About() {
                 <p className="text-lg text-muted-foreground mb-6">
                   {t('about.missionText2')}
                 </p>
-                <Link to="/librairie">
+                <Link to={PUBLIC_LIBRARY_PATH}>
                   <Button className="btn-primary inline-flex items-center gap-2">
                     {t('about.discoverPublications')} <ArrowRight className="h-4 w-4" />
                   </Button>
@@ -265,7 +266,7 @@ export default function About() {
                   {t('about.signupNow')} <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link to="/librairie">
+              <Link to={PUBLIC_LIBRARY_PATH}>
                 <Button variant="outline" className="border-white text-white hover:bg-white/10 inline-flex items-center gap-2">
                   {t('about.explorePublications')} <ArrowRight className="h-4 w-4" />
                 </Button>

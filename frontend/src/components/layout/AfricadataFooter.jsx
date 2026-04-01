@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { PUBLIC_LIBRARY_PATH } from 'lib/publicRoutes';
 import './AfricadataFooter.css';
 
 export default function AfricadataFooter() {
@@ -14,7 +15,7 @@ export default function AfricadataFooter() {
         </Link>
         <div className="africadata-footer__links">
           <Link to="/">{t('nav.home')}</Link>
-          <Link to="/librairie">{t('nav.library')}</Link>
+          <Link to={PUBLIC_LIBRARY_PATH}>{t('nav.library')}</Link>
           <Link to="/about">{t('nav.about')}</Link>
           <Link to="/connexion">{t('nav.login')}</Link>
         </div>

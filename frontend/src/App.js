@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
 
 import Accueil from './components/accueil';
@@ -31,6 +31,17 @@ import AdminStatistics from './components/admin/AdminStatistics';
 import AdminSettings from './components/admin/AdminSettings';
 import AdminAudit from './components/admin/AdminAudit';
 import AdminWaiverCodes from './components/admin/AdminWaiverCodes';
+import { PUBLIC_LIBRARY_PATH } from 'lib/publicRoutes';
+
+function LegacyLibraryRedirect() {
+  const location = useLocation();
+  return (
+    <Navigate
+      to={{ pathname: PUBLIC_LIBRARY_PATH, search: location.search, hash: location.hash }}
+      replace
+    />
+  );
+}
 
 function App() {
   return (
@@ -45,7 +56,8 @@ function App() {
           <Route path="/mot-de-passe-oublie" element={<ForgotPassword />} />
           <Route path="/reinitialiser-mot-de-passe" element={<ResetPassword />} />
           <Route path="/publication/:id" element={<PublicationDetails />} />
-          <Route path="/librairie" element={<Librairie />} />
+          <Route path="/librairie" element={<LegacyLibraryRedirect />} />
+          <Route path={PUBLIC_LIBRARY_PATH} element={<Librairie />} />
           <Route path="/pay" element={<Pay />} />
 
           {/* Interface utilisateur (navbar + sidebar) — réservée aux utilisateurs connectés */}

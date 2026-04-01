@@ -21,6 +21,7 @@ import { getPublications, getFavorites, toggleFavorite as apiToggleFavorite, sub
 import { useTranslation } from 'react-i18next';
 import { useAuth } from 'context/AuthContext';
 import { isSupabaseConfigured } from 'lib/supabase';
+import { PUBLIC_LIBRARY_PATH } from 'lib/publicRoutes';
 import { useSimplePageSEO } from 'hooks/useSimplePageSEO';
 import 'components/layout/AfricadataHeader.css';
 import 'components/ui/RatingStars.css';
@@ -70,7 +71,7 @@ export default function Librairie({ embedded = false }) {
     enabled: !embedded,
     title: `${t('library.title')} | AfricaData`,
     description: t('library.seoDescription'),
-    path: '/librairie',
+    path: PUBLIC_LIBRARY_PATH,
   });
 
   const debouncedSearch = useDebounce(searchInput, 300);
