@@ -1,7 +1,7 @@
 {
   "nav": {
     "home": "Accueil",
-    "library": "Librairie",
+    "library": "Bibliothèque",
     "about": "À propos",
     "login": "Connexion",
     "signup": "S'inscrire",
@@ -206,7 +206,7 @@
     "discoverMission": "Découvrir la mission"
   },
   "library": {
-    "title": "Librairie",
+    "title": "Bibliothèque",
     "seoDescription": "Consultez les publications scientifiques indexées sur AfricaData : articles, thèses, rapports. Recherche par domaine, auteur et mots-clés.",
     "searchPlaceholder": "Rechercher par titre, auteur, domaine, mots-clés...",
     "filters": "Filtres",
@@ -300,7 +300,7 @@
     "similar": "Publications similaires",
     "loading": "Chargement…",
     "notFound": "Publication introuvable.",
-    "backToLibrary": "Retour à la librairie",
+    "backToLibrary": "Retour à la bibliothèque",
     "giveRating": "Donnez votre note",
     "thanksForReview": "Merci pour votre avis.",
     "pdfDocument": "Document PDF",
@@ -335,7 +335,7 @@
     "inReview": "En révision",
     "published": "Publiées",
     "downloadsCount": "Téléchargements",
-    "exploreLibrary": "Explorer la librairie",
+    "exploreLibrary": "Explorer la bibliothèque",
     "viewPublication": "Voir la publication",
     "noNotificationsEmpty": "Aucune notification. Les nouvelles publications apparaîtront ici.",
     "deleteNotification": "Supprimer",

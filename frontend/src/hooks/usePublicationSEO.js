@@ -4,6 +4,8 @@ import { DEFAULT_SITE_TITLE, DEFAULT_SITE_DESCRIPTION } from 'lib/seoDefaults';
 
 const JSON_LD_ID = 'africadata-publication-jsonld';
 
+const NON_INDEXABLE_STATUS = new Set(['draft', 'rejected', 'deleted']);
+
 function truncateText(text, maxLen) {
   if (!text || typeof text !== 'string') return '';
   const t = text.replace(/\s+/g, ' ').trim();
@@ -54,16 +56,39 @@ function setCanonical(href) {
   el.setAttribute('data-africadata-seo', 'true');
 }
 
+function upsertRobots(content) {
+  upsertMetaName('robots', content);
+}
+
 /**
  * Met à jour title, meta description, Open Graph, Twitter et JSON-LD pour le référencement
  * (Google peut indexer les SPA après rendu ; les balises renforcent titre + extrait dans les résultats).
+ * @param {boolean} isLoading - tant que true, on n'applique pas noindex (évite de marquer la page avant chargement).
  */
-export function usePublicationSEO(publication, publicationId) {
+export function usePublicationSEO(publication, publicationId, isLoading = false) {
   useEffect(() => {
-    if (!publication || publicationId == null || publicationId === '') {
+    if (isLoading) return;
+
+    const hasId = publicationId != null && publicationId !== '';
+
+    if (!hasId) {
       removeDynamicSeoTags();
       document.title = DEFAULT_SITE_TITLE;
       upsertMetaName('description', DEFAULT_SITE_DESCRIPTION);
+      upsertRobots('index, follow');
+      const canon = document.querySelector('link[rel="canonical"][data-africadata-seo]');
+      if (canon?.parentNode) canon.parentNode.removeChild(canon);
+      return;
+    }
+
+    const shouldNoIndex =
+      !publication || NON_INDEXABLE_STATUS.has(publication.status);
+
+    if (shouldNoIndex) {
+      removeDynamicSeoTags();
+      document.title = DEFAULT_SITE_TITLE;
+      upsertMetaName('description', DEFAULT_SITE_DESCRIPTION);
+      upsertRobots('noindex, nofollow');
       const canon = document.querySelector('link[rel="canonical"][data-africadata-seo]');
       if (canon?.parentNode) canon.parentNode.removeChild(canon);
       return;
@@ -82,6 +107,7 @@ export function usePublicationSEO(publication, publicationId) {
 
     document.title = pageTitle;
     upsertMetaName('description', description);
+    upsertRobots('index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
     setCanonical(canonical);
 
     appendMetaProperty('og:title', pageTitle);
@@ -134,6 +160,7 @@ export function usePublicationSEO(publication, publicationId) {
       removeDynamicSeoTags();
       document.title = DEFAULT_SITE_TITLE;
       upsertMetaName('description', DEFAULT_SITE_DESCRIPTION);
+      upsertRobots('index, follow');
     };
-  }, [publication, publicationId]);
+  }, [publication, publicationId, isLoading]);
 }

@@ -150,7 +150,7 @@ export default function UserLayout() {
     return <Navigate to="/connexion" replace />;
   }
 
-  // Les admins accèdent ici comme tout utilisateur : tableau de bord, librairie, soumission, etc.
+  // Les admins accèdent ici comme tout utilisateur : tableau de bord, bibliothèque, soumission, etc.
   // Ils ne jouent leur rôle admin que lorsqu'ils vont sur /superadmin (lien « Administration »).
 
   return (

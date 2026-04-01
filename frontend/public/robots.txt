@@ -14,4 +14,4 @@ Disallow: /profil
 Disallow: /submit
 Disallow: /normes-de-publication
 
-Sitemap: http://localhost:3000/sitemap.xml
+Sitemap: https://africadatas.com/sitemap.xml

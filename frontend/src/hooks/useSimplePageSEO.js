@@ -3,7 +3,7 @@ import { getSiteBaseUrl } from 'lib/siteUrl';
 import { DEFAULT_SITE_TITLE, DEFAULT_SITE_DESCRIPTION } from 'lib/seoDefaults';
 
 /**
- * Titre, meta description et canonical pour les pages publiques (librairie, à propos, etc.).
+ * Titre, meta description et canonical pour les pages publiques (bibliothèque, à propos, etc.).
  */
 export function useSimplePageSEO({ enabled, title, description, path }) {
   useEffect(() => {

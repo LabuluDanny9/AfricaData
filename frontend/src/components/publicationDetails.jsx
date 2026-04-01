@@ -59,7 +59,7 @@ export default function PublicationDetails() {
 
   const seoPublication =
     !loading && publication && id != null && String(publication.id) === String(id) ? publication : null;
-  usePublicationSEO(seoPublication, id);
+  usePublicationSEO(seoPublication, id, loading);
 
   useEffect(() => {
     if (isSupabaseConfigured()) {
