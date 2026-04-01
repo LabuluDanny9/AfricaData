@@ -8,6 +8,7 @@ import { getPublicStats } from 'services/publications';
 import { isSupabaseConfigured } from 'lib/supabase';
 import { PUBLIC_LIBRARY_PATH } from 'lib/publicRoutes';
 import { useSimplePageSEO } from 'hooks/useSimplePageSEO';
+import './about.css';
 
 export default function About() {
   const { t } = useTranslation();
@@ -82,12 +83,14 @@ export default function About() {
         {/* Hero Section - fond transparent avec motif science & données */}
         <section className="about-hero py-16 md:py-24">
           <div className="max-w-6xl mx-auto px-4">
-            <div className="text-center">
-              <img src="/logo.png" alt="AfricaData" className="about-hero-logo mx-auto mb-6" />
-              <h1 className="about-hero-title text-4xl md:text-5xl font-bold mb-4">{t('about.heroTitle')}</h1>
-              <p className="about-hero-subtitle text-xl max-w-2xl mx-auto">
-                {t('about.heroSubtitle')}
-              </p>
+            <div className="about-hero-brand d-flex flex-column flex-md-row align-items-center justify-content-center gap-4 gap-md-5 mx-auto">
+              <img src="/logo.png" alt="" className="about-hero-logo-side flex-shrink-0" decoding="async" aria-hidden />
+              <div className="about-hero-brand-text text-center text-md-start flex-grow-1 min-w-0">
+                <h1 className="about-hero-title text-4xl md:text-5xl font-bold mb-3 mb-md-4">{t('about.heroTitle')}</h1>
+                <p className="about-hero-subtitle text-xl mb-0 about-hero-subtitle-inline">
+                  {t('about.heroSubtitle')}
+                </p>
+              </div>
             </div>
           </div>
         </section>

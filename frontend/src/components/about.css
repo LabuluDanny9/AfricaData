@@ -89,14 +89,42 @@
   text-decoration: underline;
 }
 
-.about-hero-logo {
-  height: 6rem;
-  width: auto;
-  max-width: 200px;
-  margin-left: auto;
-  margin-right: auto;
+/* Hero : logo compact à côté du texte (sans chevauchement) */
+.about-hero-brand {
+  max-width: 52rem;
+}
+
+.about-hero-logo-side {
+  width: 5.5rem;
+  height: 5.5rem;
+  max-width: 22vw;
+  max-height: 22vw;
   object-fit: contain;
   display: block;
+}
+
+@media (min-width: 768px) {
+  .about-hero-logo-side {
+    width: 6.5rem;
+    height: 6.5rem;
+    max-width: none;
+    max-height: none;
+  }
+
+  .about-hero-brand {
+    gap: 2rem !important;
+  }
+}
+
+.about-hero-subtitle-inline {
+  max-width: 40rem;
+}
+
+@media (min-width: 768px) {
+  .about-hero-subtitle-inline {
+    margin-left: 0;
+    margin-right: 0;
+  }
 }
 
 .about-mission-logo {
