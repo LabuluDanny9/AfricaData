@@ -117,9 +117,8 @@
     "signupGoogleNotConfigured": "Inscription Google non configurée. Activez le fournisseur Google dans Supabase."
   },
   "home": {
-    "heroBadge": "Centre de collecte de données scientifiques",
     "heroTitle": "Valorisez la recherche africaine avec AfricaData",
-    "heroLead": "Collectez, validez et diffusez vos publications dans un environnement stable, conforme aux standards Open Science et prêt pour la visibilité internationale.",
+    "heroLead": "Diffusez vos publications dans un environnement stable, conforme aux standards Open Science et prêt pour la visibilité internationale.",
     "heroTitleAlt": "Recherche scientifique africaine, centralisée et ouverte",
     "heroSubtitle": "Explorez, déposez et partagez des publications. Accès ouvert, indexation et visibilité internationale.",
     "searchPlaceholder": "Auteur, laboratoire, mot-clé...",

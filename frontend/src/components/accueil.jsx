@@ -156,10 +156,6 @@ function Accueil() {
           <Row className="justify-content-center text-center">
             <Col lg="10" xl="8">
               <img src="/logo.png" alt="AfricaData" className="accueil-hero-logo mx-auto mb-4" />
-              <Badge bg="danger" className="mb-3 px-3 py-2 rounded-pill d-inline-flex align-items-center gap-2">
-                <Database size={18} />
-                {t('home.heroBadge')}
-              </Badge>
               <h1 className="display-5 fw-bold mb-3 accueil-hero-title">
                 {t('home.heroTitle')}
               </h1>
