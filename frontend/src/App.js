@@ -45,7 +45,8 @@ function App() {
           <Route path="/mot-de-passe-oublie" element={<ForgotPassword />} />
           <Route path="/reinitialiser-mot-de-passe" element={<ResetPassword />} />
           <Route path="/publication/:id" element={<PublicationDetails />} />
-          <Route path="/librairie" element={<Librairie />} />
+          <Route path="/bibliotheque" element={<Librairie />} />
+          <Route path="/librairie" element={<Navigate to="/bibliotheque" replace />} />
           <Route path="/pay" element={<Pay />} />
 
           {/* Interface utilisateur (navbar + sidebar) — réservée aux utilisateurs connectés */}

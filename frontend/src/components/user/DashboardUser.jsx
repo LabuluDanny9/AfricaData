@@ -5,6 +5,7 @@ import { FileText, Clock, CheckCircle, Star, ArrowRight, PlusCircle, BookOpen } 
 import { getMyPublicationStats } from '../../services/publications';
 import { useAuth } from 'context/AuthContext';
 import { isSupabaseConfigured } from 'lib/supabase';
+import { PUBLIC_LIBRARY_PATH } from 'lib/publicRoutes';
 import { supabase } from 'lib/supabase';
 import './DashboardUser.css';
 
@@ -157,7 +158,7 @@ export default function DashboardUser() {
                   <FileText size={20} />
                   Mes publications
                 </Link>
-                <Link to="/librairie" className="btn btn-outline-secondary rounded-pill d-flex align-items-center justify-content-center gap-2">
+                <Link to={PUBLIC_LIBRARY_PATH} className="btn btn-outline-secondary rounded-pill d-flex align-items-center justify-content-center gap-2">
                   <BookOpen size={20} />
                   Explorer la bibliothèque
                 </Link>

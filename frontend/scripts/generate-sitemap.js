@@ -43,7 +43,7 @@ function buildRobotsTxt(siteUrl) {
     '# Généré par scripts/generate-sitemap.js (prebuild)',
     'User-agent: *',
     'Allow: /',
-    'Allow: /librairie',
+    'Allow: /bibliotheque',
     'Allow: /publication/',
     '',
     'Disallow: /superadmin',
@@ -89,7 +89,7 @@ async function main() {
 
   const staticPages = [
     { path: '/', changefreq: 'weekly', priority: '1.0' },
-    { path: '/librairie', changefreq: 'daily', priority: '0.95' },
+    { path: '/bibliotheque', changefreq: 'daily', priority: '0.95' },
     { path: '/about', changefreq: 'monthly', priority: '0.7' },
     { path: '/connexion', changefreq: 'monthly', priority: '0.4' },
     { path: '/inscription', changefreq: 'monthly', priority: '0.5' },

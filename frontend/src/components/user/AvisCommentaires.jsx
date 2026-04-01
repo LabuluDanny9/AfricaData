@@ -3,10 +3,13 @@ import { Link } from 'react-router-dom';
 import { Card, ListGroup, Button } from 'react-bootstrap';
 import { MessageCircle, Trash2, FileText } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from 'lib/supabase';
+import { PUBLIC_LIBRARY_PATH } from 'lib/publicRoutes';
 import { useAuth } from 'context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import './AvisCommentaires.css';
 
 export default function AvisCommentaires() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -70,7 +73,7 @@ export default function AvisCommentaires() {
             <div className="text-center py-5 text-body-secondary">
               <MessageCircle size={48} className="mb-2 opacity-50" />
               <p className="mb-0">Aucun commentaire.</p>
-              <Link to="/librairie" className="btn btn-danger btn-sm mt-3 rounded-pill">Explorer la bibliothèque</Link>
+              <Link to={PUBLIC_LIBRARY_PATH} className="btn btn-danger btn-sm mt-3 rounded-pill">{t('user.exploreLibrary')}</Link>
             </div>
           ) : (
             <ListGroup variant="flush">

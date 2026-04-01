@@ -363,7 +363,7 @@ export async function notifySubmissionConfirmation(publicationId) {
 
 /**
  * Abonnement Realtime aux changements sur les publications publiées (nouvelle publication ou mise à jour).
- * Utile pour actualiser la librairie et l'accueil sans recharger la page.
+ * Utile pour actualiser la bibliothèque et l'accueil sans recharger la page.
  * @param {(payload: { event: 'INSERT'|'UPDATE'|'DELETE', new?: object, old?: object }) => void} onPayload
  * @returns {() => void} fonction pour se désabonner
  */
