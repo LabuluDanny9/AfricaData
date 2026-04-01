@@ -11,21 +11,23 @@ const resources = {
 };
 
 const LANG_STORAGE_KEY = 'africadata-lang';
-const savedLang = typeof window !== 'undefined' && window.localStorage.getItem(LANG_STORAGE_KEY);
+const savedLang = typeof window !== 'undefined' ? window.localStorage.getItem(LANG_STORAGE_KEY) : null;
+/** Français par défaut : sans ça, la langue du navigateur (souvent en) affiche « Library » au lieu de « Bibliothèque ». */
+const initialLng = savedLang === 'en' || savedLang === 'fr' ? savedLang : 'fr';
 
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
-    lng: savedLang || undefined,
+    lng: initialLng,
     fallbackLng: 'fr',
     supportedLngs: ['fr', 'en'],
     interpolation: {
       escapeValue: false,
     },
     detection: {
-      order: ['localStorage', 'navigator'],
+      order: ['localStorage'],
       caches: ['localStorage'],
       lookupLocalStorage: LANG_STORAGE_KEY,
     },
