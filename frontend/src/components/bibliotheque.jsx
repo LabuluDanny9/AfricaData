@@ -25,7 +25,7 @@ import { PUBLIC_LIBRARY_PATH } from 'lib/publicRoutes';
 import { useSimplePageSEO } from 'hooks/useSimplePageSEO';
 import 'components/layout/AfricadataHeader.css';
 import 'components/ui/RatingStars.css';
-import './librairie.css';
+import './bibliotheque.css';
 
 /* Filtres adaptés à une plateforme internationale (sans référence aux facultés) */
 const DOMAINS = ['Informatique', 'IA & Data Science', 'Réseaux & Télécoms', 'Médecine & Santé', 'Sciences agronomiques', 'Sciences économiques', 'Ingénierie', 'Environnement', 'Sciences sociales', 'Énergie'];
@@ -52,7 +52,7 @@ function truncate(str, maxLines = 2) {
   return lines.length > 15 ? truncated + '…' : truncated;
 }
 
-export default function Librairie({ embedded = false }) {
+export default function BibliothequePage({ embedded = false }) {
   const { t } = useTranslation();
   const [searchInput, setSearchInput] = useState('');
   const [domain, setDomain] = useState('');
@@ -170,10 +170,10 @@ export default function Librairie({ embedded = false }) {
 
   const FiltersContent = () => (
     <>
-      <Accordion defaultActiveKey={['0', '1', '2', '3', '4', '5']} alwaysOpen className="librairie-accordion" flush>
+      <Accordion defaultActiveKey={['0', '1', '2', '3', '4', '5']} alwaysOpen className="bibliotheque-accordion" flush>
         <Accordion.Item eventKey="0">
           <Accordion.Header>📂 {t('library.filterDomain')}</Accordion.Header>
-          <Accordion.Body className="librairie-filter-list">
+          <Accordion.Body className="bibliotheque-filter-list">
             {DOMAINS.map((d) => (
               <Form.Check key={d} type="radio" id={`domain-${d}`} name="domain" label={d} checked={domain === d} onChange={() => setDomain(d)} />
             ))}
@@ -182,7 +182,7 @@ export default function Librairie({ embedded = false }) {
         </Accordion.Item>
         <Accordion.Item eventKey="1">
           <Accordion.Header>📄 {t('library.filterType')}</Accordion.Header>
-          <Accordion.Body className="librairie-filter-list">
+          <Accordion.Body className="bibliotheque-filter-list">
             {TYPES.map((typ) => (
               <Form.Check key={typ} type="radio" id={`type-${typ}`} name="typeDoc" label={typ} checked={typeDoc === typ} onChange={() => setTypeDoc(typ)} />
             ))}
@@ -191,7 +191,7 @@ export default function Librairie({ embedded = false }) {
         </Accordion.Item>
         <Accordion.Item eventKey="2">
           <Accordion.Header>🌐 {t('library.filterLanguage')}</Accordion.Header>
-          <Accordion.Body className="librairie-filter-list">
+          <Accordion.Body className="bibliotheque-filter-list">
             {LANGUES.map((lang) => (
               <Form.Check key={lang} type="radio" id={`lang-${lang}`} name="language" label={lang} checked={language === lang} onChange={() => setLanguage(lang)} />
             ))}
@@ -200,7 +200,7 @@ export default function Librairie({ embedded = false }) {
         </Accordion.Item>
         <Accordion.Item eventKey="3">
           <Accordion.Header>🗺️ {t('library.filterRegion')}</Accordion.Header>
-          <Accordion.Body className="librairie-filter-list">
+          <Accordion.Body className="bibliotheque-filter-list">
             {REGIONS.map((r) => (
               <Form.Check key={r} type="radio" id={`region-${r}`} name="region" label={r} checked={region === r} onChange={() => setRegion(r)} />
             ))}
@@ -209,7 +209,7 @@ export default function Librairie({ embedded = false }) {
         </Accordion.Item>
         <Accordion.Item eventKey="4">
           <Accordion.Header>📅 {t('library.filterYear')}</Accordion.Header>
-          <Accordion.Body className="librairie-filter-list">
+          <Accordion.Body className="bibliotheque-filter-list">
             {ANNEES.map((y) => (
               <Form.Check key={y} type="radio" id={`year-${y}`} name="year" label={y} checked={year === y} onChange={() => setYear(y)} />
             ))}
@@ -224,12 +224,15 @@ export default function Librairie({ embedded = false }) {
   );
 
   return (
-    <div className="librairie-page min-vh-100 d-flex flex-column">
+    <div className="bibliotheque-page min-vh-100 d-flex flex-column">
       {!embedded && <AfricadataHeader />}
 
-      <Container fluid className="librairie-container flex-grow-1 py-4">
+      <Container fluid className="bibliotheque-container flex-grow-1 py-4">
+        {!embedded && (
+          <h1 className="h3 fw-bold text-body mb-3">{t('library.title')}</h1>
+        )}
         {/* Barre de recherche globale */}
-        <div className="librairie-search-bar mb-4">
+        <div className="bibliotheque-search-bar mb-4">
           <InputGroup size="lg" className="shadow-sm">
             <InputGroup.Text className="bg-white">
               <Search size={20} className="text-secondary" />
@@ -240,7 +243,7 @@ export default function Librairie({ embedded = false }) {
               aria-label={t('library.searchAria')}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="librairie-search-input"
+              className="bibliotheque-search-input"
             />
           </InputGroup>
         </div>
@@ -248,7 +251,7 @@ export default function Librairie({ embedded = false }) {
         <Row>
           {/* Filtres — Desktop: colonne gauche */}
           <aside className="col-lg-3 d-none d-lg-block">
-            <div className="librairie-filters-card card border-0 shadow-sm sticky-top">
+            <div className="bibliotheque-filters-card card border-0 shadow-sm sticky-top">
               <Card.Body>
                 <h3 className="h6 fw-bold mb-3">{t('library.filters')}</h3>
                 <FiltersContent />
@@ -273,7 +276,7 @@ export default function Librairie({ embedded = false }) {
 
             {/* Recommandations automatiques — 3 publications mises en avant (sans filtre actif) */}
             {filtered.length > 0 && !debouncedSearch.trim() && !domain && !typeDoc && !language && !region && !year && (
-              <Card className="border-0 shadow-sm mb-4 librairie-recommendations">
+              <Card className="border-0 shadow-sm mb-4 bibliotheque-recommendations">
                 <Card.Body className="py-3">
                   <h3 className="h6 fw-bold mb-3 d-flex align-items-center gap-2">
                     <TrendingUp size={20} className="text-danger" /> {t('library.recommended')}
@@ -282,8 +285,8 @@ export default function Librairie({ embedded = false }) {
                     {filtered.slice(0, 3).map((pub) => (
                       <Col key={`rec-${pub.id}`}>
                         <Link to={`/publication/${pub.id}`} className="text-decoration-none text-body">
-                          <div className="librairie-rec-card p-3 rounded border h-100">
-                            <p className="small fw-semibold mb-1 librairie-rec-title">{pub.title}</p>
+                          <div className="bibliotheque-rec-card p-3 rounded border h-100">
+                            <p className="small fw-semibold mb-1 bibliotheque-rec-title">{pub.title}</p>
                             <div className="d-flex align-items-center gap-2 small text-body-secondary">
                               <RatingStars value={pub.rating} count={pub.ratingCount} size={14} />
                               <span>·</span>
@@ -318,12 +321,12 @@ export default function Librairie({ embedded = false }) {
                 <Row className="row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
                   {paginated.map((pub) => (
                     <Col key={pub.id}>
-                      <Card className="librairie-card h-100 border-0 shadow-sm">
-                        <Card.Header className="librairie-card-header bg-transparent border-0 pb-0">
-                          <Card.Title className="h6 mb-1 librairie-card-title">
+                      <Card className="bibliotheque-card h-100 border-0 shadow-sm">
+                        <Card.Header className="bibliotheque-card-header bg-transparent border-0 pb-0">
+                          <Card.Title className="h6 mb-1 bibliotheque-card-title">
                             <Link to={`/publication/${pub.id}`}>{pub.title}</Link>
                           </Card.Title>
-                          <Badge bg="outline-danger" className="librairie-card-badge">{pub.type}</Badge>
+                          <Badge bg="outline-danger" className="bibliotheque-card-badge">{pub.type}</Badge>
                         </Card.Header>
                         <Card.Body className="pt-2">
                           <div className="d-flex align-items-center gap-2 mb-2">
@@ -340,7 +343,7 @@ export default function Librairie({ embedded = false }) {
                             <span>{pub.author}</span>
                           </div>
                           <p className="small text-body-secondary mb-1">{pub.domain}{pub.region ? ` · ${pub.region}` : ''} · {pub.year}</p>
-                          <p className="small text-body-secondary librairie-card-summary">{truncate(pub.summary)}</p>
+                          <p className="small text-body-secondary bibliotheque-card-summary">{truncate(pub.summary)}</p>
                           <div className="d-flex align-items-center gap-3 mt-2 small text-body-secondary">
                             <span className="d-flex align-items-center gap-1"><Eye size={12} /> {pub.views ?? 0} {t('library.views')}</span>
                             <span className="d-flex align-items-center gap-1"><Download size={12} /> {pub.downloads ?? 0} {t('library.downloads')}</span>
@@ -367,7 +370,7 @@ export default function Librairie({ embedded = false }) {
                 {/* Pagination */}
                 {totalPages > 1 && (
                   <div className="d-flex justify-content-center mt-4">
-                    <Pagination className="librairie-pagination" onSelect={(e) => setCurrentPage(Number(e))}>
+                    <Pagination className="bibliotheque-pagination" onSelect={(e) => setCurrentPage(Number(e))}>
                       <Pagination.First disabled={currentPage === 1} onClick={() => setCurrentPage(1)} />
                       <Pagination.Prev disabled={currentPage === 1} onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} />
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -387,7 +390,7 @@ export default function Librairie({ embedded = false }) {
       </Container>
 
       {/* Offcanvas filtres — Mobile */}
-      <Offcanvas show={showFilters} onHide={() => setShowFilters(false)} placement="start" className="librairie-offcanvas" >
+      <Offcanvas show={showFilters} onHide={() => setShowFilters(false)} placement="start" className="bibliotheque-offcanvas" >
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>{t('library.filters')}</Offcanvas.Title>
         </Offcanvas.Header>

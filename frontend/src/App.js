@@ -7,7 +7,7 @@ import Connexion from './components/connexion';
 import Inscription from './components/inscription';
 import ForgotPassword from './components/forgotPassword';
 import ResetPassword from './components/ResetPassword';
-import Librairie from './components/librairie';
+import BibliothequePage from './components/bibliotheque';
 import PublicationDetails from './components/publicationDetails';
 import Pay from './components/pay';
 
@@ -57,7 +57,7 @@ function App() {
           <Route path="/reinitialiser-mot-de-passe" element={<ResetPassword />} />
           <Route path="/publication/:id" element={<PublicationDetails />} />
           <Route path="/librairie" element={<LegacyLibraryRedirect />} />
-          <Route path={PUBLIC_LIBRARY_PATH} element={<Librairie />} />
+          <Route path={PUBLIC_LIBRARY_PATH} element={<BibliothequePage />} />
           <Route path="/pay" element={<Pay />} />
 
           {/* Interface utilisateur (navbar + sidebar) — réservée aux utilisateurs connectés */}
